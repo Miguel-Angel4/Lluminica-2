@@ -97,7 +97,7 @@ body {
   border-color: var(--llum-blue);
 }
 
-#toggle-password {
+.toggle-password {
   position: absolute;
   right: 0.75rem;
   background: none;
@@ -106,6 +106,15 @@ body {
   color: #9ca3af;
   display: flex;
   align-items: center;
+  padding: 0;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  text-align: center;
+  font-weight: 500;
 }
 
 .btn-primary {
@@ -119,6 +128,13 @@ body {
   cursor: pointer;
   transition: opacity 0.2s;
   margin-top: 0.5rem;
+  width: 100%;
+}
+
+#forgot-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .btn-primary:hover {
@@ -163,9 +179,71 @@ body {
   font-size: 0.875rem;
   font-weight: 600;
 }
+#login-view, #forgot-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.input-row .input-group input {
+  padding-left: 2.5rem; /* Ensure space for icons in shared rows */
+}
+
+#register-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+#register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.auth-footer p {
+  font-size: 0.9rem;
+  color: #111;
+  font-weight: 500;
+}
+
+.auth-footer a {
+  color: black;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-line {
+  width: 60px;
+  height: 2px;
+  background-color: var(--llum-orange);
+  opacity: 0.6;
+}
 
 @media (max-width: 480px) {
   #app {
     padding: 1.5rem;
+  }
+  
+  .input-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 }
