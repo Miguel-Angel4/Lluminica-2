@@ -209,7 +209,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
       
       alert('¡Tu contraseña ha sido actualizada con éxito!');
-      toLogin.click();
+      
+      // Explicitly switch view instead of relying on a hidden element's click
+      hideAllViews();
+      loginView.style.display = 'flex';
+      document.title = 'Lluminica - Iniciar sesión';
+      
+      // Clear the recovery hash from the URL so reloading doesn't trigger it again
+      window.history.replaceState(null, '', window.location.pathname);
     } catch (err) {
       console.error('Update password error:', err.message);
       alert('Error al actualizar contraseña: ' + err.message);
