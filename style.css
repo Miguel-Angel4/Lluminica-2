@@ -579,3 +579,114 @@ body {
   border: none;
   margin-top: 0.5rem;
 }
+
+
+.main-subview {
+  flex: 1;
+  display: none;
+  flex-direction: column;
+  position: relative;
+}
+
+.galeria-header {
+  background: #f8fafc;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.filtro-cliente {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.filtro-cliente select {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  outline: none;
+  background: white;
+  color: #333;
+}
+
+.buscador-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-input-group {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  color: #64748b;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.filter-btn {
+  background: white;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.galeria-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  padding-bottom: 80px;
+  color: #64748b;
+}
+
+.img-placeholder {
+  margin-bottom: 1rem;
+}
+
+.empty-state-galeria h3 {
+  color: #334155;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.empty-state-galeria p {
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.8;
+}
+
+.fab-camera {
+  position: absolute;
+  bottom: 80px;
+  right: 1.5rem;
+  width: 56px;
+  height: 56px;
+  background: #f97316;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+  cursor: pointer;
+}

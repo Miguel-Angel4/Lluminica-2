@@ -263,15 +263,23 @@ document.addEventListener('DOMContentLoaded', () => {
   navItems.forEach(item => {
     item.addEventListener('click', () => {
       const label = item.querySelector('span').innerText;
+      const viewCitas = document.querySelector('#view-citas');
+      const viewGaleria = document.querySelector('#view-galeria');
       
-      // If clicking something other than Citas, show a placeholder
-      if (label !== 'Citas') {
-        alert(`La sección de ${label} estará disponible próximamente.`);
-        return;
-      }
-
       navItems.forEach(ni => ni.classList.remove('active'));
       item.classList.add('active');
+
+      if (label === 'Citas') {
+        if(viewCitas) viewCitas.style.display = 'flex';
+        if(viewGaleria) viewGaleria.style.display = 'none';
+        document.title = 'Lluminica - Citas';
+      } else if (label === 'Galería') {
+        if(viewCitas) viewCitas.style.display = 'none';
+        if(viewGaleria) viewGaleria.style.display = 'flex';
+        document.title = 'Lluminica - Galería';
+      } else {
+        alert(`La sección de ${label} estará disponible próximamente.`);
+      }
     });
   });
 });
