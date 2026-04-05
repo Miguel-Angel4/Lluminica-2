@@ -1,3 +1,9 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 document.addEventListener('DOMContentLoaded', () => {
   const loginView = document.querySelector('#login-view');
   const registerView = document.querySelector('#register-view');
@@ -11,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const loginForm = document.querySelector('#login-form');
   const registerForm = document.querySelector('#register-form');
   const forgotForm = document.querySelector('#forgot-form');
+  const dashboardView = document.querySelector('#dashboard-view');
 
   // View toggling
   toRegister.addEventListener('click', (e) => {
@@ -18,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginView.style.display = 'none';
     registerView.style.display = 'flex';
     forgotView.style.display = 'none';
+    dashboardView.style.display = 'none';
     document.title = 'Lluminica - Crear cuenta';
   });
 
@@ -26,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginView.style.display = 'flex';
     registerView.style.display = 'none';
     forgotView.style.display = 'none';
+    dashboardView.style.display = 'none';
     document.title = 'Lluminica - Iniciar sesión';
   });
 
@@ -34,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginView.style.display = 'none';
     registerView.style.display = 'none';
     forgotView.style.display = 'flex';
+    dashboardView.style.display = 'none';
     document.title = 'Lluminica - Restablecer contraseña';
   });
 
@@ -42,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loginView.style.display = 'flex';
     registerView.style.display = 'none';
     forgotView.style.display = 'none';
+    dashboardView.style.display = 'none';
     document.title = 'Lluminica - Iniciar sesión';
   });
 
@@ -70,29 +81,44 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Handle Login form submission
-  loginForm.addEventListener('submit', (e) => {
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = loginForm.querySelector('#email').value;
-    const password = loginForm.querySelector('#password').value;
+    const password = loginForm.querySelector('#password').value; // In a real app, you'd use Supabase Auth
     const loginError = document.querySelector('#login-error');
     
     // Reset error message invisibility
     loginError.style.display = 'none';
 
-    // Simulate authentication check
-    // For demonstration, let's say test@test.com/password is the correct one
-    if (email === 'test@test.com' && password === 'password') {
-      alert('Inicio de sesión exitoso!');
-      console.log('Login success:', { email });
-    } else {
+    try {
+      // For demonstration, we check if the user exists in our 'profiles' table
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (error || !data) {
+        throw new Error('Credenciales inválidas');
+      }
+
+      // If we found the user, success!
+      alert('¡Bienvenido, ' + data.nombre + '!');
+      
+      // Show Dashboard
+      loginView.style.display = 'none';
+      dashboardView.style.display = 'flex';
+      document.title = 'Lluminica - Citas';
+      console.log('Login success:', data);
+    } catch (err) {
       // Show the error message
       loginError.style.display = 'block';
-      console.log('Login failed:', { email, password });
+      console.error('Login error:', err.message);
     }
   });
 
   // Handle Register form submission
-  registerForm.addEventListener('submit', (e) => {
+  registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const password = document.querySelector('#reg-password').value;
@@ -109,18 +135,30 @@ document.addEventListener('DOMContentLoaded', () => {
       telefono: document.querySelector('#reg-telefono').value,
       nif: document.querySelector('#reg-nif').value,
       email: document.querySelector('#reg-email').value,
-      razon: document.querySelector('#reg-razon').value,
-      address: document.querySelector('#reg-address').value
+      razon_social: document.querySelector('#reg-razon').value,
+      direccion: document.querySelector('#reg-address').value
     };
     
     console.log('Registration attempt:', formData);
-    alert('Usuario registrado con éxito (simulado).');
-    
-    // Switch back to login
-    toLogin.click();
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert([formData]);
+
+      if (error) throw error;
+
+      alert('¡Usuario registrado con éxito en Supabase!');
+      
+      // Switch back to login
+      toLogin.click();
+    } catch (err) {
+      console.error('Registration error:', err.message);
+      alert('Error al registrar usuario: ' + err.message);
+    }
   });
 
-  // Handle Forgot Password form submission
+  // Handle Forgot Password form submission (Keep simulated since no Auth yet)
   forgotForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const email = document.querySelector('#forgot-email').value;
@@ -130,5 +168,37 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Switch back to login
     forgotToLogin.click();
+  });
+
+  // Dashboard Interactivity
+  const tabs = document.querySelectorAll('.tab-item');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // If it's the calendar tab, we don't switch yet because it's 'Próximamente'
+      if (tab.id === 'tab-calendario') {
+        alert('La vista de Calendario estará disponible próximamente.');
+        return;
+      }
+      
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  navItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const label = item.querySelector('span').innerText;
+      
+      // If clicking something other than Citas, show a placeholder
+      if (label !== 'Citas') {
+        alert(`La sección de ${label} estará disponible próximamente.`);
+        return;
+      }
+
+      navItems.forEach(ni => ni.classList.remove('active'));
+      item.classList.add('active');
+    });
   });
 });
