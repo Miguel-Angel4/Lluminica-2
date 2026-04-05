@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+ document.addEventListener('DOMContentLoaded', () => {
   const loginView = document.querySelector('#login-view');
   const registerView = document.querySelector('#register-view');
   const forgotView = document.querySelector('#forgot-view');
