@@ -282,4 +282,55 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // Modal logic for Galeria Camera FAB
+  const galeriaFab = document.querySelector('.fab-camera');
+  const imageSourceModal = document.querySelector('#image-source-modal');
+  const btnCameraAction = document.querySelector('#btn-camera-action');
+  const btnGalleryAction = document.querySelector('#btn-gallery-action');
+  const btnCancelAction = document.querySelector('#btn-cancel-action');
+  const cameraInput = document.querySelector('#camera-input');
+  const galleryInput = document.querySelector('#gallery-input');
+
+  if (galeriaFab && imageSourceModal) {
+    galeriaFab.addEventListener('click', () => {
+      imageSourceModal.style.display = 'flex';
+    });
+
+    btnCancelAction.addEventListener('click', () => {
+      imageSourceModal.style.display = 'none';
+    });
+
+    // Close modal if clicking outside the dialog
+    imageSourceModal.addEventListener('click', (e) => {
+      if (e.target === imageSourceModal) {
+        imageSourceModal.style.display = 'none';
+      }
+    });
+
+    btnCameraAction.addEventListener('click', () => {
+      imageSourceModal.style.display = 'none';
+      cameraInput.click();
+    });
+
+    btnGalleryAction.addEventListener('click', () => {
+      imageSourceModal.style.display = 'none';
+      galleryInput.click();
+    });
+
+    // Handle actual file picking
+    cameraInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        alert('Foto capturada con la cámara: ' + e.target.files[0].name);
+        // Here you would upload or display the captured image
+      }
+    });
+
+    galleryInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        alert('Foto seleccionada de la galería: ' + e.target.files[0].name);
+        // Here you would upload or display the selected image
+      }
+    });
+  }
 });

@@ -400,6 +400,23 @@
         Lluminica 0.28.1
       </footer>
     </div>
+    <!-- Modal Selección Imagen -->
+    <div id="image-source-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-dialog">
+        <h3 class="modal-title">Elija una opción</h3>
+        <p class="modal-subtitle">Seleccionar Fuente de Imagen</p>
+        <div class="modal-actions">
+          <button id="btn-camera-action" class="modal-btn-flat">CÁMARA</button>
+          <button id="btn-gallery-action" class="modal-btn-flat">GALERÍA</button>
+          <button id="btn-cancel-action" class="modal-btn-flat">CANCELAR</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Hidden inputs for file selection -->
+    <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;" />
+    <input type="file" id="gallery-input" accept="image/*" style="display: none;" />
+
     <script type="module" src="/main.js"></script>
   </body>
 </html>
