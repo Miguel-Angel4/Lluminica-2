@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const updatePasswordView = document.querySelector('#update-password-view');
   const updatePasswordForm = document.querySelector('#update-password-form');
+  const createAppointmentView = document.querySelector('#create-appointment-view');
 
   // View toggling logic extended
   const hideAllViews = () => {
@@ -29,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     forgotView.style.display = 'none';
     updatePasswordView.style.display = 'none';
     dashboardView.style.display = 'none';
+    if(createAppointmentView) createAppointmentView.style.display = 'none';
   };
 
   toRegister.addEventListener('click', (e) => {
@@ -58,6 +60,24 @@ document.addEventListener('DOMContentLoaded', () => {
     loginView.style.display = 'flex';
     document.title = 'Lluminica - Iniciar sesión';
   });
+
+  // FAB button logic for Crear Cita
+  const fabAddBtn = document.querySelector('.fab-add');
+  const backToDashboardBtn = document.querySelector('#back-to-dashboard');
+  
+  if (fabAddBtn && createAppointmentView && backToDashboardBtn) {
+    fabAddBtn.addEventListener('click', () => {
+      hideAllViews();
+      createAppointmentView.style.display = 'flex';
+      document.title = 'Lluminica - Crear cita';
+    });
+
+    backToDashboardBtn.addEventListener('click', () => {
+      hideAllViews();
+      dashboardView.style.display = 'flex';
+      document.title = 'Lluminica - Citas';
+    });
+  }
 
   // Password visibility toggle (generalized)
   document.querySelectorAll('.toggle-password').forEach(button => {

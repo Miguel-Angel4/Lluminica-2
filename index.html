@@ -243,6 +243,120 @@
         </nav>
       </div>
 
+      <!-- Vista de Crear Cita -->
+      <div id="create-appointment-view" style="display: none;">
+        <header class="app-header-top">
+          <button id="back-to-dashboard" class="icon-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+          </button>
+          <h2>Crear cita</h2>
+          <div style="width: 24px;"></div>
+        </header>
+
+        <div class="scroll-content">
+          <!-- Fecha y Hora -->
+          <div class="card-section">
+            <div class="section-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+              <span>Fecha y Hora</span>
+            </div>
+            <div class="input-field">
+              <label>Fecha:</label>
+              <input type="text" class="cyan-input" value="5/4/2026" />
+            </div>
+            <div class="input-field">
+              <label>Hora:</label>
+              <input type="text" class="cyan-input" value="20:24" />
+            </div>
+          </div>
+
+          <!-- Cliente -->
+          <div class="card-section">
+            <div class="section-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>Cliente</span>
+            </div>
+            <button class="select-btn">
+              <span>Seleccionar Cliente</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+
+          <!-- Procedimiento -->
+          <div class="card-section">
+            <div class="section-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span>Procedimiento</span>
+            </div>
+            <button class="select-btn disabled">
+              <span>Seleccionar Procedimiento</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+          </div>
+
+          <!-- Cobro -->
+          <div class="card-section">
+            <div class="section-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M12 12v9"/><path d="m8 17 4 4 4-4"/></svg>
+              <span>Cobro</span>
+            </div>
+            <div class="input-field">
+              <label>Precio (€)</label>
+              <input type="text" class="gray-input" value="0.00" />
+            </div>
+            
+            <div class="input-field">
+              <label>Forma de Pago</label>
+              <div class="pill-group">
+                <button class="pill-btn pill-cyan">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                  Tarjeta
+                </button>
+                <button class="pill-btn pill-gray">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><line x1="12" x2="12" y1="8" y2="16"/><line x1="8" x2="16" y1="12" y2="12"/></svg>
+                  Efectivo
+                </button>
+              </div>
+            </div>
+
+            <div class="input-field">
+              <label>Estado de Pago</label>
+              <div class="pill-group">
+                <button class="pill-btn pill-gray">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                  Pagado
+                </button>
+                <button class="pill-btn pill-orange">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                  Pendiente
+                </button>
+              </div>
+            </div>
+
+            <div class="input-field">
+              <label>Concepto</label>
+              <input type="text" class="gray-input" placeholder="Concepto del cobro" />
+            </div>
+          </div>
+
+          <!-- Notas -->
+          <div class="card-section">
+            <div class="section-header">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="section-icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>Notas</span>
+            </div>
+            <div class="input-field">
+              <textarea placeholder="Escribe tus notas aquí..."></textarea>
+            </div>
+            <button class="icon-circle">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <button class="bottom-submit-btn">Crear cita</button>
+      </div>
+
       <footer class="version-footer">
         Lluminica 0.28.1
       </footer>
