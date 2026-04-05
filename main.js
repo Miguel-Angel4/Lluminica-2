@@ -19,40 +19,43 @@ document.addEventListener('DOMContentLoaded', () => {
   const forgotForm = document.querySelector('#forgot-form');
   const dashboardView = document.querySelector('#dashboard-view');
 
-  // View toggling
+  const updatePasswordView = document.querySelector('#update-password-view');
+  const updatePasswordForm = document.querySelector('#update-password-form');
+
+  // View toggling logic extended
+  const hideAllViews = () => {
+    loginView.style.display = 'none';
+    registerView.style.display = 'none';
+    forgotView.style.display = 'none';
+    updatePasswordView.style.display = 'none';
+    dashboardView.style.display = 'none';
+  };
+
   toRegister.addEventListener('click', (e) => {
     e.preventDefault();
-    loginView.style.display = 'none';
+    hideAllViews();
     registerView.style.display = 'flex';
-    forgotView.style.display = 'none';
-    dashboardView.style.display = 'none';
     document.title = 'Lluminica - Crear cuenta';
   });
 
   toLogin.addEventListener('click', (e) => {
     e.preventDefault();
+    hideAllViews();
     loginView.style.display = 'flex';
-    registerView.style.display = 'none';
-    forgotView.style.display = 'none';
-    dashboardView.style.display = 'none';
     document.title = 'Lluminica - Iniciar sesión';
   });
 
   toForgot.addEventListener('click', (e) => {
     e.preventDefault();
-    loginView.style.display = 'none';
-    registerView.style.display = 'none';
+    hideAllViews();
     forgotView.style.display = 'flex';
-    dashboardView.style.display = 'none';
     document.title = 'Lluminica - Restablecer contraseña';
   });
 
   forgotToLogin.addEventListener('click', (e) => {
     e.preventDefault();
+    hideAllViews();
     loginView.style.display = 'flex';
-    registerView.style.display = 'none';
-    forgotView.style.display = 'none';
-    dashboardView.style.display = 'none';
     document.title = 'Lluminica - Iniciar sesión';
   });
 
@@ -60,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.toggle-password').forEach(button => {
     button.addEventListener('click', () => {
       const input = button.parentElement.querySelector('input');
+      if (!input) return;
       const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
       input.setAttribute('type', type);
       
@@ -80,47 +84,56 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Handle Login form submission
+  // Listener for Password Recovery flow
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      hideAllViews();
+      updatePasswordView.style.display = 'flex';
+      document.title = 'Lluminica - Crear nueva contraseña';
+    }
+  });
+
+  // Handle Login form submission (Supabase Auth)
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = loginForm.querySelector('#email').value;
-    const password = loginForm.querySelector('#password').value; // In a real app, you'd use Supabase Auth
+    const password = loginForm.querySelector('#password').value;
     const loginError = document.querySelector('#login-error');
     
-    // Reset error message invisibility
     loginError.style.display = 'none';
 
     try {
-      // For demonstration, we check if the user exists in our 'profiles' table
-      const { data, error } = await supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) throw error;
+
+      // Fetch profile to get the name
+      const { data: profile } = await supabase
         .from('profiles')
-        .select('*')
+        .select('nombre')
         .eq('email', email)
         .single();
-
-      if (error || !data) {
-        throw new Error('Credenciales inválidas');
-      }
-
-      // If we found the user, success!
-      alert('¡Bienvenido, ' + data.nombre + '!');
+        
+      const userName = profile ? profile.nombre : 'Usuario';
+      alert('¡Bienvenido, ' + userName + '!');
       
-      // Show Dashboard
-      loginView.style.display = 'none';
+      hideAllViews();
       dashboardView.style.display = 'flex';
       document.title = 'Lluminica - Citas';
-      console.log('Login success:', data);
     } catch (err) {
-      // Show the error message
       loginError.style.display = 'block';
       console.error('Login error:', err.message);
     }
   });
 
-  // Handle Register form submission
+  // Handle Register form submission (Supabase Auth)
   registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    const email = document.querySelector('#reg-email').value;
     const password = document.querySelector('#reg-password').value;
     const confirmPassword = document.querySelector('#reg-confirm-password').value;
 
@@ -129,45 +142,78 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const formData = {
-      nombre: document.querySelector('#reg-nombre').value,
-      apellidos: document.querySelector('#reg-apellidos').value,
-      telefono: document.querySelector('#reg-telefono').value,
-      nif: document.querySelector('#reg-nif').value,
-      email: document.querySelector('#reg-email').value,
-      razon_social: document.querySelector('#reg-razon').value,
-      direccion: document.querySelector('#reg-address').value
-    };
-    
-    console.log('Registration attempt:', formData);
-
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .insert([formData]);
+      // 1. Register with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+      });
 
-      if (error) throw error;
+      if (authError) throw authError;
 
-      alert('¡Usuario registrado con éxito en Supabase!');
+      // 2. Insert extra data into our custom profiles table
+      const formData = {
+        nombre: document.querySelector('#reg-nombre').value,
+        apellidos: document.querySelector('#reg-apellidos').value,
+        telefono: document.querySelector('#reg-telefono').value,
+        nif: document.querySelector('#reg-nif').value,
+        email: email,
+        razon_social: document.querySelector('#reg-razon').value,
+        direccion: document.querySelector('#reg-address').value
+      };
       
-      // Switch back to login
+      const { error: profileError } = await supabase.from('profiles').insert([formData]);
+      if (profileError) console.error("Error guardando perfil:", profileError);
+
+      alert('¡Registro exitoso! Por favor, revisa tu correo electrónico para verificar tu cuenta antes de iniciar sesión.');
       toLogin.click();
     } catch (err) {
       console.error('Registration error:', err.message);
-      alert('Error al registrar usuario: ' + err.message);
+      alert('Error: ' + err.message);
     }
   });
 
-  // Handle Forgot Password form submission (Keep simulated since no Auth yet)
-  forgotForm.addEventListener('submit', (e) => {
+  // Handle Forgot Password
+  forgotForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.querySelector('#forgot-email').value;
+    const msgElement = document.querySelector('#forgot-message');
     
-    console.log('Password reset attempt for:', email);
-    alert('Se ha enviado un correo de recuperación (simulado).');
+    msgElement.style.color = '#111';
+    msgElement.textContent = 'Enviando...';
+    msgElement.style.display = 'block';
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+
+      if (error) throw error;
+      
+      msgElement.style.color = '#10b981'; // Green UI success
+      msgElement.textContent = 'Se te ha enviado un correo con instrucciones para recuperar tu contraseña.';
+    } catch (err) {
+      console.error('Reset error:', err.message);
+      msgElement.style.color = '#ef4444'; // Red UI error
+      msgElement.textContent = 'Error: No se pudo enviar el correo.';
+    }
+  });
+
+  // Handle Update Password
+  updatePasswordForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const newPassword = document.querySelector('#new-password').value;
     
-    // Switch back to login
-    forgotToLogin.click();
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      
+      alert('¡Tu contraseña ha sido actualizada con éxito!');
+      toLogin.click();
+    } catch (err) {
+      console.error('Update password error:', err.message);
+      alert('Error al actualizar contraseña: ' + err.message);
+    }
   });
 
   // Dashboard Interactivity
