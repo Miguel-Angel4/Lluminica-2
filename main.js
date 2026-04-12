@@ -350,8 +350,14 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(dataUrl)
           .then(res => res.blob())
           .then(blob => {
-            const file = new File([blob], "camara_pc_" + Date.now() + ".jpg", { type: "image/jpeg" });
-            addImageToGallery(file);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = "camara_pc_" + Date.now() + ".jpg";
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
             stopWebcam();
           });
       });
@@ -374,52 +380,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btnGalleryAction.addEventListener('click', () => {
       imageSourceModal.style.display = 'none';
       galleryInput.click();
-    });
-
-    const galeriaContent = document.querySelector('.galeria-content');
-
-    const addImageToGallery = (file) => {
-      // Remove empty state if it exists
-      if (galeriaContent.classList.contains('empty-state-galeria')) {
-        galeriaContent.innerHTML = '';
-        galeriaContent.classList.remove('empty-state-galeria');
-        // Change from centered flex to grid
-        galeriaContent.style.display = 'grid';
-        galeriaContent.style.gridTemplateColumns = 'repeat(3, 1fr)';
-        galeriaContent.style.gap = '0.5rem';
-        galeriaContent.style.alignItems = 'start';
-        galeriaContent.style.justifyContent = 'start';
-        galeriaContent.style.padding = '1rem';
-        // reset padding bottom for FAB
-        galeriaContent.style.paddingBottom = '80px'; 
-      }
-
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const imgContainer = document.createElement('div');
-        imgContainer.style.aspectRatio = '1 / 1';
-        imgContainer.style.width = '100%';
-        imgContainer.style.borderRadius = '8px';
-        imgContainer.style.overflow = 'hidden';
-        imgContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-
-        const img = document.createElement('img');
-        img.src = event.target.result;
-        img.style.width = '100%';
-        img.style.height = '100%';
-        img.style.objectFit = 'cover';
-        img.style.display = 'block';
-        
-        imgContainer.appendChild(img);
-        galeriaContent.appendChild(imgContainer);
-      };
-      reader.readAsDataURL(file);
-    };
-
-    galleryInput.addEventListener('change', (e) => {
-      if (e.target.files && e.target.files.length > 0) {
-        addImageToGallery(e.target.files[0]);
-      }
     });
   }
 });
