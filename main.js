@@ -366,21 +366,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    if (addToMainGalleryBtn) {
-      addToMainGalleryBtn.addEventListener('click', () => {
-        // Remove empty state if it exists
-        if (galeriaContent.classList.contains('empty-state-galeria')) {
-          galeriaContent.innerHTML = '';
-          galeriaContent.classList.remove('empty-state-galeria');
-          galeriaContent.style.display = 'grid';
-          galeriaContent.style.gridTemplateColumns = 'repeat(3, 1fr)';
-          galeriaContent.style.gap = '0.5rem';
-          galeriaContent.style.alignItems = 'start';
-          galeriaContent.style.justifyContent = 'start';
-          galeriaContent.style.padding = '1rem';
-          galeriaContent.style.paddingBottom = '80px';
-        }
-
     const addImagesModal = document.getElementById('add-images-modal');
     const wizardImagesContainer = document.getElementById('wizard-images-container');
     const addImagesBackBtn = document.getElementById('add-images-back');
