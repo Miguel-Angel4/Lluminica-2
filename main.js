@@ -308,9 +308,67 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    const webcamView = document.getElementById('webcam-view');
+    const webcamVideo = document.getElementById('webcam-video');
+    const webcamCanvas = document.getElementById('webcam-canvas');
+    const webcamCaptureBtn = document.getElementById('webcam-capture');
+    const webcamCloseBtn = document.getElementById('webcam-close');
+
+    const stopWebcam = () => {
+      if (webcamVideo && webcamVideo.srcObject) {
+        webcamVideo.srcObject.getTracks().forEach(track => track.stop());
+        webcamVideo.srcObject = null;
+      }
+      if (webcamView) webcamView.style.display = 'none';
+    };
+
+    const startWebcam = async () => {
+      imageSourceModal.style.display = 'none';
+      if (webcamView) webcamView.style.display = 'block';
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        webcamVideo.srcObject = stream;
+      } catch (err) {
+        alert('Error al acceder a la cámara en el PC: ' + err.message);
+        if (webcamView) webcamView.style.display = 'none';
+      }
+    };
+
+    if (webcamCloseBtn) {
+      webcamCloseBtn.addEventListener('click', stopWebcam);
+    }
+
+    if (webcamCaptureBtn) {
+      webcamCaptureBtn.addEventListener('click', () => {
+        if (!webcamVideo.videoWidth) return;
+        webcamCanvas.width = webcamVideo.videoWidth;
+        webcamCanvas.height = webcamVideo.videoHeight;
+        const ctx = webcamCanvas.getContext('2d');
+        ctx.drawImage(webcamVideo, 0, 0, webcamCanvas.width, webcamCanvas.height);
+        
+        const dataUrl = webcamCanvas.toDataURL('image/jpeg', 0.9);
+        fetch(dataUrl)
+          .then(res => res.blob())
+          .then(blob => {
+            const file = new File([blob], "camara_pc_" + Date.now() + ".jpg", { type: "image/jpeg" });
+            addImageToGallery(file);
+            stopWebcam();
+          });
+      });
+    }
+
     btnCameraAction.addEventListener('click', () => {
       imageSourceModal.style.display = 'none';
-      cameraInput.click();
+      
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobile) {
+        // En móviles, usamos la app de cámara nativa del sistema
+        cameraInput.click();
+      } else {
+        // En PC, no hay app nativa de cámara, abrimos el visor integrado
+        startWebcam();
+      }
     });
 
     btnGalleryAction.addEventListener('click', () => {
