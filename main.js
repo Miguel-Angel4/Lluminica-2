@@ -683,4 +683,31 @@ document.addEventListener('DOMContentLoaded', () => {
       addClienteModal.style.display = 'none';
     });
   }
+
+  const addClienteSaveBtn = document.getElementById('add-cliente-save');
+  if (addClienteSaveBtn && addClienteModal) {
+    addClienteSaveBtn.addEventListener('click', () => {
+      // Future logic for saving to Supabase would go here
+      addClienteModal.style.display = 'none';
+      
+      // Update UI in Clientes tab to show we added a client (Mock Data)
+      const clientesContent = document.querySelector('.clientes-content');
+      if (clientesContent && clientesContent.classList.contains('empty-state-clientes')) {
+        clientesContent.innerHTML = `
+          <div style="background: white; width: 100%; border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 1rem;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: #06b6d4; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
+              NC
+            </div>
+            <div style="text-align: left;">
+              <h3 style="margin: 0 0 0.2rem 0; font-size: 1.1rem; color: #1e293b;">Nuevo Cliente</h3>
+              <p style="margin: 0; font-size: 0.9rem; color: #94a3b8;">NIF: 12345678A</p>
+            </div>
+          </div>
+        `;
+        clientesContent.classList.remove('empty-state-clientes');
+        clientesContent.style.justifyContent = 'flex-start';
+        clientesContent.style.height = 'auto'; // Disable centering wrapper
+      }
+    });
+  }
 });
