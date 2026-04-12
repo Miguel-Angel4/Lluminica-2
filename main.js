@@ -308,56 +308,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    const webcamView = document.getElementById('webcam-view');
-    const webcamVideo = document.getElementById('webcam-video');
-    const webcamCanvas = document.getElementById('webcam-canvas');
-    const webcamCaptureBtn = document.getElementById('webcam-capture');
-    const webcamCloseBtn = document.getElementById('webcam-close');
-
-    const stopWebcam = () => {
-      const stream = webcamVideo.srcObject;
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-      webcamView.style.display = 'none';
-      webcamVideo.srcObject = null;
-    };
-
-    const startWebcam = async () => {
-      imageSourceModal.style.display = 'none';
-      webcamView.style.display = 'flex';
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        webcamVideo.srcObject = stream;
-      } catch (err) {
-        alert('Error al acceder a la cámara: ' + err.message);
-        webcamView.style.display = 'none';
-      }
-    };
-
-    webcamCloseBtn.addEventListener('click', stopWebcam);
-
-    webcamCaptureBtn.addEventListener('click', () => {
-      if (!webcamVideo.videoWidth) return;
-      webcamCanvas.width = webcamVideo.videoWidth;
-      webcamCanvas.height = webcamVideo.videoHeight;
-      const ctx = webcamCanvas.getContext('2d');
-      ctx.drawImage(webcamVideo, 0, 0, webcamCanvas.width, webcamCanvas.height);
-      
-      const dataUrl = webcamCanvas.toDataURL('image/jpeg', 0.9);
-      // Fetch dataUrl to blob to reuse the addImageToGallery logic, or just modify addImageToGallery to accept dataUrl.
-      // Easiest is just convert dataUrl to Blob:
-      fetch(dataUrl)
-        .then(res => res.blob())
-        .then(blob => {
-          const file = new File([blob], "camara_" + Date.now() + ".jpg", { type: "image/jpeg" });
-          addImageToGallery(file);
-          stopWebcam();
-        });
-    });
-
     btnCameraAction.addEventListener('click', () => {
-      startWebcam();
+      imageSourceModal.style.display = 'none';
+      cameraInput.click();
     });
 
     btnGalleryAction.addEventListener('click', () => {
