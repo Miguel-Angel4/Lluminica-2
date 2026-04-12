@@ -338,6 +338,57 @@ document.addEventListener('DOMContentLoaded', () => {
       webcamCloseBtn.addEventListener('click', stopWebcam);
     }
 
+    const internalSessionPhotos = [];
+    const internalGalleryModal = document.getElementById('internal-gallery-modal');
+    const internalGalleryGrid = document.getElementById('internal-gallery-grid');
+    const closeInternalGalleryBtn = document.getElementById('close-internal-gallery');
+
+    if (closeInternalGalleryBtn) {
+      closeInternalGalleryBtn.addEventListener('click', () => {
+        internalGalleryModal.style.display = 'none';
+      });
+    }
+
+    const renderInternalGallery = () => {
+      if (!internalGalleryGrid) return;
+      internalGalleryGrid.innerHTML = '';
+      if (internalSessionPhotos.length === 0) {
+        internalGalleryGrid.innerHTML = '<p style="grid-column: span 3; text-align: center; margin-top: 2rem; color: #64748b;">No hay fotos guardadas en esta sesión.</p>';
+        return;
+      }
+      internalSessionPhotos.forEach(dataUrl => {
+        const renderDiv = document.createElement('div');
+        renderDiv.style.aspectRatio = '1 / 1';
+        renderDiv.style.width = '100%';
+        renderDiv.style.borderRadius = '4px';
+        renderDiv.style.overflow = 'hidden';
+        
+        const renderImg = document.createElement('img');
+        renderImg.src = dataUrl;
+        renderImg.style.width = '100%';
+        renderImg.style.height = '100%';
+        renderImg.style.objectFit = 'cover';
+        renderImg.style.display = 'block';
+
+        // Estilo visual del circulo que se ve en la imagen original
+        const circle = document.createElement('div');
+        circle.style.position = 'absolute';
+        circle.style.top = '6px';
+        circle.style.left = '6px';
+        circle.style.width = '20px';
+        circle.style.height = '20px';
+        circle.style.borderRadius = '50%';
+        circle.style.border = '2px solid white';
+        circle.style.background = 'rgba(0,0,0,0.3)';
+
+        renderDiv.style.position = 'relative';
+        renderDiv.appendChild(renderImg);
+        renderDiv.appendChild(circle);
+
+        internalGalleryGrid.appendChild(renderDiv);
+      });
+    };
+
     if (webcamCaptureBtn) {
       webcamCaptureBtn.addEventListener('click', () => {
         if (!webcamVideo.videoWidth) return;
@@ -347,21 +398,25 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(webcamVideo, 0, 0, webcamCanvas.width, webcamCanvas.height);
         
         const dataUrl = webcamCanvas.toDataURL('image/jpeg', 0.9);
-        fetch(dataUrl)
-          .then(res => res.blob())
-          .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            a.download = "camara_pc_" + Date.now() + ".jpg";
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            stopWebcam();
-          });
+        // Save to internal gallery explicitly (don't download)
+        internalSessionPhotos.unshift(dataUrl);
+        alert('Foto guardada en Galería.');
+        stopWebcam();
       });
     }
+
+    // Capture mobile photo and save inside internal gallery
+    cameraInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          internalSessionPhotos.unshift(ev.target.result);
+          alert('Foto guardada en Galería.');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
 
     btnCameraAction.addEventListener('click', () => {
       imageSourceModal.style.display = 'none';
@@ -379,7 +434,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnGalleryAction.addEventListener('click', () => {
       imageSourceModal.style.display = 'none';
-      galleryInput.click();
+      // Abre la UI custom y pinta el array de sesión
+      if (internalGalleryModal) {
+        internalGalleryModal.style.display = 'flex';
+        renderInternalGallery();
+      }
     });
   }
 });
