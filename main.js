@@ -266,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const viewCitas = document.querySelector('#view-citas');
       const viewGaleria = document.querySelector('#view-galeria');
       const viewClientes = document.querySelector('#view-clientes');
+      const viewMenu = document.querySelector('#view-menu');
       
       navItems.forEach(ni => ni.classList.remove('active'));
       item.classList.add('active');
@@ -284,7 +285,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if(viewCitas) viewCitas.style.display = 'none';
         if(viewGaleria) viewGaleria.style.display = 'none';
         if(viewClientes) viewClientes.style.display = 'block';
+        if(viewMenu) viewMenu.style.display = 'none';
         document.title = 'Lluminica - Clientes';
+        loadClientes();
+      } else if (label === 'Menú') {
+        if(viewCitas) viewCitas.style.display = 'none';
+        if(viewGaleria) viewGaleria.style.display = 'none';
+        if(viewClientes) viewClientes.style.display = 'none';
+        if(viewMenu) viewMenu.style.display = 'block';
+        document.title = 'Lluminica - Menú';
       } else {
         alert(`La sección de ${label} estará disponible próximamente.`);
       }
@@ -686,27 +695,139 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const addClienteSaveBtn = document.getElementById('add-cliente-save');
   if (addClienteSaveBtn && addClienteModal) {
-    addClienteSaveBtn.addEventListener('click', () => {
-      // Future logic for saving to Supabase would go here
-      addClienteModal.style.display = 'none';
-      
-      // Update UI in Clientes tab to show we added a client (Mock Data)
-      const clientesContent = document.querySelector('.clientes-content');
-      if (clientesContent && clientesContent.classList.contains('empty-state-clientes')) {
+    addClienteSaveBtn.addEventListener('click', async () => {
+      const name = document.getElementById('client-name').value;
+      const nif = document.getElementById('client-nif').value;
+      const bday = document.getElementById('client-birthday').value;
+      const email = document.getElementById('client-email').value;
+      const phone = document.getElementById('client-phone').value;
+      const gender = document.getElementById('client-gender').value;
+
+      if (!name) {
+        alert('El nombre es obligatorio');
+        return;
+      }
+
+      addClienteSaveBtn.disabled = true;
+      addClienteSaveBtn.textContent = 'Guardando...';
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No hay sesión activa');
+
+        const { error } = await supabase.from('clients').insert([
+          {
+            professional_id: user.id,
+            nombre_completo: name,
+            nif: nif,
+            fecha_nacimiento: bday || null,
+            email: email,
+            telefono: phone,
+            genero: gender
+          }
+        ]);
+
+        if (error) throw error;
+
+        // Reset and close
+        document.getElementById('client-name').value = '';
+        document.getElementById('client-nif').value = '';
+        document.getElementById('client-birthday').value = '';
+        document.getElementById('client-email').value = '';
+        document.getElementById('client-phone').value = '';
+        
+        addClienteModal.style.display = 'none';
+        loadClientes(); // Reload list
+      } catch (err) {
+        console.error('Error saving client:', err.message);
+        alert('Error al guardar: ' + err.message);
+      } finally {
+        addClienteSaveBtn.disabled = false;
+        addClienteSaveBtn.textContent = 'Guardar';
+      }
+    });
+  }
+
+  async function loadClientes() {
+    const clientesContent = document.querySelector('.clientes-content');
+    if (!clientesContent) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: clients, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (!clients || clients.length === 0) {
         clientesContent.innerHTML = `
-          <div style="background: white; width: 100%; border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; gap: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 1rem;">
-            <div style="width: 50px; height: 50px; border-radius: 50%; background: #06b6d4; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
-              NC
-            </div>
-            <div style="text-align: left;">
-              <h3 style="margin: 0 0 0.2rem 0; font-size: 1.1rem; color: #1e293b;">Nuevo Cliente</h3>
-              <p style="margin: 0; font-size: 0.9rem; color: #94a3b8;">NIF: 12345678A</p>
-            </div>
+          <div class="img-placeholder" style="width: 90px; height: 90px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
           </div>
+          <h3 style="color: #1e293b; font-size: 1.1rem; font-weight: 600; margin: 0 0 0.5rem 0;">No hay clientes aún</h3>
+          <p style="color: #94a3b8; font-size: 0.95rem; margin: 0;">Agrega tu primer cliente</p>
         `;
-        clientesContent.classList.remove('empty-state-clientes');
-        clientesContent.style.justifyContent = 'flex-start';
-        clientesContent.style.height = 'auto'; // Disable centering wrapper
+        clientesContent.classList.add('empty-state-clientes');
+        clientesContent.style.justifyContent = 'center';
+        clientesContent.style.height = 'calc(100vh - 250px)';
+      } else {
+        renderClientesList(clients);
+      }
+    } catch (err) {
+        console.error('Error loading clients:', err.message);
+    }
+  }
+
+  function renderClientesList(clients) {
+    const clientesContent = document.querySelector('.clientes-content');
+    clientesContent.innerHTML = '';
+    clientesContent.classList.remove('empty-state-clientes');
+    clientesContent.style.justifyContent = 'flex-start';
+    clientesContent.style.height = 'auto';
+    clientesContent.style.display = 'block';
+
+    clients.forEach(client => {
+      const initials = client.nombre_completo.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+      const card = document.createElement('div');
+      card.style.background = 'white';
+      card.style.width = '100%';
+      card.style.borderRadius = '12px';
+      card.style.padding = '1rem';
+      card.style.display = 'flex';
+      card.style.alignItems = 'center';
+      card.style.gap = '1rem';
+      card.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)';
+      card.style.marginBottom = '0.75rem';
+      card.style.boxSizing = 'border-box';
+
+      card.innerHTML = `
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: #06b6d4; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; flex-shrink: 0;">
+          ${initials}
+        </div>
+        <div style="text-align: left; overflow: hidden;">
+          <h3 style="margin: 0; font-size: 1rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${client.nombre_completo}</h3>
+          <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #94a3b8;">${client.email || 'Sin email'} • ${client.nif || 'No NIF'}</p>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: auto; flex-shrink: 0;"><path d="m9 18 6-6-6-6"/></svg>
+      `;
+      clientesContent.appendChild(card);
+    });
+  }
+
+  const btnLogout = document.getElementById('btn-logout');
+  if (btnLogout) {
+    btnLogout.addEventListener('click', async () => {
+      const { error } = await supabase.auth.signOut();
+      if (!error) {
+        dashboardView.style.display = 'none';
+        loginView.style.display = 'flex';
+        // reset tabs
+        navItems.forEach(ni => ni.classList.remove('active'));
+        navItems[0].classList.add('active');
       }
     });
   }
