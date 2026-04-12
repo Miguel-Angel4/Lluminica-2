@@ -541,6 +541,105 @@
       <button id="add-cliente-save" style="background-color: #06b6d4; color: white; padding: 1rem; text-align: center; font-weight: 600; font-size: 1rem; border: none; border-radius: 8px; margin: 0 1rem 2rem 1rem; width: calc(100% - 2rem); cursor: pointer; display: block;">Guardar</button>
     </div>
 
+    <!-- Modal Editar Cliente -->
+    <div id="edit-cliente-modal" class="full-screen-modal" style="display: none; background: #eef2f6; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 120; overflow-y: auto;">
+      <header class="app-header-top" style="background: white; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 10;">
+        <button id="edit-cliente-back" class="icon-btn" style="color: #06b6d4;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+        </button>
+        <h2 style="color: #1e293b; font-weight: 600; font-size: 1rem; text-align: center; flex-grow: 1; margin: 0; position: absolute; left: 0; right: 0; z-index: -1;">Editar Cliente</h2>
+      </header>
+      
+      <div style="padding: 1rem;">
+        <!-- Card 1: Nombre y Foto -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <div style="display: flex; gap: 1rem;">
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: #f8fafc; border: 1px solid #e2e8f0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #94a3b8; font-size: 0.75rem; flex-shrink: 0; border-style: dashed;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span>Foto</span>
+            </div>
+            <div style="flex-grow: 1;">
+              <label style="display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">Nombre del cliente</label>
+              <div style="position: relative;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <input type="text" id="edit-client-name" placeholder="Nombre completo" style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; outline: none; color: #334155;" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Datos -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <h3 style="font-size: 1rem; font-weight: 600; color: #334155; margin: 0 0 1rem 0;">Datos del cliente</h3>
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">NIF</label>
+            <div style="position: relative;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"><rect width="18" height="14" x="3" y="5" rx="2" ry="2"/><line x1="3" x2="21" y1="9" y2="9"/><line x1="9" x2="9" y1="13" y2="13"/></svg>
+              <input type="text" id="edit-client-nif" placeholder="Introduce el NIF" style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; outline: none; color: #334155;" />
+            </div>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">Fecha de nacimiento</label>
+            <div style="position: relative;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+              <input type="date" id="edit-client-birthday" style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; outline: none; color: #334155;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Contacto -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <h3 style="font-size: 1rem; font-weight: 600; color: #334155; margin: 0 0 1rem 0;">Contacto</h3>
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">Correo electrónico</label>
+            <div style="position: relative;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <input type="email" id="edit-client-email" placeholder="Ingrese el correo electrónico" style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; outline: none; color: #334155;" />
+            </div>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">Teléfono</label>
+            <div style="position: relative;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%);"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <input type="tel" id="edit-client-phone" placeholder="Ingrese el número de teléfono" style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; outline: none; color: #334155;" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Información adicional -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <h3 style="font-size: 1rem; font-weight: 600; color: #334155; margin: 0 0 1rem 0;">Información adicional</h3>
+          
+          <div style="margin-bottom: 1rem;">
+            <label style="display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">Género</label>
+            <div style="position: relative;">
+              <select id="edit-client-gender" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #1e293b; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; outline: none; color: #334155; appearance: none; background: white;">
+                <option>Hombre</option>
+                <option>Mujer</option>
+                <option>Otro</option>
+              </select>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.9rem; font-weight: 600; color: #334155; margin-bottom: 0.5rem;">Centros médicos</label>
+            <div style="position: relative;">
+              <select style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #94a3b8; border-radius: 6px; box-sizing: border-box; font-size: 0.95rem; outline: none; color: #94a3b8; appearance: none; background: #f8fafc;" disabled>
+                <option>No hay opciones disponibles</option>
+              </select>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none;"><path d="m6 9 6 6 6-6"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button id="edit-client-save" style="background-color: #06b6d4; color: white; padding: 1rem; text-align: center; font-weight: 600; font-size: 1rem; border: none; border-radius: 8px; margin: 0 1rem 2rem 1rem; width: calc(100% - 2rem); cursor: pointer; display: block;">Guardar Cambios</button>
+    </div>
+
     <!-- Vista Perfil del Cliente -->
     <div id="client-profile-view" class="full-screen-modal" style="display: none; background: #eef2f6; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 110; overflow-y: auto;">
       <header class="app-header-top" style="background: white; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; padding: 0 1rem;">
@@ -549,7 +648,7 @@
         </button>
         <h2 style="color: #1e293b; font-weight: 600; font-size: 1.1rem;">Perfil del Cliente</h2>
         <div style="display: flex; gap: 1rem;">
-          <button class="icon-btn" style="color: #06b6d4;">
+          <button id="edit-profile-btn" class="icon-btn" style="color: #06b6d4;">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
           </button>
           <button class="icon-btn" style="color: #06b6d4;">

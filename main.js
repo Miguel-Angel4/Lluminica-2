@@ -782,6 +782,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  let currentEditingClient = null;
+
   function renderClientesList(clients) {
     const clientesContent = document.querySelector('.clientes-content');
     clientesContent.innerHTML = '';
@@ -836,6 +838,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatar = document.getElementById('profile-avatar');
     avatar.innerHTML = initials;
 
+    currentEditingClient = client;
     profileView.style.display = 'block';
   }
 
@@ -848,6 +851,89 @@ document.addEventListener('DOMContentLoaded', () => {
   if (profileBackBtn) {
     profileBackBtn.addEventListener('click', () => {
       document.getElementById('client-profile-view').style.display = 'none';
+      currentEditingClient = null;
+    });
+  }
+
+  const editProfileBtn = document.getElementById('edit-profile-btn');
+  const editClienteModal = document.getElementById('edit-cliente-modal');
+  const editClienteBackBtn = document.getElementById('edit-cliente-back');
+  const editClientSaveBtn = document.getElementById('edit-client-save');
+
+  if (editProfileBtn && editClienteModal) {
+    editProfileBtn.addEventListener('click', () => {
+      if (!currentEditingClient) return;
+      
+      document.getElementById('edit-client-name').value = currentEditingClient.nombre_completo;
+      document.getElementById('edit-client-nif').value = currentEditingClient.nif || '';
+      document.getElementById('edit-client-birthday').value = currentEditingClient.fecha_nacimiento || '';
+      document.getElementById('edit-client-email').value = currentEditingClient.email || '';
+      document.getElementById('edit-client-phone').value = currentEditingClient.telefono || '';
+      document.getElementById('edit-client-gender').value = currentEditingClient.genero || 'Hombre';
+      
+      editClienteModal.style.display = 'block';
+    });
+  }
+
+  if (editClienteBackBtn) {
+    editClienteBackBtn.addEventListener('click', () => {
+      editClienteModal.style.display = 'none';
+    });
+  }
+
+  if (editClientSaveBtn) {
+    editClientSaveBtn.addEventListener('click', async () => {
+      if (!currentEditingClient) return;
+
+      const name = document.getElementById('edit-client-name').value;
+      const nif = document.getElementById('edit-client-nif').value;
+      const bday = document.getElementById('edit-client-birthday').value;
+      const email = document.getElementById('edit-client-email').value;
+      const phone = document.getElementById('edit-client-phone').value;
+      const gender = document.getElementById('edit-client-gender').value;
+
+      if (!name) {
+        alert('El nombre es obligatorio');
+        return;
+      }
+
+      editClientSaveBtn.disabled = true;
+      editClientSaveBtn.textContent = 'Guardando...';
+
+      try {
+        const { error } = await supabase
+          .from('clients')
+          .update({
+            nombre_completo: name,
+            nif: nif,
+            fecha_nacimiento: bday || null,
+            email: email,
+            telefono: phone,
+            genero: gender
+          })
+          .eq('id', currentEditingClient.id);
+
+        if (error) throw error;
+
+        // Update current local object
+        currentEditingClient.nombre_completo = name;
+        currentEditingClient.nif = nif;
+        currentEditingClient.fecha_nacimiento = bday;
+        currentEditingClient.email = email;
+        currentEditingClient.telefono = phone;
+        currentEditingClient.genero = gender;
+
+        // Refresh profile view
+        openClientProfile(currentEditingClient);
+        
+        editClienteModal.style.display = 'none';
+        loadClientes(); // Refresh list in background
+      } catch (err) {
+        alert('Error al actualizar: ' + err.message);
+      } finally {
+        editClientSaveBtn.disabled = false;
+        editClientSaveBtn.textContent = 'Guardar Cambios';
+      }
     });
   }
 
