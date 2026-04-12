@@ -381,6 +381,55 @@ document.addEventListener('DOMContentLoaded', () => {
           galeriaContent.style.paddingBottom = '80px';
         }
 
+    const addImagesModal = document.getElementById('add-images-modal');
+    const wizardImagesContainer = document.getElementById('wizard-images-container');
+    const addImagesBackBtn = document.getElementById('add-images-back');
+    const wizardClientSelect = document.getElementById('wizard-client-select');
+    const wizardClientDropdown = document.getElementById('wizard-client-dropdown');
+    const wizardSaveBtn = document.getElementById('wizard-save-btn');
+
+    if (addImagesBackBtn) {
+      addImagesBackBtn.addEventListener('click', () => {
+        addImagesModal.style.display = 'none';
+        internalGalleryModal.style.display = 'flex';
+      });
+    }
+
+    if (wizardClientSelect) {
+      wizardClientSelect.addEventListener('click', () => {
+        wizardClientDropdown.style.display = wizardClientDropdown.style.display === 'none' ? 'block' : 'none';
+      });
+      // Simulate selecting a new client by hiding it if you click "Crear nuevo cliente"
+      const createClientBtn = wizardClientDropdown.querySelector('button');
+      if (createClientBtn) {
+        createClientBtn.addEventListener('click', () => {
+          wizardClientDropdown.style.display = 'none';
+          wizardClientSelect.querySelector('span').textContent = 'Cliente Nuevo';
+          wizardClientSelect.querySelector('span').style.color = '#334155';
+          wizardSaveBtn.style.background = '#06b6d4';
+          wizardSaveBtn.style.color = 'white';
+          wizardSaveBtn.style.cursor = 'pointer';
+        });
+      }
+    }
+
+    if (wizardSaveBtn) {
+      wizardSaveBtn.addEventListener('click', () => {
+        if (wizardSaveBtn.style.cursor === 'not-allowed') return;
+
+        // Remove empty state if it exists
+        if (galeriaContent.classList.contains('empty-state-galeria')) {
+          galeriaContent.innerHTML = '';
+          galeriaContent.classList.remove('empty-state-galeria');
+          galeriaContent.style.display = 'grid';
+          galeriaContent.style.gridTemplateColumns = 'repeat(3, 1fr)';
+          galeriaContent.style.gap = '0.5rem';
+          galeriaContent.style.alignItems = 'start';
+          galeriaContent.style.justifyContent = 'start';
+          galeriaContent.style.padding = '1rem';
+          galeriaContent.style.paddingBottom = '80px';
+        }
+
         // Add selected photos to the main wall
         selectedInternalPhotos.forEach(idx => {
           const dataUrl = internalSessionPhotos[idx];
@@ -402,9 +451,104 @@ document.addEventListener('DOMContentLoaded', () => {
           galeriaContent.appendChild(imgContainer);
         });
 
+        // Close all
+        addImagesModal.style.display = 'none';
         internalGalleryModal.style.display = 'none';
         selectedInternalPhotos.clear();
         updateActionBar();
+        
+        // Reset wizard state
+        wizardClientSelect.querySelector('span').textContent = 'Selecciona un Cliente';
+        wizardClientSelect.querySelector('span').style.color = '#64748b';
+        wizardSaveBtn.style.background = '#cbd5e1';
+        wizardSaveBtn.style.color = '#475569';
+        wizardSaveBtn.style.cursor = 'not-allowed';
+      });
+    }
+
+    if (addToMainGalleryBtn) {
+      addToMainGalleryBtn.addEventListener('click', () => {
+        internalGalleryModal.style.display = 'none';
+        addImagesModal.style.display = 'flex';
+        wizardImagesContainer.innerHTML = '';
+
+        selectedInternalPhotos.forEach(idx => {
+          const dataUrl = internalSessionPhotos[idx];
+          
+          const div = document.createElement('div');
+          div.style.minWidth = '160px';
+          div.style.width = '160px';
+          div.style.height = '160px';
+          div.style.position = 'relative';
+          div.style.borderRadius = '12px';
+          div.style.overflow = 'visible'; // important to let dropdown overhang
+      
+          const img = document.createElement('img');
+          img.src = dataUrl;
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'cover';
+          img.style.borderRadius = '12px';
+      
+          // Tag Overlay
+          const tagBar = document.createElement('div');
+          tagBar.style.position = 'absolute';
+          tagBar.style.bottom = '8px';
+          tagBar.style.left = '8px';
+          tagBar.style.right = '8px';
+          tagBar.style.background = 'rgba(100,116,139,0.85)';
+          tagBar.style.backdropFilter = 'blur(4px)';
+          tagBar.style.color = 'white';
+          tagBar.style.fontSize = '0.8rem';
+          tagBar.style.padding = '0.5rem';
+          tagBar.style.borderRadius = '6px';
+          tagBar.style.display = 'flex';
+          tagBar.style.justifyContent = 'space-between';
+          tagBar.style.cursor = 'pointer';
+          tagBar.innerHTML = `<span class="tag-text">Sin Etiqueta</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+      
+          const tagMenu = document.createElement('div');
+          tagMenu.style.display = 'none';
+          tagMenu.style.position = 'absolute';
+          tagMenu.style.bottom = '46px';
+          tagMenu.style.left = '8px';
+          tagMenu.style.background = '#f8fafc';
+          tagMenu.style.borderRadius = '8px';
+          tagMenu.style.width = '140px';
+          tagMenu.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+          tagMenu.style.overflow = 'hidden';
+          tagMenu.style.zIndex = '50';
+          
+          const options = ['Sin etiqueta', 'Antes', 'Después'];
+          options.forEach(opt => {
+            const item = document.createElement('div');
+            item.style.padding = '0.8rem 1rem';
+            item.style.fontSize = '0.9rem';
+            item.style.color = opt === 'Sin etiqueta' ? '#06b6d4' : '#334155';
+            item.style.cursor = 'pointer';
+            item.innerText = opt;
+            item.style.borderBottom = '1px solid #f1f5f9';
+            
+            item.addEventListener('click', (e) => {
+               e.stopPropagation();
+               tagBar.querySelector('.tag-text').innerText = opt;
+               tagMenu.style.display = 'none';
+               
+               Array.from(tagMenu.children).forEach(c => c.style.color = '#334155');
+               item.style.color = '#06b6d4';
+            });
+            tagMenu.appendChild(item);
+          });
+      
+          tagBar.addEventListener('click', () => {
+             tagMenu.style.display = tagMenu.style.display === 'none' ? 'block' : 'none';
+          });
+      
+          div.appendChild(img);
+          div.appendChild(tagMenu);
+          div.appendChild(tagBar);
+          wizardImagesContainer.appendChild(div);
+        });
       });
     }
 

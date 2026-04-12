@@ -452,6 +452,60 @@
       </div>
     </div>
     
+    <!-- Wizard: Añadir imágenes -->
+    <div id="add-images-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #eef2f6; z-index: 10005; flex-direction: column;">
+      <!-- Header -->
+      <div style="display: flex; align-items: center; padding: 1rem; background: white; border-bottom: 1px solid #e2e8f0;">
+        <button id="add-images-back" style="background: none; border: none; font-size: 1.5rem; color: #0ea5e9; cursor: pointer; margin-right: 1rem;">&larr;</button>
+        <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600; flex: 1; text-align: center; margin-right: 2rem;">Añadir imágenes</h3>
+      </div>
+      
+      <div style="flex: 1; overflow-y: auto; padding: 1rem;">
+        <!-- Images Card -->
+        <div style="background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; gap: 1rem; overflow-x: auto;" id="wizard-images-container">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Form -->
+        <div style="margin-bottom: 1rem; position: relative;">
+          <label style="display: block; font-size: 0.9rem; color: #475569; margin-bottom: 0.3rem;">Cliente</label>
+          <div id="wizard-client-select" style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.8rem 1rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+            <span style="color: #64748b;">Selecciona un Cliente</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <!-- Custom Dropdown Popup -->
+          <div id="wizard-client-dropdown" style="display: none; position: absolute; top: calc(100% + 5px); left: 0; width: 100%; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 10; padding: 1rem; text-align: center;">
+            <p style="color: #64748b; font-size: 0.9rem; margin-top: 0; margin-bottom: 1rem;">No se encontraron resultados</p>
+            <button style="background: #06b6d4; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <span style="font-size: 1.2rem;">+</span> Crear nuevo cliente
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.3rem;">Procedimiento</label>
+          <div style="background: rgba(255,255,255,0.5); border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.8rem 1rem; color: #cbd5e1; display: flex; justify-content: space-between;">
+            <span>Selecciona un cliente primero</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.3rem;">Selecciona un cliente primero</p>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <label style="display: block; font-size: 0.9rem; color: #cbd5e1; margin-bottom: 0.3rem;">Cita</label>
+          <div style="background: rgba(255,255,255,0.5); border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.8rem 1rem; color: #cbd5e1; display: flex; justify-content: space-between;">
+            <span>Selecciona un procedimiento primero</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <p style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.3rem;">Selecciona un procedimiento primero</p>
+        </div>
+
+        <button id="wizard-save-btn" style="width: 100%; background: #cbd5e1; color: #475569; border: none; padding: 1rem; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: not-allowed;">
+          Guardar
+        </button>
+      </div>
+    </div>
+
     <!-- Hidden inputs for file selection -->
     <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;" />
     <input type="file" id="gallery-input" accept="image/*" style="display: none;" />
