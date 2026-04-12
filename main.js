@@ -343,9 +343,68 @@ document.addEventListener('DOMContentLoaded', () => {
     const internalGalleryGrid = document.getElementById('internal-gallery-grid');
     const closeInternalGalleryBtn = document.getElementById('close-internal-gallery');
 
+    const selectedInternalPhotos = new Set();
+    const internalGalleryActionBar = document.getElementById('internal-gallery-action-bar');
+    const addToMainGalleryBtn = document.getElementById('add-to-main-gallery-btn');
+    const galeriaContent = document.querySelector('.galeria-content');
+
+    const updateActionBar = () => {
+      if (!internalGalleryActionBar || !addToMainGalleryBtn) return;
+      if (selectedInternalPhotos.size > 0) {
+        internalGalleryActionBar.style.display = 'flex';
+        addToMainGalleryBtn.textContent = `Añadir (${selectedInternalPhotos.size})`;
+      } else {
+        internalGalleryActionBar.style.display = 'none';
+      }
+    };
+
     if (closeInternalGalleryBtn) {
       closeInternalGalleryBtn.addEventListener('click', () => {
         internalGalleryModal.style.display = 'none';
+        selectedInternalPhotos.clear();
+        updateActionBar();
+      });
+    }
+
+    if (addToMainGalleryBtn) {
+      addToMainGalleryBtn.addEventListener('click', () => {
+        // Remove empty state if it exists
+        if (galeriaContent.classList.contains('empty-state-galeria')) {
+          galeriaContent.innerHTML = '';
+          galeriaContent.classList.remove('empty-state-galeria');
+          galeriaContent.style.display = 'grid';
+          galeriaContent.style.gridTemplateColumns = 'repeat(3, 1fr)';
+          galeriaContent.style.gap = '0.5rem';
+          galeriaContent.style.alignItems = 'start';
+          galeriaContent.style.justifyContent = 'start';
+          galeriaContent.style.padding = '1rem';
+          galeriaContent.style.paddingBottom = '80px';
+        }
+
+        // Add selected photos to the main wall
+        selectedInternalPhotos.forEach(idx => {
+          const dataUrl = internalSessionPhotos[idx];
+          const imgContainer = document.createElement('div');
+          imgContainer.style.aspectRatio = '1 / 1';
+          imgContainer.style.width = '100%';
+          imgContainer.style.borderRadius = '8px';
+          imgContainer.style.overflow = 'hidden';
+          imgContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+
+          const img = document.createElement('img');
+          img.src = dataUrl;
+          img.style.width = '100%';
+          img.style.height = '100%';
+          img.style.objectFit = 'cover';
+          img.style.display = 'block';
+          
+          imgContainer.appendChild(img);
+          galeriaContent.appendChild(imgContainer);
+        });
+
+        internalGalleryModal.style.display = 'none';
+        selectedInternalPhotos.clear();
+        updateActionBar();
       });
     }
 
@@ -356,12 +415,14 @@ document.addEventListener('DOMContentLoaded', () => {
         internalGalleryGrid.innerHTML = '<p style="grid-column: span 3; text-align: center; margin-top: 2rem; color: #64748b;">No hay fotos guardadas en esta sesión.</p>';
         return;
       }
-      internalSessionPhotos.forEach(dataUrl => {
+      internalSessionPhotos.forEach((dataUrl, idx) => {
         const renderDiv = document.createElement('div');
         renderDiv.style.aspectRatio = '1 / 1';
         renderDiv.style.width = '100%';
         renderDiv.style.borderRadius = '4px';
         renderDiv.style.overflow = 'hidden';
+        renderDiv.style.cursor = 'pointer';
+        renderDiv.style.position = 'relative';
         
         const renderImg = document.createElement('img');
         renderImg.src = dataUrl;
@@ -370,21 +431,49 @@ document.addEventListener('DOMContentLoaded', () => {
         renderImg.style.objectFit = 'cover';
         renderImg.style.display = 'block';
 
-        // Estilo visual del circulo que se ve en la imagen original
         const circle = document.createElement('div');
         circle.style.position = 'absolute';
         circle.style.top = '6px';
         circle.style.left = '6px';
-        circle.style.width = '20px';
-        circle.style.height = '20px';
+        circle.style.width = '24px';
+        circle.style.height = '24px';
         circle.style.borderRadius = '50%';
         circle.style.border = '2px solid white';
-        circle.style.background = 'rgba(0,0,0,0.3)';
+        circle.style.display = 'flex';
+        circle.style.alignItems = 'center';
+        circle.style.justifyContent = 'center';
+        
+        // Update selection UI based on current state
+        const updateSelectionUI = () => {
+          if (selectedInternalPhotos.has(idx)) {
+            circle.style.background = '#00897b'; // Green matching the button
+            circle.style.borderColor = '#00897b';
+            circle.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+            renderDiv.style.transform = 'scale(0.95)';
+            renderDiv.style.transition = 'transform 0.1s';
+          } else {
+            circle.style.background = 'rgba(0,0,0,0.3)';
+            circle.style.borderColor = 'white';
+            circle.innerHTML = '';
+            renderDiv.style.transform = 'scale(1)';
+            renderDiv.style.transition = 'transform 0.1s';
+          }
+        };
 
-        renderDiv.style.position = 'relative';
+        updateSelectionUI();
+
+        renderDiv.addEventListener('click', () => {
+          if (selectedInternalPhotos.has(idx)) {
+            selectedInternalPhotos.delete(idx);
+          } else {
+            selectedInternalPhotos.add(idx);
+          }
+          updateSelectionUI();
+          updateActionBar();
+        });
+
         renderDiv.appendChild(renderImg);
         renderDiv.appendChild(circle);
-
         internalGalleryGrid.appendChild(renderDiv);
       });
     };

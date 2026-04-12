@@ -436,6 +436,19 @@
         <div id="internal-gallery-grid" style="padding: 0 1rem 2rem 1rem; flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; align-content: flex-start;">
           <!-- Custom captured images populate here -->
         </div>
+
+        <!-- Sticky Action Bar (Shows when photos are selected) -->
+        <div id="internal-gallery-action-bar" style="display: none; padding: 1rem; border-top: 1px solid #e2e8f0; background: white; justify-content: space-between; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; color: #00897b; font-weight: 600; font-size: 0.95rem;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            Ver seleccionado
+          </div>
+          <button id="add-to-main-gallery-btn" style="background: #00897b; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: bold; font-size: 0.95rem; cursor: pointer;">Añadir (1)</button>
+        </div>
       </div>
     </div>
     
