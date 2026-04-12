@@ -937,6 +937,52 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const deleteProfileBtn = document.getElementById('delete-profile-btn');
+  const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+  const btnCancelDelete = document.getElementById('btn-cancel-delete');
+  const btnConfirmDelete = document.getElementById('btn-confirm-delete');
+
+  if (deleteProfileBtn && deleteConfirmModal) {
+    deleteProfileBtn.addEventListener('click', () => {
+      deleteConfirmModal.style.display = 'flex';
+    });
+  }
+
+  if (btnCancelDelete) {
+    btnCancelDelete.addEventListener('click', () => {
+      deleteConfirmModal.style.display = 'none';
+    });
+  }
+
+  if (btnConfirmDelete) {
+    btnConfirmDelete.addEventListener('click', async () => {
+      if (!currentEditingClient) return;
+
+      btnConfirmDelete.disabled = true;
+      btnConfirmDelete.textContent = 'BORRANDO...';
+
+      try {
+        const { error } = await supabase
+          .from('clients')
+          .delete()
+          .eq('id', currentEditingClient.id);
+
+        if (error) throw error;
+
+        // Success
+        deleteConfirmModal.style.display = 'none';
+        document.getElementById('client-profile-view').style.display = 'none';
+        currentEditingClient = null;
+        loadClientes(); // Reload list
+      } catch (err) {
+        alert('Error al eliminar: ' + err.message);
+      } finally {
+        btnConfirmDelete.disabled = false;
+        btnConfirmDelete.textContent = 'ELIMINAR';
+      }
+    });
+  }
+
   const btnLogout = document.getElementById('btn-logout');
   if (btnLogout) {
     btnLogout.addEventListener('click', async () => {
