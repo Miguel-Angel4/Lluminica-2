@@ -814,7 +814,40 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: auto; flex-shrink: 0;"><path d="m9 18 6-6-6-6"/></svg>
       `;
+
+      card.addEventListener('click', () => {
+        openClientProfile(client);
+      });
+
       clientesContent.appendChild(card);
+    });
+  }
+
+  function openClientProfile(client) {
+    const profileView = document.getElementById('client-profile-view');
+    if (!profileView) return;
+
+    document.getElementById('profile-name').textContent = client.nombre_completo;
+    document.getElementById('profile-bday').textContent = client.fecha_nacimiento ? formatDate(client.fecha_nacimiento) : 'Sin fecha';
+    document.getElementById('profile-gender').textContent = client.genero || 'No especificado';
+    
+    // Update initials in avatar
+    const initials = client.nombre_completo.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+    const avatar = document.getElementById('profile-avatar');
+    avatar.innerHTML = initials;
+
+    profileView.style.display = 'block';
+  }
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`;
+  }
+
+  const profileBackBtn = document.getElementById('client-profile-back');
+  if (profileBackBtn) {
+    profileBackBtn.addEventListener('click', () => {
+      document.getElementById('client-profile-view').style.display = 'none';
     });
   }
 
