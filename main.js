@@ -265,6 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const label = item.querySelector('span').innerText;
       const viewCitas = document.querySelector('#view-citas');
       const viewGaleria = document.querySelector('#view-galeria');
+      const viewClientes = document.querySelector('#view-clientes');
       
       navItems.forEach(ni => ni.classList.remove('active'));
       item.classList.add('active');
@@ -272,11 +273,18 @@ document.addEventListener('DOMContentLoaded', () => {
       if (label === 'Citas') {
         if(viewCitas) viewCitas.style.display = 'flex';
         if(viewGaleria) viewGaleria.style.display = 'none';
+        if(viewClientes) viewClientes.style.display = 'none';
         document.title = 'Lluminica - Citas';
       } else if (label === 'Galería') {
         if(viewCitas) viewCitas.style.display = 'none';
         if(viewGaleria) viewGaleria.style.display = 'flex';
+        if(viewClientes) viewClientes.style.display = 'none';
         document.title = 'Lluminica - Galería';
+      } else if (label === 'Clientes') {
+        if(viewCitas) viewCitas.style.display = 'none';
+        if(viewGaleria) viewGaleria.style.display = 'none';
+        if(viewClientes) viewClientes.style.display = 'block';
+        document.title = 'Lluminica - Clientes';
       } else {
         alert(`La sección de ${label} estará disponible próximamente.`);
       }
