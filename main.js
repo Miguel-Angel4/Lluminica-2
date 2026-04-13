@@ -1505,23 +1505,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- PROCEDIMIENTOS LOGIC ---
+  let currentProcIconData = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m4.93 4.93 14.14 14.14"/><path d="M2 12h20"/><path d="m19.07 4.93-14.14 14.14"/></svg>`;
+  let editingProcId = null;
+
   const btnOpenAddProc = document.getElementById('btn-open-add-proc');
   if (btnOpenAddProc) {
-    btnOpenAddProc.addEventListener('click', () => switchToView('Crear Procedimiento'));
+    btnOpenAddProc.addEventListener('click', () => {
+      editingProcId = null;
+      document.querySelector('#view-crear-procedimiento h2').textContent = 'Crear Procedimiento';
+      document.getElementById('btn-save-proc').textContent = 'Crear Procedimiento';
+      const nameInput = document.getElementById('proc-name');
+      if (nameInput) nameInput.value = '';
+      switchToView('Crear Procedimiento');
+    });
   }
-
-  const backFromProcedimientos = document.getElementById('back-from-procedimientos');
-  if (backFromProcedimientos) {
-    backFromProcedimientos.addEventListener('click', () => switchToView('Menú'));
-  }
-
-  const backFromCrearProc = document.getElementById('back-from-crear-proc');
-  if (backFromCrearProc) {
-    backFromCrearProc.addEventListener('click', () => switchToView('Procedimientos'));
-  }
-
-  let currentProcIconData = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m4.93 4.93 14.14 14.14"/><path d="M2 12h20"/><path d="m19.07 4.93-14.14 14.14"/></svg>`;
 
   const btnSaveProc = document.getElementById('btn-save-proc');
   const modalSuccess = document.getElementById('modal-success');
@@ -1550,23 +1547,37 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         
-        const { error } = await supabase
-          .from('procedimientos')
-          .insert({
-            nombre: name,
-            precio: 0,
-            duracion_minutos: 30,
-            icon_svg: currentProcIconData,
-            user_id: user.id
-          });
+        let error;
+        if (editingProcId) {
+          // Update
+          const { error: err } = await supabase
+            .from('procedimientos')
+            .update({ nombre: name })
+            .eq('id', editingProcId);
+          error = err;
+        } else {
+          // Insert
+          const { error: err } = await supabase
+            .from('procedimientos')
+            .insert({
+              nombre: name,
+              precio: 0,
+              duracion_minutos: 30,
+              icon_svg: currentProcIconData,
+              user_id: user.id
+            });
+          error = err;
+        }
 
         if (error) throw error;
 
         // Reset
         if (nameInput) nameInput.value = '';
+        editingProcId = null;
 
         // Show Success Modal instead of immediate redirect
         if (modalSuccess) {
+          modalSuccess.querySelector('p').textContent = editingProcId ? 'Procedimiento actualizado con éxito' : 'Procedimiento creado con éxito';
           modalSuccess.style.display = 'flex';
         } else {
           switchToView('Procedimientos');
@@ -1637,14 +1648,43 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         <div style="font-weight: 700; font-size: 1rem; color: #1e293b;">${proc.nombre}</div>
         <div style="display: flex; gap: 0.75rem; align-items: center;">
-          <button style="background: none; border: none; padding: 4px; cursor: pointer; color: #00bcd4; display: flex;">
+          <button class="btn-edit-proc" style="background: none; border: none; padding: 4px; cursor: pointer; color: #00bcd4; display: flex;">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
           </button>
-          <button style="background: none; border: none; padding: 4px; cursor: pointer; color: #ef4444; display: flex;">
+          <button class="btn-delete-proc" style="background: none; border: none; padding: 4px; cursor: pointer; color: #ef4444; display: flex;">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
           </button>
         </div>
       `;
+
+      // Event listeners for actions
+      const btnEdit = card.querySelector('.btn-edit-proc');
+      if (btnEdit) {
+        btnEdit.addEventListener('click', () => {
+          editingProcId = proc.id;
+          document.querySelector('#view-crear-procedimiento h2').textContent = 'Editar Procedimiento';
+          document.getElementById('btn-save-proc').textContent = 'Guardar Cambios';
+          const nameInput = document.getElementById('proc-name');
+          if (nameInput) nameInput.value = proc.nombre;
+          switchToView('Crear Procedimiento');
+        });
+      }
+
+      const btnDel = card.querySelector('.btn-delete-proc');
+      if (btnDel) {
+        btnDel.addEventListener('click', async () => {
+          if (confirm(`¿Estás seguro de que quieres eliminar "${proc.nombre}"?`)) {
+            try {
+              const { error } = await supabase.from('procedimientos').delete().eq('id', proc.id);
+              if (error) throw error;
+              loadProcedimientos();
+            } catch (err) {
+              alert('Error al eliminar: ' + err.message);
+            }
+          }
+        });
+      }
+
       list.appendChild(card);
     });
   }
