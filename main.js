@@ -275,8 +275,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Find matching nav item and activate it
     navItems.forEach(ni => {
-      const navLabel = ni.querySelector('span').innerText;
-      if (navLabel === label) ni.classList.add('active');
+      const navLabel = ni.querySelector('span').innerText.trim();
+      if (navLabel === label.trim()) ni.classList.add('active');
     });
 
     hideAllDashboardViews();
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   navItems.forEach(item => {
     item.addEventListener('click', () => {
-      const label = item.querySelector('span').innerText;
+      const label = item.querySelector('span').innerText.trim();
       switchToView(label);
     });
   });
@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
        if (item.id === 'btn-logout' || item.classList.contains('logout')) return;
        const labelEl = item.querySelector('.item-text');
        if (labelEl) {
-         switchToView(labelEl.innerText);
+          switchToView(labelEl.innerText.trim());
        }
     });
   });
