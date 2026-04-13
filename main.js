@@ -578,48 +578,55 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  let currentIconTarget = 'product'; // 'product' or 'procedure'
+
   if (btnProductImgIcons && productIconModal) {
     btnProductImgIcons.addEventListener('click', () => {
+      currentIconTarget = 'product';
       productIconModal.style.display = 'flex';
     });
   }
 
-  if (btnCloseIconModal) {
-    btnCloseIconModal.addEventListener('click', () => {
-      productIconModal.style.display = 'none';
+  const btnProcImgIcons = document.getElementById('proc-img-btn-icons');
+  if (btnProcImgIcons && productIconModal) {
+    btnProcImgIcons.addEventListener('click', () => {
+      currentIconTarget = 'procedure';
+      productIconModal.style.display = 'flex';
     });
   }
 
-  // Close icon modal if clicking outside
-  if (productIconModal) {
-    productIconModal.addEventListener('click', (e) => {
-      if (e.target === productIconModal) {
-        productIconModal.style.display = 'none';
-      }
-    });
-  }
+  const procIconPreview = document.getElementById('proc-icon-preview');
+  const updateProcIconPreview = (svgHtml) => {
+    if (!procIconPreview) return;
+    procIconPreview.innerHTML = svgHtml;
+    procIconPreview.style.background = '#f1f5f9';
+    const svg = procIconPreview.querySelector('svg');
+    if (svg) {
+      svg.setAttribute('width', '60');
+      svg.setAttribute('height', '60');
+      svg.setAttribute('stroke', '#00bcd4');
+    }
+  };
 
   // Icon selection logic
   const iconOptions = document.querySelectorAll('.icon-option');
   iconOptions.forEach(opt => {
     opt.addEventListener('click', () => {
-      // Clear previous selection
       iconOptions.forEach(o => {
         o.style.background = 'none';
         o.style.border = '2px solid #00bcd4';
         o.style.color = '#00bcd4';
       });
-      // Highlight new selection
       opt.style.background = '#00bcd4';
       opt.style.color = 'white';
       
       const svgHtml = opt.querySelector('svg').outerHTML;
-      updateProductImagePreview(svgHtml, true);
-      
-      // We keep modal open as per image 3 or close it? 
-      // Image 3 shows a "Cerrar" button, so usually user selects and then closes or it closes automatically.
-      // I'll close it automatically for better UX but let's see. 
-      // Actually image 3 has a "Cerrar" button so I'll let the user close it.
+      if (currentIconTarget === 'product') {
+        updateProductImagePreview(svgHtml, true);
+      } else {
+        updateProcIconPreview(svgHtml);
+        currentProcIconData = svgHtml; // Store it
+      }
     });
   });
 
@@ -1514,6 +1521,8 @@ document.addEventListener('DOMContentLoaded', () => {
     backFromCrearProc.addEventListener('click', () => switchToView('Procedimientos'));
   }
 
+  let currentProcIconData = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m4.93 4.93 14.14 14.14"/><path d="M2 12h20"/><path d="m19.07 4.93-14.14 14.14"/></svg>`;
+
   const btnSaveProc = document.getElementById('btn-save-proc');
   if (btnSaveProc) {
     btnSaveProc.addEventListener('click', async () => {
@@ -1538,6 +1547,7 @@ document.addEventListener('DOMContentLoaded', () => {
             nombre: name,
             precio: price || 0,
             duracion_minutos: duration || 30,
+            icon_svg: currentProcIconData,
             user_id: user.id
           });
 
@@ -1581,8 +1591,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!list) return;
 
     if (!procs || procs.length === 0) {
-      list.innerHTML = '<p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.5;">No hay procedimientos aún.</p>';
+      list.innerHTML = `
+        <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 1.5rem;">No hay procedimientos</p>
+        <button id="btn-empty-create-proc" style="padding: 0.75rem 1.5rem; border-radius: 8px; background: #00bcd4; border: none; color: white; font-weight: 700; cursor: pointer; box-shadow: 0 4px 10px rgba(0, 188, 212, 0.3);">Crear Procedimiento</button>
+      `;
       list.style.justifyContent = 'center';
+      
+      const btnEmpty = document.getElementById('btn-empty-create-proc');
+      if (btnEmpty) {
+        btnEmpty.addEventListener('click', () => switchToView('Crear Procedimiento'));
+      }
       return;
     }
 
@@ -1592,21 +1610,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     procs.forEach(proc => {
       const card = document.createElement('div');
-      card.classList.add('doc-card'); // Use same style as documents
       card.style.width = '100%';
+      card.style.background = 'white';
+      card.style.borderRadius = '16px';
+      card.style.padding = '1rem';
+      card.style.display = 'flex';
+      card.style.alignItems = 'center';
+      card.style.gap = '1rem';
+      card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.03)';
       card.style.boxSizing = 'border-box';
+      card.style.marginBottom = '0.75rem';
+
+      const iconHtml = proc.icon_svg || `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m4.93 4.93 14.14 14.14"/><path d="M2 12h20"/><path d="m19.07 4.93-14.14 14.14"/></svg>`;
 
       card.innerHTML = `
-        <div class="doc-info" style="flex:1;">
-          <div class="doc-icon" style="background: ${proc.color || '#06b6d4'}; color: white;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77Z"/></svg>
-          </div>
-          <div style="text-align: left;">
-            <div class="doc-name" style="font-weight: 700;">${proc.nombre}</div>
-            <div style="font-size: 0.85rem; color: #94a3b8;">${proc.precio}€ • ${proc.duracion_minutos} min</div>
-          </div>
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: #00bcd4; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+          ${iconHtml.replace(/width="[^"]*"/, 'width="26"').replace(/height="[^"]*"/, 'height="26"').replace(/stroke="[^"]*"/, 'stroke="white"')}
         </div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <div style="flex: 1; text-align: left;">
+          <div style="font-weight: 700; font-size: 1.05rem; color: #1e293b;">${proc.nombre}</div>
+          <div style="font-size: 0.85rem; color: #94a3b8;">${proc.precio}€ • ${proc.duracion_minutos} min</div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
       `;
       list.appendChild(card);
     });

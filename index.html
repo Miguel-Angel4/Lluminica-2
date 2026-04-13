@@ -524,23 +524,20 @@ Line modified: 396
             <button class="back-btn" id="back-from-procedimientos">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             </button>
-            <h2>Procedimientos</h2>
+            <h2 style="font-size: 1.1rem;">Lista de tipos de procedimientos</h2>
           </header>
           
-          <div class="procedimientos-search-header" style="padding: 1rem; background: #eaeff2;">
-            <div style="position: relative; max-width: 100%;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <input type="text" id="proc-search-input" placeholder="Buscar procedimientos" style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; border: none; border-radius: 30px; background: white; font-size: 0.95rem; color: #334155; outline: none; box-sizing: border-box; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" />
-            </div>
-          </div>
-
           <div id="proc-list" class="procedimientos-content" style="flex:1; display:flex; flex-direction: column; align-items:center; justify-content:center; padding: 1.5rem 1rem; text-align: center; overflow-y: auto;">
-             <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.5;">No hay procedimientos aún.</p>
+             <!-- If empty, JS will inject:
+             <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 1.5rem;">No hay procedimientos</p>
+             <button id="btn-empty-create-proc" style="padding: 0.75rem 1.5rem; border-radius: 8px; background: #00bcd4; border: none; color: white; font-weight: 700;">Crear Procedimiento</button>
+             -->
+             <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.5;">Cargando...</p>
           </div>
 
-          <!-- Orange FAB for Procedures -->
-          <button id="btn-open-add-proc" class="fab-add-doc" style="position: fixed; bottom: 85px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background-color: #f97316; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); z-index: 10; cursor: pointer;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <!-- Cyan FAB for Procedures as per user image -->
+          <button id="btn-open-add-proc" class="fab-add-doc" style="position: fixed; bottom: 85px; right: 20px; width: 62px; height: 62px; border-radius: 50%; background-color: #00bcd4; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4); z-index: 10; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           </button>
         </div>
 
@@ -556,9 +553,20 @@ Line modified: 396
           <div style="padding: 1.5rem; overflow-y: auto; flex: 1;">
             <div class="product-form-card" style="background: white; border-radius: 20px; padding: 2rem 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
               
+              <!-- Icon Preview Area for Procedures -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                <div id="proc-icon-preview" style="width: 120px; height: 120px; border-radius: 50%; background: #f1f5f9; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m4.93 4.93 14.14 14.14"/><path d="M2 12h20"/><path d="m19.07 4.93-14.14 14.14"/></svg>
+                </div>
+                
+                <button id="proc-img-btn-icons" style="width: 40px; height: 40px; border-radius: 50%; background: #00bcd4; border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>
+                </button>
+              </div>
+
               <div style="margin-bottom: 1.5rem;">
-                <label style="display: block; font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">Nombre</label>
-                <input type="text" id="proc-name" placeholder="Nombre del procedimiento" style="width: 100%; padding: 0.85rem 1rem; border: none; border-radius: 8px; background: #eef2f6; font-size: 1rem; color: #334155; outline: none; box-sizing: border-box;" />
+                <label style="display: block; font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">Nombre del procedimiento</label>
+                <input type="text" id="proc-name" placeholder="Ej: Limpieza facial" style="width: 100%; padding: 0.85rem 1rem; border: none; border-radius: 8px; background: #eef2f6; font-size: 1rem; color: #334155; outline: none; box-sizing: border-box;" />
               </div>
 
               <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
