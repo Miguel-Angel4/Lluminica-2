@@ -1721,8 +1721,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnOpenAddCentro) {
     btnOpenAddCentro.addEventListener('click', () => {
       editingCentroId = null;
-      document.querySelector('#view-crear-centro h2').textContent = 'Crear Centro';
-      document.getElementById('btn-save-centro').textContent = 'Crear un nuevo centro';
+      document.querySelector('#view-crear-centro h2').textContent = 'Crear un Centro';
+      document.getElementById('btn-save-centro').textContent = 'Crear Centro';
       const nameInput = document.getElementById('centro-name');
       if (nameInput) nameInput.value = '';
       switchToView('Crear Centro');
@@ -1797,7 +1797,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('Error: ' + err.message);
       } finally {
         btnSaveCentro.disabled = false;
-        btnSaveCentro.textContent = editingCentroId ? 'Guardar Cambios' : 'Crear un nuevo centro';
+        btnSaveCentro.textContent = editingCentroId ? 'Guardar Cambios' : 'Crear Centro';
       }
     });
   }
@@ -1827,7 +1827,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!centros || centros.length === 0) {
       list.innerHTML = `
         <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem;">No hay centros registrados. Crea uno nuevo.</p>
-        <button id="btn-empty-create-centro" style="padding: 0.85rem 1.75rem; border-radius: 10px; background: #00bcd4; border: none; color: white; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);">Crear un nuevo centro</button>
+        <button id="btn-empty-create-centro" style="padding: 0.85rem 1.75rem; border-radius: 10px; background: #00bcd4; border: none; color: white; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);">Crear Centro</button>
       `;
       list.style.justifyContent = 'center';
       
@@ -1835,6 +1835,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btnEmpty) {
         btnEmpty.addEventListener('click', () => {
           editingCentroId = null;
+          document.querySelector('#view-crear-centro h2').textContent = 'Crear un Centro';
+          document.getElementById('btn-save-centro').textContent = 'Crear Centro';
           switchToView('Crear Centro');
         });
       }
