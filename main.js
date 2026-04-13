@@ -496,6 +496,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Image Context (gallery or product)
+  let currentImageContext = 'gallery';
+
+  const productPreviewArea = document.getElementById('product-image-preview');
+  const btnProductImgCamera = document.getElementById('product-img-btn-camera');
+  const btnProductImgGallery = document.getElementById('product-img-btn-gallery');
+
+  const updateProductImagePreview = (dataUrl) => {
+    if (!productPreviewArea) return;
+    productPreviewArea.innerHTML = `<img src="${dataUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;" />`;
+  };
+
+  if (btnProductImgCamera) {
+    btnProductImgCamera.addEventListener('click', () => {
+      currentImageContext = 'product';
+      if (imageSourceModal) imageSourceModal.style.display = 'flex';
+    });
+  }
+
+  if (btnProductImgGallery) {
+    btnProductImgGallery.addEventListener('click', () => {
+      currentImageContext = 'product';
+      if (imageSourceModal) imageSourceModal.style.display = 'flex';
+    });
+  }
+
   // Modal logic for Galeria Camera FAB
   const galeriaFab = document.querySelector('.fab-camera');
   const imageSourceModal = document.querySelector('#image-source-modal');
@@ -507,6 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   if (galeriaFab && imageSourceModal) {
     galeriaFab.addEventListener('click', () => {
+      currentImageContext = 'gallery';
       imageSourceModal.style.display = 'flex';
     });
 
@@ -829,25 +856,47 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(webcamVideo, 0, 0, webcamCanvas.width, webcamCanvas.height);
         
         const dataUrl = webcamCanvas.toDataURL('image/jpeg', 0.9);
-        // Save to internal gallery explicitly (don't download)
-        internalSessionPhotos.unshift(dataUrl);
-        alert('Foto guardada en Galería.');
+        
+        if (currentImageContext === 'product') {
+          updateProductImagePreview(dataUrl);
+        } else {
+          // Save to internal gallery explicitly (don't download)
+          internalSessionPhotos.unshift(dataUrl);
+          alert('Foto guardada en Galería.');
+        }
         stopWebcam();
       });
     }
 
+    const processImageFile = (file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target.result;
+        if (currentImageContext === 'product') {
+          updateProductImagePreview(dataUrl);
+        } else {
+          internalSessionPhotos.unshift(dataUrl);
+          alert('Foto guardada en Galería.');
+        }
+      };
+      reader.readAsDataURL(file);
+    };
+
     // Capture mobile photo and save inside internal gallery
     cameraInput.addEventListener('change', (e) => {
       if (e.target.files && e.target.files.length > 0) {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          internalSessionPhotos.unshift(ev.target.result);
-          alert('Foto guardada en Galería.');
-        };
-        reader.readAsDataURL(file);
+        processImageFile(e.target.files[0]);
       }
     });
+
+    // File selection from PC explorer
+    if (galleryInput) {
+      galleryInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+          processImageFile(e.target.files[0]);
+        }
+      });
+    }
 
     btnCameraAction.addEventListener('click', () => {
       imageSourceModal.style.display = 'none';
@@ -865,10 +914,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     btnGalleryAction.addEventListener('click', () => {
       imageSourceModal.style.display = 'none';
-      // Abre la UI custom y pinta el array de sesión
-      if (internalGalleryModal) {
-        internalGalleryModal.style.display = 'flex';
-        renderInternalGallery();
+      
+      if (currentImageContext === 'product') {
+        // En productos, "GALERÍA" abre el explorador de archivos del PC/Móvil
+        if (galleryInput) galleryInput.click();
+      } else {
+        // En la Galería general, abre la UI custom con las fotos ya capturadas
+        if (internalGalleryModal) {
+          internalGalleryModal.style.display = 'flex';
+          renderInternalGallery();
+        }
       }
     });
   }
