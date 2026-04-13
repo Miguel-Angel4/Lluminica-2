@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
-    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos'];
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos', '#view-crear-producto'];
     views.forEach(selector => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
@@ -311,6 +311,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-productos');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Productos';
+    } else if (label === 'Crear Producto') {
+      const view = document.querySelector('#view-crear-producto');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Crear Producto';
     } else {
       alert(`La sección de ${label} estará disponible próximamente.`);
     }
@@ -341,6 +345,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (backFromProductos) {
     backFromProductos.addEventListener('click', () => {
       switchToView('Menú');
+    });
+  }
+
+  const btnOpenAddProduct = document.getElementById('btn-open-add-product');
+  if (btnOpenAddProduct) {
+    btnOpenAddProduct.addEventListener('click', () => {
+      switchToView('Crear Producto');
+    });
+  }
+
+  const backFromCrearProducto = document.getElementById('back-from-crear-producto');
+  if (backFromCrearProducto) {
+    backFromCrearProducto.addEventListener('click', () => {
+      switchToView('Productos');
     });
   }
 
