@@ -347,16 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  menuItems.forEach(item => {
-    item.addEventListener('click', () => {
-       if (item.id === 'btn-logout' || item.classList.contains('logout')) return;
-       const labelEl = item.querySelector('.item-text');
-       if (labelEl) {
-          switchToView(labelEl.innerText.trim());
-       }
-    });
-  });
-
   const backFromDocs = document.getElementById('back-from-docs');
   if (backFromDocs) {
     backFromDocs.addEventListener('click', () => {
@@ -518,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       console.log('Navegando a:', label); // Debug log
 
-      if (['Citas', 'Galería', 'Clientes', 'Menú', 'Documentos', 'Productos', 'Procedimientos'].includes(label)) {
+      if (['Citas', 'Galería', 'Clientes', 'Menú', 'Documentos', 'Productos', 'Procedimientos', 'Centros'].includes(label)) {
         switchToView(label);
       } else {
         alert(`La sección de ${label} estará disponible próximamente.`);
