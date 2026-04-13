@@ -340,6 +340,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const btnTriggerDocInput = document.getElementById('btn-trigger-doc-input');
+  const inputUploadDoc = document.getElementById('input-upload-doc');
+  if (btnTriggerDocInput && inputUploadDoc) {
+    btnTriggerDocInput.addEventListener('click', () => {
+      inputUploadDoc.click();
+    });
+    
+    inputUploadDoc.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        btnTriggerDocInput.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          ${file.name}
+        `;
+      }
+    });
+  }
+
   const menuItemsMain = document.querySelectorAll('.menu-item');
   menuItemsMain.forEach(item => {
     item.addEventListener('click', () => {
