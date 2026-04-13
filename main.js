@@ -342,6 +342,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const btnDoUploadDoc = document.getElementById('btn-do-upload-doc');
   const docsListContainer = document.getElementById('docs-list-container');
+  const btnTriggerDocInput = document.getElementById('btn-trigger-doc-input');
+  const inputUploadDoc = document.getElementById('input-upload-doc');
   let tempDocs = []; // Local storage for the session
 
   if (btnTriggerDocInput && inputUploadDoc) {
