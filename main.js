@@ -546,27 +546,82 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const productPreviewArea = document.getElementById('product-image-preview');
   const btnProductImgCamera = document.getElementById('product-img-btn-camera');
-  const btnProductImgGallery = document.getElementById('product-img-btn-gallery');
+  const btnProductImgIcons = document.getElementById('product-img-btn-icons');
+  const productIconModal = document.getElementById('product-icon-modal');
+  const btnCloseIconModal = document.getElementById('btn-close-icon-modal');
 
-  const updateProductImagePreview = (dataUrl) => {
+  const updateProductImagePreview = (content, isIcon = false) => {
     if (!productPreviewArea) return;
-    currentProductImageData = dataUrl;
-    productPreviewArea.innerHTML = `<img src="${dataUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;" />`;
+    currentProductImageData = content;
+    if (isIcon) {
+      productPreviewArea.innerHTML = content;
+      productPreviewArea.style.background = '#f1f5f9';
+      // Ensure the SVG inside fills nicely
+      const svg = productPreviewArea.querySelector('svg');
+      if (svg) {
+        svg.setAttribute('width', '60');
+        svg.setAttribute('height', '60');
+        svg.setAttribute('stroke', '#00bcd4');
+      }
+    } else {
+      productPreviewArea.innerHTML = `<img src="${content}" style="width: 100%; height: 100%; object-fit: cover; display: block;" />`;
+    }
   };
 
   if (btnProductImgCamera) {
     btnProductImgCamera.addEventListener('click', () => {
       currentImageContext = 'product';
-      if (imageSourceModal) imageSourceModal.style.display = 'flex';
+      if (imageSourceModal) {
+        // We ensure Camera button allows both capturing AND gallery since the other button is now for icons
+        imageSourceModal.style.display = 'flex';
+      }
     });
   }
 
-  if (btnProductImgGallery) {
-    btnProductImgGallery.addEventListener('click', () => {
-      currentImageContext = 'product';
-      if (imageSourceModal) imageSourceModal.style.display = 'flex';
+  if (btnProductImgIcons && productIconModal) {
+    btnProductImgIcons.addEventListener('click', () => {
+      productIconModal.style.display = 'flex';
     });
   }
+
+  if (btnCloseIconModal) {
+    btnCloseIconModal.addEventListener('click', () => {
+      productIconModal.style.display = 'none';
+    });
+  }
+
+  // Close icon modal if clicking outside
+  if (productIconModal) {
+    productIconModal.addEventListener('click', (e) => {
+      if (e.target === productIconModal) {
+        productIconModal.style.display = 'none';
+      }
+    });
+  }
+
+  // Icon selection logic
+  const iconOptions = document.querySelectorAll('.icon-option');
+  iconOptions.forEach(opt => {
+    opt.addEventListener('click', () => {
+      // Clear previous selection
+      iconOptions.forEach(o => {
+        o.style.background = 'none';
+        o.style.border = '2px solid #00bcd4';
+        o.style.color = '#00bcd4';
+      });
+      // Highlight new selection
+      opt.style.background = '#00bcd4';
+      opt.style.color = 'white';
+      
+      const svgHtml = opt.querySelector('svg').outerHTML;
+      updateProductImagePreview(svgHtml, true);
+      
+      // We keep modal open as per image 3 or close it? 
+      // Image 3 shows a "Cerrar" button, so usually user selects and then closes or it closes automatically.
+      // I'll close it automatically for better UX but let's see. 
+      // Actually image 3 has a "Cerrar" button so I'll let the user close it.
+    });
+  });
 
   // Modal logic for Galeria Camera FAB
   const galeriaFab = document.querySelector('.fab-camera');
@@ -1412,11 +1467,22 @@ document.addEventListener('DOMContentLoaded', () => {
       card.style.boxShadow = '0 1px 3px rgba(0,0,0,0.02)';
       card.style.boxSizing = 'border-box';
 
-      const imgHtml = prod.imagen_url 
-        ? `<img src="${prod.imagen_url}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" />`
-        : `<div style="width: 50px; height: 50px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #00bcd4;">
-             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-3-3"/><path d="m21 16-3 3"/><path d="m3 16 3 3"/><path d="m3 8 3-3"/><circle cx="12" cy="12" r="3"/><path d="M12 7v5l3 3"/></svg>
-           </div>`;
+      let imgHtml = '';
+      if (prod.imagen_url && prod.imagen_url.startsWith('<svg')) {
+        imgHtml = `
+          <div style="width: 50px; height: 50px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #00bcd4; overflow: hidden;">
+            ${prod.imagen_url.replace(/width="[^"]*"/, 'width="30"').replace(/height="[^"]*"/, 'height="30"').replace(/stroke="[^"]*"/, 'stroke="#00bcd4"')}
+          </div>
+        `;
+      } else if (prod.imagen_url) {
+        imgHtml = `<img src="${prod.imagen_url}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" />`;
+      } else {
+        imgHtml = `
+          <div style="width: 50px; height: 50px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #00bcd4;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-3-3"/><path d="m21 16-3 3"/><path d="m3 16 3 3"/><path d="m3 8 3-3"/><circle cx="12" cy="12" r="3"/><path d="M12 7v5l3 3"/></svg>
+          </div>
+        `;
+      }
 
       card.innerHTML = `
         ${imgHtml}
