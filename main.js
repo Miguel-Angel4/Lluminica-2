@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
-    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu'];
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos'];
     views.forEach(selector => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
@@ -299,6 +299,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Menú';
       loadUserProfile();
+    } else if (label === 'Documentos') {
+      const view = document.querySelector('#view-documentos');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Documentos';
     } else {
       alert(`La sección de ${label} estará disponible próximamente.`);
     }
@@ -311,14 +315,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  menuItems.forEach(item => {
+  const backFromDocs = document.getElementById('back-from-docs');
+  if (backFromDocs) {
+    backFromDocs.addEventListener('click', () => {
+      switchToView('Menú');
+    });
+  }
+
+  const menuItemsMain = document.querySelectorAll('.menu-item');
+  menuItemsMain.forEach(item => {
     item.addEventListener('click', () => {
       const labelElement = item.querySelector('.item-text');
       if (!labelElement) return;
       const label = labelElement.innerText;
       
       // If it's a known navigation target, switch
-      if (['Citas', 'Galería', 'Clientes', 'Menú'].includes(label)) {
+      if (['Citas', 'Galería', 'Clientes', 'Menú', 'Documentos'].includes(label)) {
         switchToView(label);
       }
     });
