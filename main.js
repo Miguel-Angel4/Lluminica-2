@@ -1458,28 +1458,29 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('div');
       card.style.width = '100%';
       card.style.background = 'white';
-      card.style.border = '1px solid #eef2f6';
-      card.style.borderRadius = '12px';
+      card.style.borderRadius = '16px';
       card.style.padding = '1rem';
       card.style.display = 'flex';
       card.style.alignItems = 'center';
       card.style.gap = '1rem';
-      card.style.boxShadow = '0 1px 3px rgba(0,0,0,0.02)';
+      card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.03)';
       card.style.boxSizing = 'border-box';
+      card.style.marginBottom = '0.75rem';
 
       let imgHtml = '';
       if (prod.imagen_url && prod.imagen_url.startsWith('<svg')) {
+        // Icon circular cyan background as in user image
         imgHtml = `
-          <div style="width: 50px; height: 50px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #00bcd4; overflow: hidden;">
-            ${prod.imagen_url.replace(/width="[^"]*"/, 'width="30"').replace(/height="[^"]*"/, 'height="30"').replace(/stroke="[^"]*"/, 'stroke="#00bcd4"')}
+          <div style="width: 50px; height: 50px; border-radius: 50%; background: #00bcd4; display: flex; align-items: center; justify-content: center; color: white; overflow: hidden; flex-shrink: 0;">
+            ${prod.imagen_url.replace(/width="[^"]*"/, 'width="26"').replace(/height="[^"]*"/, 'height="26"').replace(/stroke="[^"]*"/, 'stroke="white"')}
           </div>
         `;
       } else if (prod.imagen_url) {
-        imgHtml = `<img src="${prod.imagen_url}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" />`;
+        imgHtml = `<img src="${prod.imagen_url}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" />`;
       } else {
         imgHtml = `
-          <div style="width: 50px; height: 50px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #00bcd4;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-3-3"/><path d="m21 16-3 3"/><path d="m3 16 3 3"/><path d="m3 8 3-3"/><circle cx="12" cy="12" r="3"/><path d="M12 7v5l3 3"/></svg>
+          <div style="width: 50px; height: 50px; border-radius: 50%; background: #00bcd4; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-3-3"/><path d="m21 16-3 3"/><path d="m3 16 3 3"/><path d="m3 8 3-3"/><circle cx="12" cy="12" r="3"/><path d="M12 7v5l3 3"/></svg>
           </div>
         `;
       }
@@ -1487,10 +1488,10 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `
         ${imgHtml}
         <div style="flex: 1; text-align: left; overflow: hidden;">
-          <h4 style="margin: 0; font-size: 1rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${prod.nombre}</h4>
+          <h4 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${prod.nombre}</h4>
           <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${prod.descripcion || 'Sin descripción'}</p>
         </div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
       `;
 
       productosList.appendChild(card);
