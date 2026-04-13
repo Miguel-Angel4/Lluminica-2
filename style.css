@@ -753,6 +753,42 @@ body {
   letter-spacing: 0.05em;
 }
 /* --- Redesign Menu Styles --- */
+/* Documentos/Subviews Header */
+.subview-header {
+  background: white;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  min-height: 60px;
+}
+
+.subview-header h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 auto;
+  text-align: center;
+  width: 100%;
+}
+
+.back-btn {
+  position: absolute;
+  left: 1rem;
+  background: none;
+  border: none;
+  color: #00bcd4;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 101;
+}
+
 .menu-view-container {
   display: flex;
   flex-direction: column;
