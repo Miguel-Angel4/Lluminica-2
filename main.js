@@ -412,19 +412,35 @@ document.addEventListener('DOMContentLoaded', () => {
     `).join('');
   }
 
-  const menuItemsMain = document.querySelectorAll('.menu-item');
-  menuItemsMain.forEach(item => {
-    item.addEventListener('click', () => {
+  // Global management list navigation handler
+  const managementList = document.querySelector('.management-list-box');
+  if (managementList) {
+    managementList.addEventListener('click', (e) => {
+      const item = e.target.closest('.menu-item');
+      if (!item) return;
+
       const labelElement = item.querySelector('.item-text');
       if (!labelElement) return;
-      const label = labelElement.innerText;
       
-      // If it's a known navigation target, switch
+      const label = labelElement.innerText.trim();
+      
+      console.log('Navegando a:', label); // Debug log
+
       if (['Citas', 'Galería', 'Clientes', 'Menú', 'Documentos'].includes(label)) {
         switchToView(label);
+      } else {
+        alert(`La sección de ${label} estará disponible próximamente.`);
       }
     });
-  });
+  }
+
+  // Also handle the profile card which is outside management list
+  const userProfileCard = document.querySelector('.menu-card:not(.feature-card)');
+  if (userProfileCard) {
+    userProfileCard.addEventListener('click', () => {
+       // Profile card could also open a profile view, for now it stays in menu
+    });
+  }
 
   async function loadUserProfile() {
     try {
