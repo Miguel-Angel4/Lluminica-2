@@ -393,7 +393,8 @@
             </div>
 
             <footer class="menu-version-footer">
-              Lluminica • v0.29.14
+              Lluminica • v0.29.16
+Line modified: 396
             </footer>
           </div>
         </div>
@@ -511,6 +512,69 @@
               <button id="btn-save-product" style="width: 100%; padding: 1rem; border-radius: 10px; background: #4caf50; border: none; color: white; font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2);">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                 Agregar al inventario
+              </button>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Vista Procedimientos -->
+        <div id="view-procedimientos" class="main-subview" style="display: none; background: #eaeff2;">
+          <header class="subview-header">
+            <button class="back-btn" id="back-from-procedimientos">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </button>
+            <h2>Procedimientos</h2>
+          </header>
+          
+          <div class="procedimientos-search-header" style="padding: 1rem; background: #eaeff2;">
+            <div style="position: relative; max-width: 100%;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" id="proc-search-input" placeholder="Buscar procedimientos" style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; border: none; border-radius: 30px; background: white; font-size: 0.95rem; color: #334155; outline: none; box-sizing: border-box; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" />
+            </div>
+          </div>
+
+          <div id="proc-list" class="procedimientos-content" style="flex:1; display:flex; flex-direction: column; align-items:center; justify-content:center; padding: 1.5rem 1rem; text-align: center; overflow-y: auto;">
+             <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.5;">No hay procedimientos aún.</p>
+          </div>
+
+          <!-- Orange FAB for Procedures -->
+          <button id="btn-open-add-proc" class="fab-add-doc" style="position: fixed; bottom: 85px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background-color: #f97316; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); z-index: 10; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+
+        <!-- Vista Crear Procedimiento -->
+        <div id="view-crear-procedimiento" class="main-subview" style="display: none; background: #eaeff2;">
+          <header class="subview-header">
+            <button class="back-btn" id="back-from-crear-proc">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </button>
+            <h2>Nuevo Procedimiento</h2>
+          </header>
+          
+          <div style="padding: 1.5rem; overflow-y: auto; flex: 1;">
+            <div class="product-form-card" style="background: white; border-radius: 20px; padding: 2rem 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+              
+              <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">Nombre</label>
+                <input type="text" id="proc-name" placeholder="Nombre del procedimiento" style="width: 100%; padding: 0.85rem 1rem; border: none; border-radius: 8px; background: #eef2f6; font-size: 1rem; color: #334155; outline: none; box-sizing: border-box;" />
+              </div>
+
+              <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                <div style="flex: 1;">
+                  <label style="display: block; font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">Precio (€)</label>
+                  <input type="number" id="proc-price" placeholder="0.00" style="width: 100%; padding: 0.85rem 1rem; border: none; border-radius: 8px; background: #eef2f6; font-size: 1rem; color: #334155; outline: none; box-sizing: border-box;" />
+                </div>
+                <div style="flex: 1;">
+                  <label style="display: block; font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">Duración (min)</label>
+                  <input type="number" id="proc-duration" placeholder="30" style="width: 100%; padding: 0.85rem 1rem; border: none; border-radius: 8px; background: #eef2f6; font-size: 1rem; color: #334155; outline: none; box-sizing: border-box;" />
+                </div>
+              </div>
+
+              <button id="btn-save-proc" style="width: 100%; padding: 1rem; border-radius: 10px; background: #4caf50; border: none; color: white; font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                Guardar Procedimiento
               </button>
 
             </div>

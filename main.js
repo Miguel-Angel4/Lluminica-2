@@ -303,6 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-documentos');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Documentos';
+      loadDocumentos();
     } else if (label === 'Subir documento') {
       const view = document.querySelector('#view-subir-documento');
       if(view) view.style.display = 'flex';
@@ -316,6 +317,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-crear-producto');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Crear Producto';
+    } else if (label === 'Procedimientos') {
+      const view = document.querySelector('#view-procedimientos');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Procedimientos';
+      loadProcedimientos();
+    } else if (label === 'Crear Procedimiento') {
+      const view = document.querySelector('#view-crear-procedimiento');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Crear Procedimiento';
     } else {
       alert(`La sección de ${label} estará disponible próximamente.`);
     }
@@ -394,50 +404,81 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (btnDoUploadDoc) {
-    btnDoUploadDoc.addEventListener('click', () => {
+    btnDoUploadDoc.addEventListener('click', async () => {
       const file = inputUploadDoc.files[0];
       if (!file) {
         alert('Por favor, selecciona un documento primero.');
         return;
       }
 
-      // Add to list
-      tempDocs.push({
-        id: Date.now(),
-        name: file.name,
-        date: new Date().toLocaleDateString()
-      });
+      btnDoUploadDoc.disabled = true;
+      btnDoUploadDoc.textContent = 'Subiendo...';
 
-      renderDocumentos();
-      switchToView('Documentos');
-      
-      // Reset input
-      inputUploadDoc.value = '';
-      btnTriggerDocInput.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
-        Seleccionar un documento
-      `;
-      btnDoUploadDoc.style.background = '#94a3b8';
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No hay sesión activa');
+
+        const { error } = await supabase
+          .from('documentos')
+          .insert({
+            nombre: file.name,
+            user_id: user.id
+          });
+
+        if (error) throw error;
+
+        // Reset and return
+        inputUploadDoc.value = '';
+        btnTriggerDocInput.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+          Seleccionar un documento
+        `;
+        btnDoUploadDoc.style.background = '#94a3b8';
+        
+        switchToView('Documentos');
+      } catch (err) {
+        alert('Error al subir: ' + err.message);
+      } finally {
+        btnDoUploadDoc.disabled = false;
+        btnDoUploadDoc.textContent = 'Subir';
+      }
     });
   }
 
-  function renderDocumentos() {
+  async function loadDocumentos() {
     if (!docsListContainer) return;
     
-    if (tempDocs.length === 0) {
+    try {
+      const { data: docs, error } = await supabase
+        .from('documentos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      renderDocumentos(docs);
+    } catch (err) {
+      console.error('Error loading documentos:', err.message);
+    }
+  }
+
+  function renderDocumentos(docs) {
+    if (!docsListContainer) return;
+    
+    if (!docs || docs.length === 0) {
       docsListContainer.innerHTML = `
         <p style="color: #94a3b8; font-size: 1.1rem; text-align: center; margin-top: 2rem;">No hay documentos</p>
       `;
       return;
     }
 
-    docsListContainer.innerHTML = tempDocs.map(doc => `
+    docsListContainer.innerHTML = docs.map(doc => `
       <div class="doc-card">
         <div class="doc-info">
           <div class="doc-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
           </div>
-          <div class="doc-name">${doc.name}</div>
+          <div class="doc-name">${doc.nombre}</div>
         </div>
         <button class="btn-asignar">Asignar</button>
       </div>
@@ -458,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       console.log('Navegando a:', label); // Debug log
 
-      if (['Citas', 'Galería', 'Clientes', 'Menú', 'Documentos', 'Productos'].includes(label)) {
+      if (['Citas', 'Galería', 'Clientes', 'Menú', 'Documentos', 'Productos', 'Procedimientos'].includes(label)) {
         switchToView(label);
       } else {
         alert(`La sección de ${label} estará disponible próximamente.`);
@@ -501,6 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentImageContext = 'gallery';
   let currentProductImageData = null;
   let allProductData = [];
+  let allProcData = [];
 
   const productPreviewArea = document.getElementById('product-image-preview');
   const btnProductImgCamera = document.getElementById('product-img-btn-camera');
@@ -1386,6 +1428,129 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       productosList.appendChild(card);
+    });
+  }
+
+  // --- PROCEDIMIENTOS LOGIC ---
+  const btnOpenAddProc = document.getElementById('btn-open-add-proc');
+  if (btnOpenAddProc) {
+    btnOpenAddProc.addEventListener('click', () => switchToView('Crear Procedimiento'));
+  }
+
+  const backFromProcedimientos = document.getElementById('back-from-procedimientos');
+  if (backFromProcedimientos) {
+    backFromProcedimientos.addEventListener('click', () => switchToView('Menú'));
+  }
+
+  const backFromCrearProc = document.getElementById('back-from-crear-proc');
+  if (backFromCrearProc) {
+    backFromCrearProc.addEventListener('click', () => switchToView('Procedimientos'));
+  }
+
+  const btnSaveProc = document.getElementById('btn-save-proc');
+  if (btnSaveProc) {
+    btnSaveProc.addEventListener('click', async () => {
+      const name = document.getElementById('proc-name').value.trim();
+      const price = document.getElementById('proc-price').value;
+      const duration = document.getElementById('proc-duration').value;
+
+      if (!name) {
+        alert('El nombre es obligatorio');
+        return;
+      }
+
+      btnSaveProc.disabled = true;
+      btnSaveProc.textContent = 'Guardando...';
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        const { error } = await supabase
+          .from('procedimientos')
+          .insert({
+            nombre: name,
+            precio: price || 0,
+            duracion_minutos: duration || 30,
+            user_id: user.id
+          });
+
+        if (error) throw error;
+
+        // Reset
+        document.getElementById('proc-name').value = '';
+        document.getElementById('proc-price').value = '';
+        document.getElementById('proc-duration').value = '';
+
+        switchToView('Procedimientos');
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btnSaveProc.disabled = false;
+        btnSaveProc.textContent = 'Guardar Procedimiento';
+      }
+    });
+  }
+
+  async function loadProcedimientos() {
+    const list = document.getElementById('proc-list');
+    if (!list) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('procedimientos')
+        .select('*')
+        .order('nombre', { ascending: true });
+
+      if (error) throw error;
+      allProcData = data || [];
+      renderProcedimientosList(allProcData);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderProcedimientosList(procs) {
+    const list = document.getElementById('proc-list');
+    if (!list) return;
+
+    if (!procs || procs.length === 0) {
+      list.innerHTML = '<p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.5;">No hay procedimientos aún.</p>';
+      list.style.justifyContent = 'center';
+      return;
+    }
+
+    list.innerHTML = '';
+    list.style.justifyContent = 'flex-start';
+    list.style.gap = '1rem';
+
+    procs.forEach(proc => {
+      const card = document.createElement('div');
+      card.classList.add('doc-card'); // Use same style as documents
+      card.style.width = '100%';
+      card.style.boxSizing = 'border-box';
+
+      card.innerHTML = `
+        <div class="doc-info" style="flex:1;">
+          <div class="doc-icon" style="background: ${proc.color || '#06b6d4'}; color: white;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.77 3.77Z"/></svg>
+          </div>
+          <div style="text-align: left;">
+            <div class="doc-name" style="font-weight: 700;">${proc.nombre}</div>
+            <div style="font-size: 0.85rem; color: #94a3b8;">${proc.precio}€ • ${proc.duracion_minutos} min</div>
+          </div>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  const procSearchInput = document.getElementById('proc-search-input');
+  if (procSearchInput) {
+    procSearchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      const filtered = allProcData.filter(p => p.nombre.toLowerCase().includes(query));
+      renderProcedimientosList(filtered);
     });
   }
 });
