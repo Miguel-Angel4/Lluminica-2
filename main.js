@@ -1571,10 +1571,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (error) throw error;
 
-        // Reset
-        if (nameInput) nameInput.value = '';
-        editingProcId = null;
-
         // Show Success Modal instead of immediate redirect
         if (modalSuccess) {
           modalSuccess.querySelector('p').textContent = editingProcId ? 'Procedimiento actualizado con éxito' : 'Procedimiento creado con éxito';
@@ -1582,6 +1578,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           switchToView('Procedimientos');
         }
+
+        // Reset
+        if (nameInput) nameInput.value = '';
+        editingProcId = null;
       } catch (err) {
         alert('Error: ' + err.message);
       } finally {
