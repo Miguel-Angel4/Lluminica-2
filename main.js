@@ -1526,12 +1526,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSaveProc = document.getElementById('btn-save-proc');
   if (btnSaveProc) {
     btnSaveProc.addEventListener('click', async () => {
-      const name = document.getElementById('proc-name').value.trim();
-      const price = document.getElementById('proc-price').value;
-      const duration = document.getElementById('proc-duration').value;
+      const nameInput = document.getElementById('proc-name');
+      const name = nameInput ? nameInput.value.trim() : '';
 
       if (!name) {
-        alert('El nombre es obligatorio');
+        alert('Introduce el nombre del procedimiento');
         return;
       }
 
@@ -1545,8 +1544,8 @@ document.addEventListener('DOMContentLoaded', () => {
           .from('procedimientos')
           .insert({
             nombre: name,
-            precio: price || 0,
-            duracion_minutos: duration || 30,
+            precio: 0,
+            duracion_minutos: 30,
             icon_svg: currentProcIconData,
             user_id: user.id
           });
@@ -1554,16 +1553,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (error) throw error;
 
         // Reset
-        document.getElementById('proc-name').value = '';
-        document.getElementById('proc-price').value = '';
-        document.getElementById('proc-duration').value = '';
+        if (nameInput) nameInput.value = '';
 
         switchToView('Procedimientos');
       } catch (err) {
         alert('Error: ' + err.message);
       } finally {
         btnSaveProc.disabled = false;
-        btnSaveProc.textContent = 'Guardar Procedimiento';
+        btnSaveProc.textContent = 'Crear Procedimiento';
       }
     });
   }
