@@ -898,16 +898,17 @@ body {
 
 .menu-item {
   width: 100%;
-  display: flex;
+  display: flex !important;
   align-items: center;
   gap: 1rem;
   padding: 1.1rem 1.25rem;
-  background: none;
+  background: white;
   border: none;
   border-bottom: 1px solid #f1f5f9;
   cursor: pointer;
   text-align: left;
   transition: background-color 0.2s;
+  min-height: 60px;
 }
 
 .menu-item:last-child {
