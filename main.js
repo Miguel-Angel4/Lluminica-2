@@ -1543,10 +1543,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalSuccess = document.getElementById('modal-success');
   const btnSuccessOk = document.getElementById('btn-success-ok');
 
+  let successModalDestination = 'Procedimientos';
+
   if (btnSuccessOk && modalSuccess) {
     btnSuccessOk.addEventListener('click', () => {
       modalSuccess.style.display = 'none';
-      switchToView('Procedimientos');
+      switchToView(successModalDestination);
     });
   }
 
@@ -1590,8 +1592,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (error) throw error;
 
-        // Show Success Modal instead of immediate redirect
+        // Show Success Modal
         if (modalSuccess) {
+          successModalDestination = 'Procedimientos';
           modalSuccess.querySelector('p').textContent = editingProcId ? 'Procedimiento actualizado con éxito' : 'Procedimiento creado con éxito';
           modalSuccess.style.display = 'flex';
         } else {
@@ -1778,16 +1781,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (nameInput) nameInput.value = '';
 
         if (modalSuccess) {
-          modalSuccess.querySelector('p').textContent = editingCentroId ? 'Centro actualizado con éxito' : 'Centro creado con éxito';
-          // Fix for the OK button to handle dynamic context
-          const originalOkHandler = btnSuccessOk.onclick;
-          btnSuccessOk.onclick = () => {
-            modalSuccess.style.display = 'none';
-            switchToView('Centros');
-            // Restore handler for next time
-            btnSuccessOk.onclick = null; 
-            // We should ideally have a more robust logic for this
-          };
+          successModalDestination = 'Centros';
+          modalSuccess.querySelector('p').textContent = editingCentroId ? 'El Centro ha sido actualizado exitosamente.' : 'El Centro ha sido creado exitosamente.';
+          btnSuccessOk.onclick = null;
           modalSuccess.style.display = 'flex';
         } else {
           switchToView('Centros');
