@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
-    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos', '#view-crear-producto'];
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos', '#view-crear-producto', '#view-procedimientos', '#view-crear-procedimiento'];
     views.forEach(selector => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
