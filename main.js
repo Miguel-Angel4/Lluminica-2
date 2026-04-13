@@ -294,11 +294,35 @@ document.addEventListener('DOMContentLoaded', () => {
         if(viewClientes) viewClientes.style.display = 'none';
         if(viewMenu) viewMenu.style.display = 'block';
         document.title = 'Lluminica - Menú';
+        loadUserProfile();
       } else {
         alert(`La sección de ${label} estará disponible próximamente.`);
       }
     });
   });
+
+  async function loadUserProfile() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('nombre, apellidos')
+        .eq('email', user.email)
+        .single();
+
+      const fullName = profile ? `${profile.nombre} ${profile.apellidos}` : user.email.split('@')[0];
+      
+      const menuUserName = document.getElementById('menu-user-name');
+      const menuUserEmail = document.getElementById('menu-user-email');
+      
+      if (menuUserName) menuUserName.textContent = fullName;
+      if (menuUserEmail) menuUserEmail.textContent = user.email;
+    } catch (err) {
+      console.error('Error loading user profile for menu:', err.message);
+    }
+  }
 
   // Modal logic for Galeria Camera FAB
   const galeriaFab = document.querySelector('.fab-camera');
