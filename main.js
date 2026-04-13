@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
-    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos'];
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento'];
     views.forEach(selector => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
@@ -303,6 +303,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-documentos');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Documentos';
+    } else if (label === 'Subir documento') {
+      const view = document.querySelector('#view-subir-documento');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Subir documento';
     } else {
       alert(`La sección de ${label} estará disponible próximamente.`);
     }
@@ -319,6 +323,20 @@ document.addEventListener('DOMContentLoaded', () => {
   if (backFromDocs) {
     backFromDocs.addEventListener('click', () => {
       switchToView('Menú');
+    });
+  }
+
+  const btnOpenUploadDoc = document.getElementById('btn-open-upload-doc');
+  if (btnOpenUploadDoc) {
+    btnOpenUploadDoc.addEventListener('click', () => {
+      switchToView('Subir documento');
+    });
+  }
+
+  const backToDocsList = document.getElementById('back-to-docs-list');
+  if (backToDocsList) {
+    backToDocsList.addEventListener('click', () => {
+      switchToView('Documentos');
     });
   }
 
