@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
-    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos', '#view-crear-producto', '#view-procedimientos', '#view-crear-procedimiento'];
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos', '#view-crear-producto', '#view-procedimientos', '#view-crear-procedimiento', '#view-centros', '#view-crear-centro'];
     views.forEach(selector => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
@@ -326,6 +326,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-crear-procedimiento');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Crear Procedimiento';
+    } else if (label === 'Centros') {
+      const view = document.querySelector('#view-centros');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Centros';
+      loadCentros();
+    } else if (label === 'Crear Centro') {
+      const view = document.querySelector('#view-crear-centro');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Crear Centro';
     } else {
       alert(`La sección de ${label} estará disponible próximamente.`);
     }
@@ -1678,6 +1687,195 @@ document.addEventListener('DOMContentLoaded', () => {
               const { error } = await supabase.from('procedimientos').delete().eq('id', proc.id);
               if (error) throw error;
               loadProcedimientos();
+            } catch (err) {
+              alert('Error al eliminar: ' + err.message);
+            }
+          }
+        });
+      }
+
+      list.appendChild(card);
+    });
+  }
+
+  // --- CENTROS LOGIC ---
+  let allCentrosData = [];
+  let editingCentroId = null;
+
+  const btnOpenAddCentro = document.getElementById('btn-open-add-centro');
+  if (btnOpenAddCentro) {
+    btnOpenAddCentro.addEventListener('click', () => {
+      editingCentroId = null;
+      document.querySelector('#view-crear-centro h2').textContent = 'Crear Centro';
+      document.getElementById('btn-save-centro').textContent = 'Crear un nuevo centro';
+      const nameInput = document.getElementById('centro-name');
+      if (nameInput) nameInput.value = '';
+      switchToView('Crear Centro');
+    });
+  }
+
+  const backFromCentros = document.getElementById('back-from-centros');
+  if (backFromCentros) {
+    backFromCentros.addEventListener('click', () => switchToView('Menú'));
+  }
+
+  const backFromCrearCentro = document.getElementById('back-from-crear-centro');
+  if (backFromCrearCentro) {
+    backFromCrearCentro.addEventListener('click', () => switchToView('Centros'));
+  }
+
+  const btnSaveCentro = document.getElementById('btn-save-centro');
+  if (btnSaveCentro) {
+    btnSaveCentro.addEventListener('click', async () => {
+      const nameInput = document.getElementById('centro-name');
+      const name = nameInput ? nameInput.value.trim() : '';
+
+      if (!name) {
+        alert('Introduce el nombre del centro');
+        return;
+      }
+
+      btnSaveCentro.disabled = true;
+      btnSaveCentro.textContent = 'Guardando...';
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        let error;
+        if (editingCentroId) {
+          const { error: err } = await supabase
+            .from('centros')
+            .update({ nombre: name })
+            .eq('id', editingCentroId);
+          error = err;
+        } else {
+          const { error: err } = await supabase
+            .from('centros')
+            .insert({
+              nombre: name,
+              user_id: user.id
+            });
+          error = err;
+        }
+
+        if (error) throw error;
+
+        if (nameInput) nameInput.value = '';
+
+        if (modalSuccess) {
+          modalSuccess.querySelector('p').textContent = editingCentroId ? 'Centro actualizado con éxito' : 'Centro creado con éxito';
+          // Fix for the OK button to handle dynamic context
+          const originalOkHandler = btnSuccessOk.onclick;
+          btnSuccessOk.onclick = () => {
+            modalSuccess.style.display = 'none';
+            switchToView('Centros');
+            // Restore handler for next time
+            btnSuccessOk.onclick = null; 
+            // We should ideally have a more robust logic for this
+          };
+          modalSuccess.style.display = 'flex';
+        } else {
+          switchToView('Centros');
+        }
+        editingCentroId = null;
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btnSaveCentro.disabled = false;
+        btnSaveCentro.textContent = editingCentroId ? 'Guardar Cambios' : 'Crear un nuevo centro';
+      }
+    });
+  }
+
+  async function loadCentros() {
+    const list = document.getElementById('centros-list');
+    if (!list) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('centros')
+        .select('*')
+        .order('nombre', { ascending: true });
+
+      if (error) throw error;
+      allCentrosData = data || [];
+      renderCentrosList(allCentrosData);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  function renderCentrosList(centros) {
+    const list = document.getElementById('centros-list');
+    if (!list) return;
+
+    if (!centros || centros.length === 0) {
+      list.innerHTML = `
+        <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem;">No hay centros registrados. Crea uno nuevo.</p>
+        <button id="btn-empty-create-centro" style="padding: 0.85rem 1.75rem; border-radius: 10px; background: #00bcd4; border: none; color: white; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 188, 212, 0.3);">Crear un nuevo centro</button>
+      `;
+      list.style.justifyContent = 'center';
+      
+      const btnEmpty = document.getElementById('btn-empty-create-centro');
+      if (btnEmpty) {
+        btnEmpty.addEventListener('click', () => {
+          editingCentroId = null;
+          switchToView('Crear Centro');
+        });
+      }
+      return;
+    }
+
+    list.innerHTML = '';
+    list.style.justifyContent = 'flex-start';
+    list.style.gap = '0.5rem';
+
+    centros.forEach(centro => {
+      const card = document.createElement('div');
+      card.style.width = '100%';
+      card.style.background = 'white';
+      card.style.borderRadius = '12px';
+      card.style.padding = '0.85rem 1rem';
+      card.style.display = 'flex';
+      card.style.alignItems = 'center';
+      card.style.justifyContent = 'space-between';
+      card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+      card.style.boxSizing = 'border-box';
+      card.style.marginBottom = '0.25rem';
+      card.style.border = '1px solid #f1f5f9';
+
+      card.innerHTML = `
+        <div style="font-weight: 700; font-size: 1rem; color: #1e293b;">${centro.nombre}</div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <button class="btn-edit-centro" style="background: none; border: none; padding: 4px; cursor: pointer; color: #00bcd4; display: flex;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+          <button class="btn-delete-centro" style="background: none; border: none; padding: 4px; cursor: pointer; color: #ef4444; display: flex;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </button>
+        </div>
+      `;
+
+      const btnEdit = card.querySelector('.btn-edit-centro');
+      if (btnEdit) {
+        btnEdit.addEventListener('click', () => {
+          editingCentroId = centro.id;
+          document.querySelector('#view-crear-centro h2').textContent = 'Editar Centro';
+          document.getElementById('btn-save-centro').textContent = 'Guardar Cambios';
+          const nameInput = document.getElementById('centro-name');
+          if (nameInput) nameInput.value = centro.nombre;
+          switchToView('Crear Centro');
+        });
+      }
+
+      const btnDel = card.querySelector('.btn-delete-centro');
+      if (btnDel) {
+        btnDel.addEventListener('click', async () => {
+          if (confirm(`¿Estás seguro de que quieres eliminar este centro?`)) {
+            try {
+              const { error } = await supabase.from('centros').delete().eq('id', centro.id);
+              if (error) throw error;
+              loadCentros();
             } catch (err) {
               alert('Error al eliminar: ' + err.message);
             }

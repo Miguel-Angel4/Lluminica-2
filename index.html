@@ -563,7 +563,46 @@
           </button>
         </div>
 
-        <nav class="bottom-nav">
+        <!-- Vista Lista de Centros -->
+        <div id="view-centros" class="main-subview" style="display: none; background: #eaeff2;">
+          <header class="subview-header">
+            <button class="back-btn" id="back-from-centros">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </button>
+            <h2 style="font-size: 1.1rem;">Lista de Centros</h2>
+          </header>
+          
+          <div id="centros-list" class="centros-content" style="flex:1; display:flex; flex-direction: column; align-items:center; justify-content:center; padding: 1.5rem 1rem; text-align: center; overflow-y: auto;">
+             <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.5;">Cargando...</p>
+          </div>
+
+          <!-- Cyan FAB for Centros -->
+          <button id="btn-open-add-centro" class="fab-add-doc" style="position: fixed; bottom: 85px; right: 20px; width: 62px; height: 62px; border-radius: 50%; background-color: #00bcd4; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4); z-index: 10; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+
+        <!-- Vista Crear Centro -->
+        <div id="view-crear-centro" class="main-subview" style="display: none; background: #eaeff2;">
+          <header class="subview-header">
+            <button class="back-btn" id="back-from-crear-centro">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </button>
+            <h2 style="font-size: 1.1rem;">Crear Centro</h2>
+          </header>
+          
+          <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; flex: 1; justify-content: center;">
+            <input type="text" id="centro-name" placeholder="Introduce el nombre del centro..." style="width: 100%; padding: 0.85rem 1rem; border: 1.5px solid #cbd5e1; border-radius: 10px; background: #f8fafc; font-size: 1rem; color: #1e293b; outline: none; box-sizing: border-box;" />
+
+            <button id="btn-save-centro" style="width: 100%; padding: 1rem; border-radius: 10px; background: #00bcd4; border: none; color: white; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s;">
+              Crear un nuevo centro
+            </button>
+          </div>
+
+          <button class="fab-add-doc" style="position: fixed; bottom: 85px; right: 20px; width: 62px; height: 62px; border-radius: 50%; background-color: #00bcd4; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4); z-index: 10; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
           <div class="nav-item active">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <span>Citas</span>
