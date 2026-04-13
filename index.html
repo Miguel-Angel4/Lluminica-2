@@ -393,7 +393,7 @@
             </div>
 
             <footer class="menu-version-footer">
-              Lluminica • v0.29.6
+              Lluminica • v0.29.7
             </footer>
           </div>
         </div>
@@ -439,6 +439,32 @@
                Subir
              </button>
           </div>
+        </div>
+
+        <!-- Vista Productos -->
+        <div id="view-productos" class="main-subview" style="display: none; background: #eaeff2;">
+          <header class="subview-header">
+            <button class="back-btn" id="back-from-productos">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </button>
+            <h2>Productos</h2>
+          </header>
+          
+          <div class="productos-search-header" style="padding: 1rem; background: #eaeff2;">
+            <div style="position: relative; max-width: 100%;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+              <input type="text" placeholder="Buscar productos" style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; border: none; border-radius: 30px; background: white; font-size: 0.95rem; color: #334155; outline: none; box-sizing: border-box; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" />
+            </div>
+          </div>
+
+          <div class="productos-content" style="flex:1; display:flex; align-items:center; justify-content:center; padding: 2rem; text-align: center;">
+             <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.5;">No hay productos, agrega uno nuevo!</p>
+          </div>
+
+          <!-- Orange FAB for Products -->
+          <button id="btn-open-add-product" class="fab-add-doc" style="position: fixed; bottom: 85px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background-color: #f97316; color: white; border: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3); z-index: 10; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
         </div>
 
         <nav class="bottom-nav">

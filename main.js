@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
-    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento'];
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos'];
     views.forEach(selector => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
@@ -307,6 +307,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-subir-documento');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Subir documento';
+    } else if (label === 'Productos') {
+      const view = document.querySelector('#view-productos');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Productos';
     } else {
       alert(`La sección de ${label} estará disponible próximamente.`);
     }
@@ -330,6 +334,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnOpenUploadDoc) {
     btnOpenUploadDoc.addEventListener('click', () => {
       switchToView('Subir documento');
+    });
+  }
+
+  const backFromProductos = document.getElementById('back-from-productos');
+  if (backFromProductos) {
+    backFromProductos.addEventListener('click', () => {
+      switchToView('Menú');
     });
   }
 
@@ -428,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       console.log('Navegando a:', label); // Debug log
 
-      if (['Citas', 'Galería', 'Clientes', 'Menú', 'Documentos'].includes(label)) {
+      if (['Citas', 'Galería', 'Clientes', 'Menú', 'Documentos', 'Productos'].includes(label)) {
         switchToView(label);
       } else {
         alert(`La sección de ${label} estará disponible próximamente.`);
