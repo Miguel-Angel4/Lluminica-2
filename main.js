@@ -1641,7 +1641,12 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const btnEmpty = document.getElementById('btn-empty-create-proc');
       if (btnEmpty) {
-        btnEmpty.addEventListener('click', () => switchToView('Crear Procedimiento'));
+        btnEmpty.addEventListener('click', () => {
+          editingProcId = null;
+          document.querySelector('#view-crear-procedimiento h2').textContent = 'Crear Procedimiento';
+          document.getElementById('btn-save-proc').textContent = 'Crear Procedimiento';
+          switchToView('Crear Procedimiento');
+        });
       }
       return;
     }
