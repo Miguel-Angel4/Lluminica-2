@@ -260,7 +260,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  const navItems = document.querySelectorAll('.nav-item');
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
