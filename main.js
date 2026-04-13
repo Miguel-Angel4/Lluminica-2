@@ -311,6 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-productos');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Productos';
+      loadProductos();
     } else if (label === 'Crear Producto') {
       const view = document.querySelector('#view-crear-producto');
       if(view) view.style.display = 'flex';
@@ -498,6 +499,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Image Context (gallery or product)
   let currentImageContext = 'gallery';
+  let currentProductImageData = null;
+  let allProductData = [];
 
   const productPreviewArea = document.getElementById('product-image-preview');
   const btnProductImgCamera = document.getElementById('product-img-btn-camera');
@@ -505,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const updateProductImagePreview = (dataUrl) => {
     if (!productPreviewArea) return;
+    currentProductImageData = dataUrl;
     productPreviewArea.innerHTML = `<img src="${dataUrl}" style="width: 100%; height: 100%; object-fit: cover; display: block;" />`;
   };
 
@@ -1245,6 +1249,143 @@ document.addEventListener('DOMContentLoaded', () => {
         navItems.forEach(ni => ni.classList.remove('active'));
         navItems[0].classList.add('active');
       }
+    });
+  }
+
+  // --- PRODUCTOS LOGIC ---
+  const btnSaveProduct = document.getElementById('btn-save-product');
+  if (btnSaveProduct) {
+    btnSaveProduct.addEventListener('click', async () => {
+      const nombreInput = document.getElementById('product-name');
+      const descripcionInput = document.getElementById('product-description');
+      
+      const nombre = nombreInput.value.trim();
+      const descripcion = descripcionInput.value.trim();
+      
+      if (!nombre) {
+        alert('El nombre del producto es obligatorio');
+        return;
+      }
+
+      btnSaveProduct.disabled = true;
+      btnSaveProduct.innerHTML = 'Guardando...';
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No hay sesión activa');
+
+        const { error } = await supabase
+          .from('productos')
+          .insert({
+            nombre,
+            descripcion,
+            imagen_url: currentProductImageData,
+            user_id: user.id
+          });
+
+        if (error) throw error;
+
+        // Reset fields
+        nombreInput.value = '';
+        descripcionInput.value = '';
+        currentProductImageData = null;
+        if (productPreviewArea) {
+          productPreviewArea.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/></svg>`;
+        }
+
+        // Navigate back
+        switchToView('Productos');
+      } catch (err) {
+        alert('Error al guardar producto: ' + err.message);
+      } finally {
+        btnSaveProduct.disabled = false;
+        btnSaveProduct.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" x2="12" x2="16" y2="12"/></svg>
+          Agregar al inventario
+        `;
+      }
+    });
+  }
+
+  async function loadProductos() {
+    const productosList = document.getElementById('productos-list');
+    if (!productosList) return;
+
+    try {
+      const { data: productos, error } = await supabase
+        .from('productos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      allProductData = productos || [];
+      renderProductosList(allProductData);
+    } catch (err) {
+      console.error('Error loading productos:', err.message);
+    }
+  }
+
+  const productSearchInput = document.getElementById('product-search-input');
+  if (productSearchInput) {
+    productSearchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      if (!query) {
+        renderProductosList(allProductData);
+        return;
+      }
+
+      const filtered = allProductData.filter(p => 
+        p.nombre.toLowerCase().includes(query) || 
+        (p.descripcion && p.descripcion.toLowerCase().includes(query))
+      );
+      renderProductosList(filtered);
+    });
+  }
+
+  function renderProductosList(productos) {
+    const productosList = document.getElementById('productos-list');
+    if (!productosList) return;
+
+    if (!productos || productos.length === 0) {
+      productosList.innerHTML = '<p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.5;">No hay productos, agrega uno nuevo!</p>';
+      productosList.style.justifyContent = 'center';
+      return;
+    }
+
+    productosList.innerHTML = '';
+    productosList.style.justifyContent = 'flex-start';
+    productosList.style.gap = '1rem';
+
+    productos.forEach(prod => {
+      const card = document.createElement('div');
+      card.style.width = '100%';
+      card.style.background = 'white';
+      card.style.border = '1px solid #eef2f6';
+      card.style.borderRadius = '12px';
+      card.style.padding = '1rem';
+      card.style.display = 'flex';
+      card.style.alignItems = 'center';
+      card.style.gap = '1rem';
+      card.style.boxShadow = '0 1px 3px rgba(0,0,0,0.02)';
+      card.style.boxSizing = 'border-box';
+
+      const imgHtml = prod.imagen_url 
+        ? `<img src="${prod.imagen_url}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;" />`
+        : `<div style="width: 50px; height: 50px; border-radius: 8px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; color: #00bcd4;">
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-3-3"/><path d="m21 16-3 3"/><path d="m3 16 3 3"/><path d="m3 8 3-3"/><circle cx="12" cy="12" r="3"/><path d="M12 7v5l3 3"/></svg>
+           </div>`;
+
+      card.innerHTML = `
+        ${imgHtml}
+        <div style="flex: 1; text-align: left; overflow: hidden;">
+          <h4 style="margin: 0; font-size: 1rem; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${prod.nombre}</h4>
+          <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${prod.descripcion || 'Sin descripción'}</p>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      `;
+
+      productosList.appendChild(card);
     });
   }
 });

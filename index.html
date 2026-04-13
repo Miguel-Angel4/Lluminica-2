@@ -393,7 +393,7 @@
             </div>
 
             <footer class="menu-version-footer">
-              Lluminica • v0.29.10
+              Lluminica • v0.29.14
             </footer>
           </div>
         </div>
@@ -453,11 +453,11 @@
           <div class="productos-search-header" style="padding: 1rem; background: #eaeff2;">
             <div style="position: relative; max-width: 100%;">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-              <input type="text" placeholder="Buscar productos" style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; border: none; border-radius: 30px; background: white; font-size: 0.95rem; color: #334155; outline: none; box-sizing: border-box; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" />
+              <input type="text" id="product-search-input" placeholder="Buscar productos" style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.75rem; border: none; border-radius: 30px; background: white; font-size: 0.95rem; color: #334155; outline: none; box-sizing: border-box; box-shadow: 0 1px 3px rgba(0,0,0,0.05);" />
             </div>
           </div>
 
-          <div class="productos-content" style="flex:1; display:flex; align-items:center; justify-content:center; padding: 2rem; text-align: center;">
+          <div id="productos-list" class="productos-content" style="flex:1; display:flex; flex-direction: column; align-items:center; justify-content:center; padding: 1.5rem 1rem; text-align: center; overflow-y: auto;">
              <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.5;">No hay productos, agrega uno nuevo!</p>
           </div>
 
@@ -498,17 +498,17 @@
               <!-- Input Nombre -->
               <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">Nombre del Producto</label>
-                <input type="text" placeholder="Añade un nombre..." style="width: 100%; padding: 0.85rem 1rem; border: none; border-radius: 8px; background: #eef2f6; font-size: 1rem; color: #334155; outline: none; box-sizing: border-box;" />
+                <input type="text" id="product-name" placeholder="Añade un nombre..." style="width: 100%; padding: 0.85rem 1rem; border: none; border-radius: 8px; background: #eef2f6; font-size: 1rem; color: #334155; outline: none; box-sizing: border-box;" />
               </div>
 
               <!-- Input Descripción -->
               <div style="margin-bottom: 2rem;">
                 <label style="display: block; font-size: 1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.75rem;">Descripción del producto</label>
-                <textarea placeholder="Añade una descripción..." style="width: 100%; height: 120px; padding: 0.85rem 1rem; border: none; border-radius: 8px; background: #eef2f6; font-size: 1rem; color: #334155; outline: none; box-sizing: border-box; resize: none;"></textarea>
+                <textarea id="product-description" placeholder="Añade una descripción..." style="width: 100%; height: 120px; padding: 0.85rem 1rem; border: none; border-radius: 8px; background: #eef2f6; font-size: 1rem; color: #334155; outline: none; box-sizing: border-box; resize: none;"></textarea>
               </div>
 
               <!-- Green Add Button -->
-              <button style="width: 100%; padding: 1rem; border-radius: 10px; background: #4caf50; border: none; color: white; font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2);">
+              <button id="btn-save-product" style="width: 100%; padding: 1rem; border-radius: 10px; background: #4caf50; border: none; color: white; font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.2);">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
                 Agregar al inventario
               </button>
