@@ -347,6 +347,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+       if (item.id === 'btn-logout' || item.classList.contains('logout')) return;
+       const labelEl = item.querySelector('.item-text');
+       if (labelEl) {
+         switchToView(labelEl.innerText);
+       }
+    });
+  });
+
   const backFromDocs = document.getElementById('back-from-docs');
   if (backFromDocs) {
     backFromDocs.addEventListener('click', () => {
