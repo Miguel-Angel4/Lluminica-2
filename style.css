@@ -759,9 +759,10 @@ body {
   gap: 1.5rem;
   padding: 1.5rem;
   background-color: #f8fafc;
-  min-height: 100%;
+  height: 100%;
   overflow-y: auto;
-  padding-bottom: 5rem;
+  padding-bottom: 120px;
+  -webkit-overflow-scrolling: touch;
 }
 
 .menu-header {
@@ -946,16 +947,17 @@ body {
 }
 
 .menu-item.logout .item-icon-box {
-  background-color: #fef2f2;
-  color: #ef4444;
+  background-color: #ef4444;
+  color: #ffffff;
 }
 
 .menu-item.logout .item-text {
   color: #ef4444;
+  font-weight: 700;
 }
 
 .menu-item.logout .chevron-right {
-  color: #f87171;
+  color: #ef4444;
 }
 
 .menu-version-footer {

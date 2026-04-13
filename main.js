@@ -287,12 +287,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.title = 'Lluminica - Galería';
       } else if (label === 'Clientes') {
         const view = document.querySelector('#view-clientes');
-        if(view) view.style.display = 'block';
+        if(view) view.style.display = 'flex';
         document.title = 'Lluminica - Clientes';
         loadClientes();
       } else if (label === 'Menú') {
         const view = document.querySelector('#view-menu');
-        if(view) view.style.display = 'block';
+        if(view) view.style.display = 'flex';
         document.title = 'Lluminica - Menú';
         loadUserProfile();
       } else {
