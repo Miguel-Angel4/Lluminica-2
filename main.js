@@ -340,8 +340,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const btnTriggerDocInput = document.getElementById('btn-trigger-doc-input');
-  const inputUploadDoc = document.getElementById('input-upload-doc');
+  const btnDoUploadDoc = document.getElementById('btn-do-upload-doc');
+  const docsListContainer = document.getElementById('docs-list-container');
+  let tempDocs = []; // Local storage for the session
+
   if (btnTriggerDocInput && inputUploadDoc) {
     btnTriggerDocInput.addEventListener('click', () => {
       inputUploadDoc.click();
@@ -354,8 +356,60 @@ document.addEventListener('DOMContentLoaded', () => {
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
           ${file.name}
         `;
+        btnDoUploadDoc.style.background = '#00bcd4';
       }
     });
+  }
+
+  if (btnDoUploadDoc) {
+    btnDoUploadDoc.addEventListener('click', () => {
+      const file = inputUploadDoc.files[0];
+      if (!file) {
+        alert('Por favor, selecciona un documento primero.');
+        return;
+      }
+
+      // Add to list
+      tempDocs.push({
+        id: Date.now(),
+        name: file.name,
+        date: new Date().toLocaleDateString()
+      });
+
+      renderDocumentos();
+      switchToView('Documentos');
+      
+      // Reset input
+      inputUploadDoc.value = '';
+      btnTriggerDocInput.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+        Seleccionar un documento
+      `;
+      btnDoUploadDoc.style.background = '#94a3b8';
+    });
+  }
+
+  function renderDocumentos() {
+    if (!docsListContainer) return;
+    
+    if (tempDocs.length === 0) {
+      docsListContainer.innerHTML = `
+        <p style="color: #94a3b8; font-size: 1.1rem; text-align: center; margin-top: 2rem;">No hay documentos</p>
+      `;
+      return;
+    }
+
+    docsListContainer.innerHTML = tempDocs.map(doc => `
+      <div class="doc-card">
+        <div class="doc-info">
+          <div class="doc-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="doc-name">${doc.name}</div>
+        </div>
+        <button class="btn-asignar">Asignar</button>
+      </div>
+    `).join('');
   }
 
   const menuItemsMain = document.querySelectorAll('.menu-item');
