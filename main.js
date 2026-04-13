@@ -1524,6 +1524,16 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentProcIconData = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m4.93 4.93 14.14 14.14"/><path d="M2 12h20"/><path d="m19.07 4.93-14.14 14.14"/></svg>`;
 
   const btnSaveProc = document.getElementById('btn-save-proc');
+  const modalSuccess = document.getElementById('modal-success');
+  const btnSuccessOk = document.getElementById('btn-success-ok');
+
+  if (btnSuccessOk && modalSuccess) {
+    btnSuccessOk.addEventListener('click', () => {
+      modalSuccess.style.display = 'none';
+      switchToView('Procedimientos');
+    });
+  }
+
   if (btnSaveProc) {
     btnSaveProc.addEventListener('click', async () => {
       const nameInput = document.getElementById('proc-name');
@@ -1555,7 +1565,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset
         if (nameInput) nameInput.value = '';
 
-        switchToView('Procedimientos');
+        // Show Success Modal instead of immediate redirect
+        if (modalSuccess) {
+          modalSuccess.style.display = 'flex';
+        } else {
+          switchToView('Procedimientos');
+        }
       } catch (err) {
         alert('Error: ' + err.message);
       } finally {
@@ -1609,26 +1624,26 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = document.createElement('div');
       card.style.width = '100%';
       card.style.background = 'white';
-      card.style.borderRadius = '16px';
-      card.style.padding = '1rem';
+      card.style.borderRadius = '12px';
+      card.style.padding = '0.85rem 1rem';
       card.style.display = 'flex';
       card.style.alignItems = 'center';
-      card.style.gap = '1rem';
-      card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.03)';
+      card.style.justifyContent = 'space-between';
+      card.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
       card.style.boxSizing = 'border-box';
-      card.style.marginBottom = '0.75rem';
-
-      const iconHtml = proc.icon_svg || `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m4.93 4.93 14.14 14.14"/><path d="M2 12h20"/><path d="m19.07 4.93-14.14 14.14"/></svg>`;
+      card.style.marginBottom = '0.5rem';
+      card.style.border = '1px solid #f1f5f9';
 
       card.innerHTML = `
-        <div style="width: 50px; height: 50px; border-radius: 50%; background: #00bcd4; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
-          ${iconHtml.replace(/width="[^"]*"/, 'width="26"').replace(/height="[^"]*"/, 'height="26"').replace(/stroke="[^"]*"/, 'stroke="white"')}
+        <div style="font-weight: 700; font-size: 1rem; color: #1e293b;">${proc.nombre}</div>
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+          <button style="background: none; border: none; padding: 4px; cursor: pointer; color: #00bcd4; display: flex;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+          <button style="background: none; border: none; padding: 4px; cursor: pointer; color: #ef4444; display: flex;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          </button>
         </div>
-        <div style="flex: 1; text-align: left;">
-          <div style="font-weight: 700; font-size: 1.05rem; color: #1e293b;">${proc.nombre}</div>
-          <div style="font-size: 0.85rem; color: #94a3b8;">${proc.precio}€ • ${proc.duracion_minutos} min</div>
-        </div>
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
       `;
       list.appendChild(card);
     });
