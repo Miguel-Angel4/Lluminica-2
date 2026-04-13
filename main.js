@@ -260,39 +260,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  const hideAllDashboardViews = () => {
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu'];
+    views.forEach(selector => {
+      const v = document.querySelector(selector);
+      if (v) v.style.display = 'none';
+    });
+  };
+
   navItems.forEach(item => {
     item.addEventListener('click', () => {
       const label = item.querySelector('span').innerText;
-      const viewCitas = document.querySelector('#view-citas');
-      const viewGaleria = document.querySelector('#view-galeria');
-      const viewClientes = document.querySelector('#view-clientes');
-      const viewMenu = document.querySelector('#view-menu');
       
       navItems.forEach(ni => ni.classList.remove('active'));
       item.classList.add('active');
 
+      hideAllDashboardViews();
+
       if (label === 'Citas') {
-        if(viewCitas) viewCitas.style.display = 'flex';
-        if(viewGaleria) viewGaleria.style.display = 'none';
-        if(viewClientes) viewClientes.style.display = 'none';
+        const view = document.querySelector('#view-citas');
+        if(view) view.style.display = 'flex';
         document.title = 'Lluminica - Citas';
       } else if (label === 'Galería') {
-        if(viewCitas) viewCitas.style.display = 'none';
-        if(viewGaleria) viewGaleria.style.display = 'flex';
-        if(viewClientes) viewClientes.style.display = 'none';
+        const view = document.querySelector('#view-galeria');
+        if(view) view.style.display = 'flex';
         document.title = 'Lluminica - Galería';
       } else if (label === 'Clientes') {
-        if(viewCitas) viewCitas.style.display = 'none';
-        if(viewGaleria) viewGaleria.style.display = 'none';
-        if(viewClientes) viewClientes.style.display = 'block';
-        if(viewMenu) viewMenu.style.display = 'none';
+        const view = document.querySelector('#view-clientes');
+        if(view) view.style.display = 'block';
         document.title = 'Lluminica - Clientes';
         loadClientes();
       } else if (label === 'Menú') {
-        if(viewCitas) viewCitas.style.display = 'none';
-        if(viewGaleria) viewGaleria.style.display = 'none';
-        if(viewClientes) viewClientes.style.display = 'none';
-        if(viewMenu) viewMenu.style.display = 'block';
+        const view = document.querySelector('#view-menu');
+        if(view) view.style.display = 'block';
         document.title = 'Lluminica - Menú';
         loadUserProfile();
       } else {

@@ -381,6 +381,8 @@ body {
   display: flex;
   justify-content: space-around;
   padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  z-index: 1000;
+  position: relative;
 }
 
 .nav-item {
@@ -586,6 +588,7 @@ body {
   display: none;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
 }
 
 .galeria-header {
