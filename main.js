@@ -1517,6 +1517,16 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentProcIconData = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"/><path d="m4.93 4.93 14.14 14.14"/><path d="M2 12h20"/><path d="m19.07 4.93-14.14 14.14"/></svg>`;
   let editingProcId = null;
 
+  const backFromProcedimientos = document.getElementById('back-from-procedimientos');
+  if (backFromProcedimientos) {
+    backFromProcedimientos.addEventListener('click', () => switchToView('Menú'));
+  }
+
+  const backFromCrearProc = document.getElementById('back-from-crear-proc');
+  if (backFromCrearProc) {
+    backFromCrearProc.addEventListener('click', () => switchToView('Procedimientos'));
+  }
+
   const btnOpenAddProc = document.getElementById('btn-open-add-proc');
   if (btnOpenAddProc) {
     btnOpenAddProc.addEventListener('click', () => {
