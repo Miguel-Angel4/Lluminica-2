@@ -260,6 +260,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  const navItems = document.querySelectorAll('.nav-item');
+  const menuItems = document.querySelectorAll('.menu-item');
+
   const hideAllDashboardViews = () => {
     const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu'];
     views.forEach(selector => {
@@ -268,35 +271,56 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  const switchToView = (label) => {
+    navItems.forEach(ni => ni.classList.remove('active'));
+    
+    // Find matching nav item and activate it
+    navItems.forEach(ni => {
+      const navLabel = ni.querySelector('span').innerText;
+      if (navLabel === label) ni.classList.add('active');
+    });
+
+    hideAllDashboardViews();
+
+    if (label === 'Citas') {
+      const view = document.querySelector('#view-citas');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Citas';
+    } else if (label === 'Galería') {
+      const view = document.querySelector('#view-galeria');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Galería';
+    } else if (label === 'Clientes') {
+      const view = document.querySelector('#view-clientes');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Clientes';
+      loadClientes();
+    } else if (label === 'Menú') {
+      const view = document.querySelector('#view-menu');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Menú';
+      loadUserProfile();
+    } else {
+      alert(`La sección de ${label} estará disponible próximamente.`);
+    }
+  };
+
   navItems.forEach(item => {
     item.addEventListener('click', () => {
       const label = item.querySelector('span').innerText;
+      switchToView(label);
+    });
+  });
+
+  menuItems.forEach(item => {
+    item.addEventListener('click', () => {
+      const labelElement = item.querySelector('.item-text');
+      if (!labelElement) return;
+      const label = labelElement.innerText;
       
-      navItems.forEach(ni => ni.classList.remove('active'));
-      item.classList.add('active');
-
-      hideAllDashboardViews();
-
-      if (label === 'Citas') {
-        const view = document.querySelector('#view-citas');
-        if(view) view.style.display = 'flex';
-        document.title = 'Lluminica - Citas';
-      } else if (label === 'Galería') {
-        const view = document.querySelector('#view-galeria');
-        if(view) view.style.display = 'flex';
-        document.title = 'Lluminica - Galería';
-      } else if (label === 'Clientes') {
-        const view = document.querySelector('#view-clientes');
-        if(view) view.style.display = 'flex';
-        document.title = 'Lluminica - Clientes';
-        loadClientes();
-      } else if (label === 'Menú') {
-        const view = document.querySelector('#view-menu');
-        if(view) view.style.display = 'flex';
-        document.title = 'Lluminica - Menú';
-        loadUserProfile();
-      } else {
-        alert(`La sección de ${label} estará disponible próximamente.`);
+      // If it's a known navigation target, switch
+      if (['Citas', 'Galería', 'Clientes', 'Menú'].includes(label)) {
+        switchToView(label);
       }
     });
   });
