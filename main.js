@@ -1921,7 +1921,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- REPORTES LOGIC ---
   let allReportesData = [];
   let editingReporteId = null;
-  let currentReporteFilter = 'all';
 
   const backFromReportes = document.getElementById('back-from-reportes');
   if (backFromReportes) {
@@ -1958,21 +1957,122 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Filter chips
-  document.querySelectorAll('.reporte-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('.reporte-chip').forEach(c => {
-        c.style.background = '#e2e8f0';
-        c.style.color = '#475569';
-        c.style.fontWeight = 'normal';
+  // ---- FILTER PANEL LOGIC ----
+  let filtroSelectedCentroId = null; // null = todas las clínicas
+  let filtroDesde = '';
+  let filtroHasta = '';
+
+  if (btnFiltrarReportes && reportesFilterPanel) {
+    btnFiltrarReportes.addEventListener('click', () => {
+      const isVisible = reportesFilterPanel.style.display !== 'none';
+      if (isVisible) {
+        reportesFilterPanel.style.display = 'none';
+      } else {
+        reportesFilterPanel.style.display = 'flex';
+        populateCentrosDropdown();
+      }
+    });
+  }
+
+  const btnCentroDropdown = document.getElementById('btn-centro-dropdown');
+  const centrosDropdownList = document.getElementById('centros-dropdown-list');
+  const centroDropdownChevron = document.getElementById('centro-dropdown-chevron');
+
+  if (btnCentroDropdown && centrosDropdownList) {
+    btnCentroDropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = centrosDropdownList.style.display !== 'none';
+      centrosDropdownList.style.display = isOpen ? 'none' : 'block';
+      if (centroDropdownChevron) {
+        centroDropdownChevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+      }
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (centrosDropdownList &&
+        !centrosDropdownList.contains(e.target) &&
+        btnCentroDropdown && !btnCentroDropdown.contains(e.target)) {
+      centrosDropdownList.style.display = 'none';
+      if (centroDropdownChevron) centroDropdownChevron.style.transform = 'rotate(0deg)';
+    }
+  });
+
+  async function populateCentrosDropdown() {
+    if (!centrosDropdownList) return;
+    try {
+      const { data: centros, error } = await supabase
+        .from('centros')
+        .select('id, nombre')
+        .order('nombre', { ascending: true });
+      if (error) throw error;
+
+      const items = [{ id: null, nombre: 'Todas las clínicas' }, ...(centros || [])];
+      centrosDropdownList.innerHTML = items.map((c, i) => {
+        const isSelected = filtroSelectedCentroId === c.id;
+        const isLast = i === items.length - 1;
+        return `
+          <div class="centro-dropdown-item" data-id="${c.id || ''}"
+            style="display:flex;align-items:center;justify-content:space-between;
+                   padding:0.9rem 1rem;font-size:0.95rem;color:#1e293b;cursor:pointer;
+                   ${!isLast ? 'border-bottom:1px solid #f1f5f9;' : ''}">
+            <span>${c.nombre}</span>
+            ${isSelected ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+          </div>`;
+      }).join('');
+
+      centrosDropdownList.querySelectorAll('.centro-dropdown-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const rawId = item.dataset.id;
+          filtroSelectedCentroId = rawId === '' ? null : rawId;
+          centrosDropdownList.style.display = 'none';
+          if (centroDropdownChevron) centroDropdownChevron.style.transform = 'rotate(0deg)';
+          populateCentrosDropdown();
+          applyReporteFilters();
+        });
       });
-      chip.style.background = '#00bcd4';
-      chip.style.color = 'white';
-      chip.style.fontWeight = '600';
-      currentReporteFilter = chip.dataset.filter;
+    } catch (err) {
+      console.error('Error loading centros for filter:', err.message);
+    }
+  }
+
+  const filtroDesdeInput = document.getElementById('filtro-reporte-desde');
+  const filtroHastaInput = document.getElementById('filtro-reporte-hasta');
+  if (filtroDesdeInput) {
+    filtroDesdeInput.addEventListener('change', (e) => { filtroDesde = e.target.value; applyReporteFilters(); });
+  }
+  if (filtroHastaInput) {
+    filtroHastaInput.addEventListener('change', (e) => { filtroHasta = e.target.value; applyReporteFilters(); });
+  }
+
+  const btnLimpiarFiltros = document.getElementById('btn-limpiar-filtros-reportes');
+  if (btnLimpiarFiltros) {
+    btnLimpiarFiltros.addEventListener('click', () => {
+      filtroSelectedCentroId = null;
+      filtroDesde = '';
+      filtroHasta = '';
+      if (filtroDesdeInput) filtroDesdeInput.value = '';
+      if (filtroHastaInput) filtroHastaInput.value = '';
+      populateCentrosDropdown();
       renderReportesList(allReportesData);
     });
-  });
+  }
+
+  function applyReporteFilters() {
+    let result = [...allReportesData];
+    if (filtroSelectedCentroId) {
+      result = result.filter(r => r.datos && r.datos.centro_id === filtroSelectedCentroId);
+    }
+    if (filtroDesde) {
+      result = result.filter(r => new Date(r.created_at) >= new Date(filtroDesde));
+    }
+    if (filtroHasta) {
+      const hasta = new Date(filtroHasta);
+      hasta.setHours(23, 59, 59, 999);
+      result = result.filter(r => new Date(r.created_at) <= hasta);
+    }
+    renderReportesList(result);
+  }
 
   const btnSaveReporte = document.getElementById('btn-save-reporte');
   if (btnSaveReporte) {
@@ -2039,7 +2139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (error) throw error;
       allReportesData = data || [];
-      renderReportesList(allReportesData);
+      applyReporteFilters();
     } catch (err) {
       console.error('Error loading reportes:', err.message);
     }
@@ -2049,18 +2149,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const list = document.getElementById('reportes-list');
     if (!list) return;
 
-    const filtered = currentReporteFilter === 'all'
-      ? reportes
-      : reportes.filter(r => r.tipo === currentReporteFilter);
-
-    if (!filtered || filtered.length === 0) {
+    if (!reportes || reportes.length === 0) {
       list.style.justifyContent = 'center';
       list.style.alignItems = 'center';
       list.innerHTML = `
-        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.75rem;">
+        <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.75rem;">
           <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-          <p style="margin: 0; color: #64748b; font-size: 1rem; font-weight: 600;">No hay reportes</p>
-          <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Crea tu primer reporte para comenzar</p>
+          <p style="margin:0;color:#64748b;font-size:1rem;font-weight:600;">No hay reportes</p>
+          <p style="margin:0;color:#94a3b8;font-size:0.9rem;">Crea tu primer reporte para comenzar</p>
         </div>
       `;
       return;
