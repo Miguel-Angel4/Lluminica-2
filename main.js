@@ -1947,15 +1947,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Filter panel toggle
-  const btnFiltrarReportes = document.getElementById('btn-filtrar-reportes');
-  const reportesFilterPanel = document.getElementById('reportes-filter-panel');
-  if (btnFiltrarReportes && reportesFilterPanel) {
-    btnFiltrarReportes.addEventListener('click', () => {
-      const isVisible = reportesFilterPanel.style.display !== 'none';
-      reportesFilterPanel.style.display = isVisible ? 'none' : 'flex';
-    });
-  }
 
   // ---- FILTER PANEL LOGIC ----
   let filtroSelectedCentroId = null; // null = todas las clínicas
