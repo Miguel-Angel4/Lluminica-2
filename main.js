@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
-    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos', '#view-crear-producto', '#view-procedimientos', '#view-crear-procedimiento', '#view-centros', '#view-crear-centro'];
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos', '#view-crear-producto', '#view-procedimientos', '#view-crear-procedimiento', '#view-centros', '#view-crear-centro', '#view-reportes', '#view-crear-reporte'];
     views.forEach(selector => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
@@ -335,6 +335,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-crear-centro');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Crear Centro';
+    } else if (label === 'Reportes') {
+      const view = document.querySelector('#view-reportes');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Reportes';
+      loadReportes();
+    } else if (label === 'Crear Reporte') {
+      const view = document.querySelector('#view-crear-reporte');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Nuevo Reporte';
     } else {
       alert(`La sección de ${label} estará disponible próximamente.`);
     }
@@ -508,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       console.log('Navegando a:', label); // Debug log
 
-      if (['Citas', 'Galería', 'Clientes', 'Menú', 'Documentos', 'Productos', 'Procedimientos', 'Centros'].includes(label)) {
+      if (['Citas', 'Galería', 'Clientes', 'Menú', 'Documentos', 'Productos', 'Procedimientos', 'Centros', 'Reportes'].includes(label)) {
         switchToView(label);
       } else {
         alert(`La sección de ${label} estará disponible próximamente.`);
@@ -1906,6 +1915,248 @@ document.addEventListener('DOMContentLoaded', () => {
       const query = e.target.value.toLowerCase().trim();
       const filtered = allProcData.filter(p => p.nombre.toLowerCase().includes(query));
       renderProcedimientosList(filtered);
+    });
+  }
+
+  // --- REPORTES LOGIC ---
+  let allReportesData = [];
+  let editingReporteId = null;
+  let currentReporteFilter = 'all';
+
+  const backFromReportes = document.getElementById('back-from-reportes');
+  if (backFromReportes) {
+    backFromReportes.addEventListener('click', () => switchToView('Menú'));
+  }
+
+  const backFromCrearReporte = document.getElementById('back-from-crear-reporte');
+  if (backFromCrearReporte) {
+    backFromCrearReporte.addEventListener('click', () => switchToView('Reportes'));
+  }
+
+  const btnNuevoReporte = document.getElementById('btn-nuevo-reporte');
+  if (btnNuevoReporte) {
+    btnNuevoReporte.addEventListener('click', () => {
+      editingReporteId = null;
+      document.getElementById('crear-reporte-title').textContent = 'Nuevo Reporte';
+      document.getElementById('btn-save-reporte').textContent = 'Guardar Reporte';
+      document.getElementById('reporte-titulo').value = '';
+      document.getElementById('reporte-tipo').value = 'ingresos';
+      document.getElementById('reporte-fecha-inicio').value = '';
+      document.getElementById('reporte-fecha-fin').value = '';
+      document.getElementById('reporte-descripcion').value = '';
+      switchToView('Crear Reporte');
+    });
+  }
+
+  // Filter panel toggle
+  const btnFiltrarReportes = document.getElementById('btn-filtrar-reportes');
+  const reportesFilterPanel = document.getElementById('reportes-filter-panel');
+  if (btnFiltrarReportes && reportesFilterPanel) {
+    btnFiltrarReportes.addEventListener('click', () => {
+      const isVisible = reportesFilterPanel.style.display !== 'none';
+      reportesFilterPanel.style.display = isVisible ? 'none' : 'flex';
+    });
+  }
+
+  // Filter chips
+  document.querySelectorAll('.reporte-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.reporte-chip').forEach(c => {
+        c.style.background = '#e2e8f0';
+        c.style.color = '#475569';
+        c.style.fontWeight = 'normal';
+      });
+      chip.style.background = '#00bcd4';
+      chip.style.color = 'white';
+      chip.style.fontWeight = '600';
+      currentReporteFilter = chip.dataset.filter;
+      renderReportesList(allReportesData);
+    });
+  });
+
+  const btnSaveReporte = document.getElementById('btn-save-reporte');
+  if (btnSaveReporte) {
+    btnSaveReporte.addEventListener('click', async () => {
+      const titulo = document.getElementById('reporte-titulo').value.trim();
+      const tipo = document.getElementById('reporte-tipo').value;
+      const fechaInicio = document.getElementById('reporte-fecha-inicio').value;
+      const fechaFin = document.getElementById('reporte-fecha-fin').value;
+      const descripcion = document.getElementById('reporte-descripcion').value.trim();
+
+      if (!titulo) {
+        alert('El título del reporte es obligatorio');
+        return;
+      }
+
+      btnSaveReporte.disabled = true;
+      btnSaveReporte.textContent = 'Guardando...';
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No hay sesión activa');
+
+        let error;
+        if (editingReporteId) {
+          const { error: err } = await supabase
+            .from('reportes')
+            .update({ titulo, tipo, fecha_inicio: fechaInicio || null, fecha_fin: fechaFin || null, descripcion })
+            .eq('id', editingReporteId);
+          error = err;
+        } else {
+          const { error: err } = await supabase
+            .from('reportes')
+            .insert({ titulo, tipo, fecha_inicio: fechaInicio || null, fecha_fin: fechaFin || null, descripcion, user_id: user.id });
+          error = err;
+        }
+
+        if (error) throw error;
+
+        editingReporteId = null;
+
+        if (modalSuccess) {
+          successModalDestination = 'Reportes';
+          modalSuccess.querySelector('p').textContent = editingReporteId ? 'Reporte actualizado con éxito' : 'Reporte creado con éxito';
+          modalSuccess.querySelector('p').textContent = 'Reporte guardado con éxito';
+          modalSuccess.style.display = 'flex';
+        } else {
+          switchToView('Reportes');
+        }
+      } catch (err) {
+        alert('Error: ' + err.message);
+      } finally {
+        btnSaveReporte.disabled = false;
+        btnSaveReporte.textContent = 'Guardar Reporte';
+      }
+    });
+  }
+
+  async function loadReportes() {
+    try {
+      const { data, error } = await supabase
+        .from('reportes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      allReportesData = data || [];
+      renderReportesList(allReportesData);
+    } catch (err) {
+      console.error('Error loading reportes:', err.message);
+    }
+  }
+
+  function renderReportesList(reportes) {
+    const list = document.getElementById('reportes-list');
+    if (!list) return;
+
+    const filtered = currentReporteFilter === 'all'
+      ? reportes
+      : reportes.filter(r => r.tipo === currentReporteFilter);
+
+    if (!filtered || filtered.length === 0) {
+      list.style.justifyContent = 'center';
+      list.style.alignItems = 'center';
+      list.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.75rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+          <p style="margin: 0; color: #64748b; font-size: 1rem; font-weight: 600;">No hay reportes</p>
+          <p style="margin: 0; color: #94a3b8; font-size: 0.9rem;">Crea tu primer reporte para comenzar</p>
+        </div>
+      `;
+      return;
+    }
+
+    list.style.justifyContent = 'flex-start';
+    list.style.alignItems = 'stretch';
+    list.innerHTML = '';
+
+    const tipoConfig = {
+      ingresos: { emoji: '💰', color: '#22c55e', bg: '#f0fdf4' },
+      citas:    { emoji: '📅', color: '#06b6d4', bg: '#ecfeff' },
+      clientes: { emoji: '👥', color: '#f59e0b', bg: '#fffbeb' },
+      general:  { emoji: '📊', color: '#8b5cf6', bg: '#f5f3ff' }
+    };
+
+    filtered.forEach(reporte => {
+      const cfg = tipoConfig[reporte.tipo] || tipoConfig.general;
+      const fechaCreacion = new Date(reporte.created_at);
+      const fechaStr = `${fechaCreacion.getDate()}/${fechaCreacion.getMonth() + 1}/${fechaCreacion.getFullYear()}`;
+
+      const card = document.createElement('div');
+      card.style.cssText = `
+        width: 100%; background: white; border-radius: 14px; padding: 1rem;
+        display: flex; align-items: center; gap: 1rem;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04); box-sizing: border-box;
+        margin-bottom: 0.75rem; border: 1px solid #f1f5f9; cursor: pointer;
+      `;
+
+      card.innerHTML = `
+        <div style="width: 48px; height: 48px; border-radius: 12px; background: ${cfg.bg}; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
+          ${cfg.emoji}
+        </div>
+        <div style="flex: 1; overflow: hidden;">
+          <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${reporte.titulo}</h4>
+          <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #94a3b8;">${fechaStr} • <span style="color: ${cfg.color}; font-weight: 600; text-transform: capitalize;">${reporte.tipo}</span></p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.4rem; flex-shrink: 0;">
+          <button class="btn-edit-reporte" style="background: none; border: none; padding: 4px; cursor: pointer; color: #00bcd4; display: flex;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </button>
+          <button class="btn-export-reporte" style="background: none; border: none; padding: 4px; cursor: pointer; color: #22c55e; display: flex;" title="Descargar CSV">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <button class="btn-delete-reporte" style="background: none; border: none; padding: 4px; cursor: pointer; color: #ef4444; display: flex;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          </button>
+        </div>
+      `;
+
+      // Edit
+      card.querySelector('.btn-edit-reporte').addEventListener('click', (e) => {
+        e.stopPropagation();
+        editingReporteId = reporte.id;
+        document.getElementById('crear-reporte-title').textContent = 'Editar Reporte';
+        document.getElementById('btn-save-reporte').textContent = 'Guardar Cambios';
+        document.getElementById('reporte-titulo').value = reporte.titulo;
+        document.getElementById('reporte-tipo').value = reporte.tipo;
+        document.getElementById('reporte-fecha-inicio').value = reporte.fecha_inicio || '';
+        document.getElementById('reporte-fecha-fin').value = reporte.fecha_fin || '';
+        document.getElementById('reporte-descripcion').value = reporte.descripcion || '';
+        switchToView('Crear Reporte');
+      });
+
+      // Export CSV
+      card.querySelector('.btn-export-reporte').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const rows = [
+          ['Título', 'Tipo', 'Fecha Inicio', 'Fecha Fin', 'Descripción', 'Creado'],
+          [reporte.titulo, reporte.tipo, reporte.fecha_inicio || '', reporte.fecha_fin || '', reporte.descripcion || '', new Date(reporte.created_at).toLocaleDateString('es-ES')]
+        ];
+        const csvContent = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `reporte_${reporte.titulo.replace(/\s+/g,'_')}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      // Delete
+      card.querySelector('.btn-delete-reporte').addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (confirm(`¿Eliminar el reporte "${reporte.titulo}"?`)) {
+          try {
+            const { error } = await supabase.from('reportes').delete().eq('id', reporte.id);
+            if (error) throw error;
+            loadReportes();
+          } catch (err) {
+            alert('Error al eliminar: ' + err.message);
+          }
+        }
+      });
+
+      list.appendChild(card);
     });
   }
 });
