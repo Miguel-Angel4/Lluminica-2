@@ -1949,6 +1949,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
   // ---- FILTER PANEL LOGIC ----
+  const btnFiltrarReportes = document.getElementById('btn-filtrar-reportes');
+  const reportesFilterPanel = document.getElementById('reportes-filter-panel');
   let filtroSelectedCentroId = null; // null = todas las clínicas
   let filtroDesde = '';
   let filtroHasta = '';
