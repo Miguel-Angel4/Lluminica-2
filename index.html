@@ -539,10 +539,6 @@
           </header>
           
           <div id="proc-list" class="procedimientos-content" style="flex:1; display:flex; flex-direction: column; align-items:center; justify-content:center; padding: 1.5rem 1rem; text-align: center; overflow-y: auto;">
-             <!-- If empty, JS will inject:
-             <p style="color: #94a3b8; font-size: 1.1rem; margin-bottom: 1.5rem;">No hay procedimientos</p>
-             <button id="btn-empty-create-proc" style="padding: 0.75rem 1.5rem; border-radius: 8px; background: #00bcd4; border: none; color: white; font-weight: 700;">Crear Procedimiento</button>
-             -->
              <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.5;">Cargando...</p>
           </div>
 
@@ -650,7 +646,7 @@
                 <svg id="centro-dropdown-chevron" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s;"><path d="m6 9 6 6 6-6"/></svg>
               </button>
               <!-- Dropdown list -->
-              <div id="centros-dropdown-list" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: white; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); overflow: hidden; z-index: 20;">
+              <div id="centros-dropdown-list" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: right; background: white; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); overflow: hidden; z-index: 20;">
                 <!-- Populated by JS -->
               </div>
             </div>
@@ -1241,14 +1237,14 @@
         <div style="margin-bottom: 1.5rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
             <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" x2="21" y1="10" x2="21" y2="10"/></svg>
               <h4 style="margin: 0; color: #06b6d4; font-size: 1rem; font-weight: 700;">Próximas citas</h4>
             </div>
             <button style="background: #06b6d4; color: white; border: none; border-radius: 6px; padding: 0.4rem 0.75rem; font-size: 0.85rem; font-weight: 600;">Ver todos</button>
           </div>
           <p style="color: #94a3b8; font-size: 0.8rem; margin: -0.5rem 0 1rem 0;">Mostrando las próximas 5</p>
           <div style="background: #f1f5f9; border-radius: 12px; padding: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.75rem; color: #94a3b8; font-size: 0.95rem; font-weight: 500;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" x2="21" y1="10" x2="21" y2="10"/></svg>
             No hay próximas citas
           </div>
         </div>
@@ -1440,7 +1436,6 @@
           <div class="icon-option" data-icon="thermometer" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid #00bcd4; display: flex; align-items: center; justify-content: center; color: #00bcd4; cursor: pointer;">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/></svg>
           </div>
-          
           <div class="icon-option" data-icon="pulse" style="width: 44px; height: 44px; border-radius: 50%; border: 2px solid #00bcd4; display: flex; align-items: center; justify-content: center; color: #00bcd4; cursor: pointer;">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3L9 3l6 18 4-9h3"/></svg>
           </div>
@@ -1474,8 +1469,9 @@
     </div>
 
     <script type="module" src="/main.js"></script>
+
     <!-- View: Detalles de Cita -->
-    <div id="view-detalles-cita" class="view-container" style="display: none; flex-direction: column; background: #f1f5f9; min-height: 100vh; overflow-y: auto;">
+    <div id="view-detalles-cita" class="view-container" style="display: none; flex-direction: column; background: #f1f5f9; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; overflow-y: auto;">
       <header class="view-header" style="background: white; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
         <button class="btn-back-detalles-cita" style="border: none; background: transparent; cursor: pointer;">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
@@ -1492,6 +1488,7 @@
       </header>
 
       <div style="padding: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+        <!-- Fecha y Tag Hoy -->
         <div style="background: white; border-radius: 20px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: flex-start; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
           <div>
             <h3 id="det-cita-fecha" style="font-size: 1.1rem; color: #1e293b; font-weight: 700; margin: 0;">--</h3>
@@ -1500,6 +1497,7 @@
           <span style="background: #00bcd4; color: white; padding: 0.3rem 1rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">Hoy</span>
         </div>
 
+        <!-- Paciente y Procedimiento -->
         <div style="background: white; border-radius: 20px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
           <div style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 16px; position: relative;">
             <div style="background: #00bcd4; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
@@ -1523,6 +1521,7 @@
             <svg style="position: absolute; right: 1rem; color: #cbd5e1" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </div>
 
+          <!-- Toggle Completada -->
           <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: #f0fdf4; border-radius: 16px;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
                <div style="background: #22c55e; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
@@ -1537,6 +1536,7 @@
           </div>
         </div>
 
+        <!-- Fotos Section -->
         <div style="background: white; border-radius: 20px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -1555,6 +1555,7 @@
           </div>
         </div>
 
+        <!-- Cobro Section -->
         <div style="background: white; border-radius: 20px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -1593,6 +1594,7 @@
           </div>
         </div>
 
+        <!-- Productos Section -->
         <div style="background: white; border-radius: 20px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -1614,6 +1616,7 @@
           </div>
         </div>
 
+        <!-- Notas Section -->
         <div style="background: white; border-radius: 20px; padding: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 2rem;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
             <div style="display: flex; align-items: center; gap: 0.75rem;">

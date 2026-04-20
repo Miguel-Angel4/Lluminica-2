@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updatePasswordView.style.display = 'none';
     dashboardView.style.display = 'none';
     if(createAppointmentView) createAppointmentView.style.display = 'none';
+    const detView = document.querySelector('#view-detalles-cita');
+    if(detView) detView.style.display = 'none';
   };
 
   toRegister.addEventListener('click', (e) => {
@@ -2710,13 +2712,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const btnBackDetallesCita = document.querySelector('.btn-back-detalles-cita');
   if (btnBackDetallesCita) {
-    btnBackDetallesCita.addEventListener('click', () => switchToView('Citas'));
+    btnBackDetallesCita.addEventListener('click', () => {
+      hideAllViews();
+      dashboardView.style.display = 'flex';
+      switchToView('Citas');
+    });
   }
 
   async function showAppointmentDetails(id) {
-    hideAllDashboardViews();
+    console.log('Mostrando detalles de cita:', id);
+    hideAllViews();
     const view = document.getElementById('view-detalles-cita');
-    if (view) view.style.display = 'flex';
+    if (view) {
+      view.style.display = 'flex';
+      console.log('Vista de detalles mostrada');
+    } else {
+      console.error('No se encontró el elemento view-detalles-cita');
+    }
 
     try {
       const { data: apt, error } = await supabase
@@ -2726,6 +2738,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .single();
 
       if (error) throw error;
+      console.log('Datos de cita cargados:', apt);
 
       const date = new Date(apt.created_at);
       const fechaTxt = date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -2741,6 +2754,25 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('det-cita-concepto').textContent = apt.concepto || '--';
       document.getElementById('det-cita-notas').textContent = apt.notas || 'No hay notas para esta cita';
       
+      const toggle = document.getElementById('det-cita-completada-toggle');
+      if (toggle) {
+        toggle.checked = apt.completada || false;
+        // Re-bind to ensure it has the latest ID context
+        toggle.onchange = async () => {
+          console.log('Cambiando estado completada a:', toggle.checked);
+          try {
+            const { error } = await supabase
+              .from('appointments')
+              .update({ completada: toggle.checked })
+              .eq('id', id);
+            if (error) throw error;
+          } catch (err) {
+            alert('Error al actualizar: ' + err.message);
+            toggle.checked = !toggle.checked; // Revert on error
+          }
+        };
+      }
+
       const dot = document.getElementById('det-cita-estado-dot');
       if (dot) dot.style.background = apt.pago_estado === 'Pagado' ? '#22c55e' : '#f59e0b';
       const statusText = document.getElementById('det-cita-estado');
