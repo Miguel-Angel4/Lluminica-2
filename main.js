@@ -1942,6 +1942,94 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // --- GENERAR REPORTE CENTRO DROP DOWN LOGIC ---
+  const btnGenerarReporteCentro = document.getElementById('btn-generar-reporte-centro');
+  const generarReporteCentrosList = document.getElementById('generar-reporte-centros-list');
+  const generarReporteCentroChevron = document.getElementById('generar-reporte-centro-chevron');
+  const generarReporteCentroText = document.getElementById('generar-reporte-centro-text');
+  let selectedGenerarReporteCentroId = null;
+
+  if (btnGenerarReporteCentro && generarReporteCentrosList) {
+    btnGenerarReporteCentro.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = generarReporteCentrosList.style.display !== 'none';
+      if (!isOpen) populateGenerarReporteCentros();
+      generarReporteCentrosList.style.display = isOpen ? 'none' : 'block';
+      if (generarReporteCentroChevron) {
+        generarReporteCentroChevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+      }
+    });
+  }
+
+  document.addEventListener('click', (e) => {
+    if (generarReporteCentrosList &&
+        !generarReporteCentrosList.contains(e.target) &&
+        btnGenerarReporteCentro && !btnGenerarReporteCentro.contains(e.target)) {
+      generarReporteCentrosList.style.display = 'none';
+      if (generarReporteCentroChevron) {
+        generarReporteCentroChevron.style.transform = 'rotate(0deg)';
+      }
+    }
+  });
+
+  async function populateGenerarReporteCentros() {
+    if (!generarReporteCentrosList) return;
+    try {
+      if (!allCentrosData || allCentrosData.length === 0) {
+        const { data, error } = await supabase.from('centros').select('id, nombre').order('nombre', { ascending: true });
+        if (error) throw error;
+        allCentrosData = data || [];
+      }
+      
+      if (allCentrosData.length === 0) {
+        generarReporteCentrosList.innerHTML = `<div style="padding:0.9rem 1rem;font-size:0.95rem;color:#94a3b8;text-align:center;">No hay centros</div>`;
+        return;
+      }
+
+      generarReporteCentrosList.innerHTML = allCentrosData.map((c, i) => {
+        const isSelected = selectedGenerarReporteCentroId === c.id;
+        const isLast = i === allCentrosData.length - 1;
+        return `
+          <div class="generar-reporte-centro-item" data-id="${c.id}" data-name="${c.nombre}"
+            style="display:flex;align-items:center;justify-content:space-between;
+                   padding:0.9rem 1rem;font-size:0.95rem;color:#1e293b;cursor:pointer;
+                   ${!isLast ? 'border-bottom:1px solid #f1f5f9;' : ''}">
+            <span>${c.nombre}</span>
+            ${isSelected ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+          </div>`;
+      }).join('');
+
+      generarReporteCentrosList.querySelectorAll('.generar-reporte-centro-item').forEach(item => {
+        item.addEventListener('click', () => {
+          selectedGenerarReporteCentroId = item.dataset.id;
+          if (generarReporteCentroText) {
+            generarReporteCentroText.textContent = item.dataset.name;
+            generarReporteCentroText.style.color = '#1e293b';
+          }
+          const resumenCentro = document.getElementById('resumen-centro-text');
+          if (resumenCentro) resumenCentro.textContent = item.dataset.name;
+          generarReporteCentrosList.style.display = 'none';
+          if (generarReporteCentroChevron) generarReporteCentroChevron.style.transform = 'rotate(0deg)';
+        });
+      });
+    } catch (err) {
+      console.error('Error loading centros for generar reporte:', err.message);
+    }
+  }
+
+  const generarDesdeInput = document.getElementById('generar-reporte-desde');
+  const generarHastaInput = document.getElementById('generar-reporte-hasta');
+  const resumenPeriodoText = document.getElementById('resumen-periodo-text');
+
+  function updateResumenPeriodo() {
+    if (resumenPeriodoText && generarDesdeInput && generarHastaInput) {
+      resumenPeriodoText.textContent = `${generarDesdeInput.value || '-'} - ${generarHastaInput.value || '-'}`;
+    }
+  }
+
+  if (generarDesdeInput) generarDesdeInput.addEventListener('input', updateResumenPeriodo);
+  if (generarHastaInput) generarHastaInput.addEventListener('input', updateResumenPeriodo);
+
 
   // ---- FILTER PANEL LOGIC ----
   const btnFiltrarReportes = document.getElementById('btn-filtrar-reportes');
