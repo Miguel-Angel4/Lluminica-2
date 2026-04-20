@@ -308,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-citas');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Citas';
+      loadAppointments();
     } else if (label === 'Galería') {
       const view = document.querySelector('#view-galeria');
       if(view) view.style.display = 'flex';
@@ -2701,5 +2702,53 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSubmitCita.textContent = 'Crear cita';
       }
     });
+  }
+  async function loadAppointments() {
+    const list = document.getElementById('citas-list');
+    const container = document.getElementById('citas-container');
+    const empty = document.getElementById('citas-empty-state');
+    if (!list) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*, clients(nombre_completo)')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        if (container) container.style.display = 'none';
+        if (empty) empty.style.display = 'flex';
+        return;
+      }
+
+      if (container) container.style.display = 'flex';
+      if (empty) empty.style.display = 'none';
+
+      list.innerHTML = data.map(apt => {
+        const date = new Date(apt.created_at);
+        const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+        const clientName = apt.clients ? apt.clients.nombre_completo.split(' ')[0] : 'Cliente';
+
+        return `
+          <div class="cita-item" style="display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; background: #f8fafc; border-radius: 14px; cursor: pointer; transition: background 0.2s;">
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+              <span style="color: #00bcd4; font-weight: 700; font-size: 1.1rem; width: 55px;">${timeStr}</span>
+              <span style="color: #1e293b; font-weight: 600; font-size: 1.05rem;">${clientName}</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </div>
+        `;
+      }).join('');
+
+      list.querySelectorAll('.cita-item').forEach(item => {
+        item.onmouseenter = () => item.style.background = '#f1f5f9';
+        item.onmouseleave = () => item.style.background = '#f8fafc';
+      });
+
+    } catch (err) {
+      console.error('Error loading appointments:', err.message);
+    }
   }
 });

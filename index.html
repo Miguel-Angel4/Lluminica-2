@@ -215,13 +215,24 @@
             </div>
           </div>
 
-          <div class="citas-content">
-            <div class="empty-state">
+          <div class="citas-content" style="display: block; padding: 1.5rem; justify-content: flex-start; align-items: flex-start;">
+            <div id="citas-container" style="display: none; flex-direction: column; gap: 1rem; width: 100%;">
+              <div class="citas-list-card" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;">
+                <div class="citas-list-header" style="background: #00bcd4; color: white; padding: 0.75rem; text-align: center; font-weight: 700; font-size: 1.1rem;">
+                  Hoy
+                </div>
+                <div id="citas-list" style="padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                  <!-- Citas populate here -->
+                </div>
+              </div>
+            </div>
+
+            <div id="citas-empty-state" class="empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; opacity: 0.6;">
               <p>No hay citas</p>
             </div>
             
             <button class="fab-add" id="btn-crear-cita">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             </button>
           </div>
         </div>
