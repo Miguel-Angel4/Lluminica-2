@@ -167,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hideAllViews();
       dashboardView.style.display = 'flex';
       document.title = 'Lluminica - Citas';
+      loadAppointments(); // Ensure appointments are loaded on login
     } catch (err) {
       loginError.style.display = 'block';
       console.error('Login error:', err.message);
@@ -287,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
-    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos', '#view-crear-producto', '#view-procedimientos', '#view-crear-procedimiento', '#view-centros', '#view-crear-centro', '#view-reportes', '#view-crear-reporte'];
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos', '#view-crear-producto', '#view-procedimientos', '#view-crear-procedimiento', '#view-centros', '#view-crear-centro', '#view-reportes', '#view-crear-reporte', '#view-detalles-cita'];
     views.forEach(selector => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
@@ -2695,7 +2696,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (error) throw error;
         
         alert('¡Cita creada con éxito!');
-        if (backToDashboardBtn) backToDashboardBtn.click();
+        // Refresh list and go back
+        loadAppointments();
+        switchToView('Citas');
       } catch (err) {
         alert('Error al crear cita: ' + err.message);
       } finally {
@@ -2703,6 +2706,50 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSubmitCita.textContent = 'Crear cita';
       }
     });
+  }
+
+  const btnBackDetallesCita = document.querySelector('.btn-back-detalles-cita');
+  if (btnBackDetallesCita) {
+    btnBackDetallesCita.addEventListener('click', () => switchToView('Citas'));
+  }
+
+  async function showAppointmentDetails(id) {
+    hideAllDashboardViews();
+    const view = document.getElementById('view-detalles-cita');
+    if (view) view.style.display = 'flex';
+
+    try {
+      const { data: apt, error } = await supabase
+        .from('appointments')
+        .select('*, clients(*), procedimientos(*)')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+
+      const date = new Date(apt.created_at);
+      const fechaTxt = date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+      const horaTxt = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+
+      document.getElementById('det-cita-fecha').textContent = fechaTxt.charAt(0).toUpperCase() + fechaTxt.slice(1);
+      document.getElementById('det-cita-hora').textContent = horaTxt;
+      document.getElementById('det-cita-paciente').textContent = apt.clients ? apt.clients.nombre_completo : 'N/A';
+      document.getElementById('det-cita-procedimiento').textContent = apt.procedimientos ? apt.procedimientos.nombre : 'N/A';
+      document.getElementById('det-cita-precio').textContent = apt.precio ? `${apt.precio} €` : '--';
+      document.getElementById('det-cita-metodo').textContent = apt.pago_metodo || 'Tarjeta';
+      document.getElementById('det-cita-estado').textContent = apt.pago_estado || 'Pendiente';
+      document.getElementById('det-cita-concepto').textContent = apt.concepto || '--';
+      document.getElementById('det-cita-notas').textContent = apt.notas || 'No hay notas para esta cita';
+      
+      const dot = document.getElementById('det-cita-estado-dot');
+      if (dot) dot.style.background = apt.pago_estado === 'Pagado' ? '#22c55e' : '#f59e0b';
+      const statusText = document.getElementById('det-cita-estado');
+      if (statusText) statusText.style.color = apt.pago_estado === 'Pagado' ? '#22c55e' : '#f59e0b';
+
+    } catch (err) {
+      console.error(err);
+      alert('Error al cargar la cita: ' + err.message);
+    }
   }
   async function loadAppointments() {
     const list = document.getElementById('citas-list');
@@ -2733,7 +2780,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const clientName = apt.clients ? apt.clients.nombre_completo.split(' ')[0] : 'Cliente';
 
         return `
-          <div class="cita-item" style="display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; background: #f8fafc; border-radius: 14px; cursor: pointer; transition: background 0.2s;">
+          <div class="cita-item" data-id="${apt.id}" style="display: flex; align-items: center; justify-content: space-between; padding: 1.1rem 1.25rem; background: #f8fafc; border-radius: 14px; cursor: pointer; transition: background 0.2s; margin-bottom: 0.75rem;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
               <span style="color: #00bcd4; font-weight: 700; font-size: 1.1rem; width: 55px;">${timeStr}</span>
               <span style="color: #1e293b; font-weight: 600; font-size: 1.05rem;">${clientName}</span>
@@ -2746,10 +2793,23 @@ document.addEventListener('DOMContentLoaded', () => {
       list.querySelectorAll('.cita-item').forEach(item => {
         item.onmouseenter = () => item.style.background = '#f1f5f9';
         item.onmouseleave = () => item.style.background = '#f8fafc';
+        item.addEventListener('click', () => showAppointmentDetails(item.dataset.id));
       });
 
     } catch (err) {
       console.error('Error loading appointments:', err.message);
     }
   }
+
+  // Initial session check
+  const initSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      hideAllViews();
+      dashboardView.style.display = 'flex';
+      switchToView('Citas');
+    }
+  };
+  initSession();
 });
+
