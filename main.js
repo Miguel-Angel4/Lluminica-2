@@ -1,3 +1,4 @@
+// Verificación de sincronización: 2026-04-20 18:12
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
