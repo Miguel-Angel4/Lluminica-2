@@ -1936,13 +1936,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnNuevoReporte) {
     btnNuevoReporte.addEventListener('click', () => {
       editingReporteId = null;
-      document.getElementById('crear-reporte-title').textContent = 'Nuevo Reporte';
-      document.getElementById('btn-save-reporte').textContent = 'Guardar Reporte';
-      document.getElementById('reporte-titulo').value = '';
-      document.getElementById('reporte-tipo').value = 'ingresos';
-      document.getElementById('reporte-fecha-inicio').value = '';
-      document.getElementById('reporte-fecha-fin').value = '';
-      document.getElementById('reporte-descripcion').value = '';
+      const titleEl = document.getElementById('crear-reporte-title');
+      if (titleEl) titleEl.textContent = 'Generar Reporte';
       switchToView('Crear Reporte');
     });
   }
@@ -2204,13 +2199,8 @@ document.addEventListener('DOMContentLoaded', () => {
       card.querySelector('.btn-edit-reporte').addEventListener('click', (e) => {
         e.stopPropagation();
         editingReporteId = reporte.id;
-        document.getElementById('crear-reporte-title').textContent = 'Editar Reporte';
-        document.getElementById('btn-save-reporte').textContent = 'Guardar Cambios';
-        document.getElementById('reporte-titulo').value = reporte.titulo;
-        document.getElementById('reporte-tipo').value = reporte.tipo;
-        document.getElementById('reporte-fecha-inicio').value = reporte.fecha_inicio || '';
-        document.getElementById('reporte-fecha-fin').value = reporte.fecha_fin || '';
-        document.getElementById('reporte-descripcion').value = reporte.descripcion || '';
+        const titleEl = document.getElementById('crear-reporte-title');
+        if (titleEl) titleEl.textContent = 'Editar Reporte';
         switchToView('Crear Reporte');
       });
 
