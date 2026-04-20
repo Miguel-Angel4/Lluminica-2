@@ -2615,6 +2615,8 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('wrapper-cliente-unselected').style.display = 'block';
       document.getElementById('wrapper-cliente-selected').style.display = 'none';
     });
+  }
+
   // Payment pill logic
   let selectedAptPagoMetodo = 'Tarjeta';
   let selectedAptPagoEstado = 'Pendiente';
