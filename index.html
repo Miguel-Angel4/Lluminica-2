@@ -679,80 +679,111 @@
           <!-- Stepper -->
           <div style="background: white; padding: 1rem 0; display: flex; align-items: center; justify-content: center; gap: 1rem; z-index: 10;">
             <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem;">
-              <div style="width: 28px; height: 28px; border-radius: 50%; background: #00bcd4; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700;">1</div>
-              <span style="font-size: 0.75rem; font-weight: 700; color: #00bcd4;">Parámetros</span>
+              <div id="stepper-1-circle" style="width: 28px; height: 28px; border-radius: 50%; background: #00bcd4; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; transition: all 0.3s;">1</div>
+              <span id="stepper-1-text" style="font-size: 0.75rem; font-weight: 700; color: #00bcd4; transition: all 0.3s;">Parámetros</span>
             </div>
             
             <div style="width: 30px; height: 1px; background: #e2e8f0; margin-bottom: 1.4rem;"></div>
             
             <div style="display: flex; flex-direction: column; align-items: center; gap: 0.4rem;">
-              <div style="width: 28px; height: 28px; border-radius: 50%; background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700;">2</div>
-              <span style="font-size: 0.75rem; font-weight: 600; color: #94a3b8;">Columnas</span>
+              <div id="stepper-2-circle" style="width: 28px; height: 28px; border-radius: 50%; background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; transition: all 0.3s;">2</div>
+              <span id="stepper-2-text" style="font-size: 0.75rem; font-weight: 600; color: #94a3b8; transition: all 0.3s;">Columnas</span>
             </div>
           </div>
 
           <div style="padding: 1.5rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 1rem;">
-            <!-- Card principal -->
-            <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-              <h3 style="margin: 0 0 0.75rem 0; font-size: 1.15rem; color: #1e293b; font-weight: 700;">Parámetros del Reporte</h3>
-              <p style="margin: 0 0 1.5rem 0; font-size: 0.9rem; color: #94a3b8; line-height: 1.4;">Selecciona el centro, rango de fechas y formato para generar el reporte.</p>
+            
+            <!-- STEP 1: PARÁMETROS -->
+            <div id="step-parametros-content" style="display: block;">
+              <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                <h3 style="margin: 0 0 0.75rem 0; font-size: 1.15rem; color: #1e293b; font-weight: 700;">Parámetros del Reporte</h3>
+                <p style="margin: 0 0 1.5rem 0; font-size: 0.9rem; color: #94a3b8; line-height: 1.4;">Selecciona el centro, rango de fechas y formato para generar el reporte.</p>
 
-              <!-- Centro Dropdown -->
-              <div style="margin-bottom: 1.5rem; position: relative;">
-                <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Centro</label>
-                <div id="btn-generar-reporte-centro" style="position: relative; border: 1.5px solid #f8fafc; border-radius: 8px; padding: 0.85rem 1rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.25rem; background: white;">
-                  <span id="generar-reporte-centro-text" style="color: #94a3b8; font-size: 0.95rem;">Seleccionar...</span>
-                  <svg id="generar-reporte-centro-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px; transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                </div>
-                <div id="generar-reporte-centros-list" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: white; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); overflow-y: auto; max-height: 200px; z-index: 20;">
-                  <!-- Populated by JS -->
-                </div>
-              </div>
-
-              <!-- Desde / Hasta -->
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem;">
-                <div>
-                  <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Desde</label>
-                  <input id="generar-reporte-desde" type="text" value="1/4/2026" style="width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #00bcd4; border-radius: 6px; font-size: 0.95rem; color: #00bcd4; outline: none; box-sizing: border-box;" />
-                </div>
-                <div>
-                  <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Hasta</label>
-                  <input id="generar-reporte-hasta" type="text" value="20/4/2026" style="width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #00bcd4; border-radius: 6px; font-size: 0.95rem; color: #00bcd4; outline: none; box-sizing: border-box;" />
-                </div>
-              </div>
-
-              <!-- Formato exportacion -->
-              <div style="margin-bottom: 1.5rem;">
-                <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Formato de exportación</label>
-                <div style="display: flex; background: #f8fafc; border-radius: 8px; padding: 0.25rem;">
-                  <div id="btn-export-csv" style="flex: 1; text-align: center; background: white; border-radius: 6px; padding: 0.75rem 0; color: #00bcd4; font-weight: 700; font-size: 0.9rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer;">
-                    CSV
+                <!-- Centro Dropdown -->
+                <div style="margin-bottom: 1.5rem; position: relative;">
+                  <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Centro</label>
+                  <div id="btn-generar-reporte-centro" style="position: relative; border: 1.5px solid #f8fafc; border-radius: 8px; padding: 0.85rem 1rem; cursor: pointer; display: flex; flex-direction: column; gap: 0.25rem; background: white;">
+                    <span id="generar-reporte-centro-text" style="color: #94a3b8; font-size: 0.95rem;">Seleccionar...</span>
+                    <svg id="generar-reporte-centro-chevron" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px; transition: transform 0.2s;"><polyline points="6 9 12 15 18 9"></polyline></svg>
                   </div>
-                  <div id="btn-export-pdf" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 0; color: #cbd5e1; font-weight: 700; font-size: 0.9rem; cursor: not-allowed;">
-                    PDF
-                    <span style="background: #00bcd4; color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.55rem; font-weight: 800; letter-spacing: 0.5px;">PRÓXIMAMENTE</span>
+                  <div id="generar-reporte-centros-list" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: white; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); overflow-y: auto; max-height: 200px; z-index: 20;">
+                    <!-- Populated by JS -->
                   </div>
                 </div>
-              </div>
 
-              <!-- Resumen del Reporte -->
-              <div id="reporte-resumen-box" style="background: #e2e8f0; border-radius: 8px; padding: 1rem;">
-                <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; color: #1e293b; font-weight: 600;">Resumen del Reporte</h4>
-                <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; color: #94a3b8;">
-                  <div>Centro: <span id="resumen-centro-text" style="color: #00bcd4; font-weight: 600;">-</span></div>
-                  <div>Período: <span id="resumen-periodo-text" style="color: #00bcd4; font-weight: 600;">1/4/2026 - 20/4/2026</span></div>
-                  <div>Formato: <span id="resumen-formato-text" style="color: #00bcd4; font-weight: 600;">CSV</span></div>
+                <!-- Desde / Hasta -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem;">
+                  <div>
+                    <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Desde</label>
+                    <input id="generar-reporte-desde" type="text" value="1/4/2026" style="width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #00bcd4; border-radius: 6px; font-size: 0.95rem; color: #00bcd4; outline: none; box-sizing: border-box;" />
+                  </div>
+                  <div>
+                    <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Hasta</label>
+                    <input id="generar-reporte-hasta" type="text" value="20/4/2026" style="width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #00bcd4; border-radius: 6px; font-size: 0.95rem; color: #00bcd4; outline: none; box-sizing: border-box;" />
+                  </div>
+                </div>
+
+                <!-- Formato exportacion -->
+                <div style="margin-bottom: 1.5rem;">
+                  <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Formato de exportación</label>
+                  <div style="display: flex; background: #f8fafc; border-radius: 8px; padding: 0.25rem;">
+                    <div id="btn-export-csv" style="flex: 1; text-align: center; background: white; border-radius: 6px; padding: 0.75rem 0; color: #00bcd4; font-weight: 700; font-size: 0.9rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); cursor: pointer;">
+                      CSV
+                    </div>
+                    <div id="btn-export-pdf" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 0; color: #cbd5e1; font-weight: 700; font-size: 0.9rem; cursor: not-allowed;">
+                      PDF
+                      <span style="background: #00bcd4; color: white; padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.55rem; font-weight: 800; letter-spacing: 0.5px;">PRÓXIMAMENTE</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Resumen del Reporte -->
+                <div id="reporte-resumen-box" style="background: #e2e8f0; border-radius: 8px; padding: 1rem;">
+                  <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; color: #1e293b; font-weight: 600;">Resumen del Reporte</h4>
+                  <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem; color: #94a3b8;">
+                    <div>Centro: <span id="resumen-centro-text" style="color: #00bcd4; font-weight: 600;">-</span></div>
+                    <div>Período: <span id="resumen-periodo-text" style="color: #00bcd4; font-weight: 600;">1/4/2026 - 20/4/2026</span></div>
+                    <div>Formato: <span id="resumen-formato-text" style="color: #00bcd4; font-weight: 600;">CSV</span></div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </div> <!-- End step 1 -->
 
-          <!-- Bottom Footer -->
+            <!-- STEP 2: COLUMNAS -->
+            <div id="step-columnas-content" style="display: none;">
+              <div style="background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                <h3 style="margin: 0 0 0.5rem 0; font-size: 1.15rem; color: #1e293b; font-weight: 700;">Configuración de Columnas</h3>
+                <p style="margin: 0 0 1.5rem 0; font-size: 0.9rem; color: #94a3b8; line-height: 1.4;">Personaliza qué datos incluir en tu reporte y en qué orden.</p>
+                
+                <div id="columnas-list-container" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <!-- Dynamically populated by JS to toggle states -->
+                </div>
+              </div>
+            </div> <!-- End step 2 -->
+
+          </div> <!-- End main padding area -->
+
+          <!-- Bottom Footer wrappers -->
           <div style="background: white; padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: center; z-index: 10;">
-            <button id="btn-siguiente-reporte" style="width: 100%; padding: 1rem; border-radius: 12px; background: #00bcd4; border: none; color: white; font-size: 1.05rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-               Siguiente
-               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </button>
+            <!-- Step 1 Buttons -->
+            <div id="footer-parametros" style="width: 100%; display: block;">
+              <button id="btn-siguiente-reporte" style="width: 100%; padding: 1rem; border-radius: 12px; background: #00bcd4; border: none; color: white; font-size: 1.05rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                 Siguiente
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </button>
+            </div>
+
+            <!-- Step 2 Buttons -->
+            <div id="footer-columnas" style="width: 100%; display: none; gap: 0.75rem;">
+              <button id="btn-anterior-reporte" style="flex: 1; padding: 1rem; border-radius: 12px; background: white; border: 2px solid #00bcd4; color: #00bcd4; font-size: 1.05rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; box-sizing: border-box;">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg>
+                 Anterior
+              </button>
+              <button id="btn-generar-csv" style="flex: 2; padding: 1rem; border-radius: 12px; background: #00bcd4; border: none; color: white; font-size: 1.05rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; box-sizing: border-box;">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                 Generar Reporte CSV
+              </button>
+            </div>
           </div>
         </div>
 

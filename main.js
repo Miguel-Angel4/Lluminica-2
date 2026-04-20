@@ -1938,6 +1938,28 @@ document.addEventListener('DOMContentLoaded', () => {
       editingReporteId = null;
       const titleEl = document.getElementById('crear-reporte-title');
       if (titleEl) titleEl.textContent = 'Generar Reporte';
+      
+      // Reset view to Step 1
+      const stepParametros = document.getElementById('step-parametros-content');
+      const stepColumnas = document.getElementById('step-columnas-content');
+      const footParametros = document.getElementById('footer-parametros');
+      const footColumnas = document.getElementById('footer-columnas');
+      const step2Circle = document.getElementById('stepper-2-circle');
+      const step2Text = document.getElementById('stepper-2-text');
+
+      if (stepParametros) stepParametros.style.display = 'block';
+      if (stepColumnas) stepColumnas.style.display = 'none';
+      if (footParametros) footParametros.style.display = 'block';
+      if (footColumnas) footColumnas.style.display = 'none';
+      
+      if (step2Circle) {
+        step2Circle.style.background = '#f1f5f9';
+        step2Circle.style.color = '#94a3b8';
+      }
+      if (step2Text) {
+        step2Text.style.color = '#94a3b8';
+      }
+
       switchToView('Crear Reporte');
     });
   }
@@ -2030,6 +2052,113 @@ document.addEventListener('DOMContentLoaded', () => {
   if (generarDesdeInput) generarDesdeInput.addEventListener('input', updateResumenPeriodo);
   if (generarHastaInput) generarHastaInput.addEventListener('input', updateResumenPeriodo);
 
+  // --- STEP 1 TO STEP 2 LOGIC ---
+  const btnSiguienteReporte = document.getElementById('btn-siguiente-reporte');
+  const btnAnteriorReporte = document.getElementById('btn-anterior-reporte');
+  
+  const stepParametrosContent = document.getElementById('step-parametros-content');
+  const stepColumnasContent = document.getElementById('step-columnas-content');
+  const footerParametros = document.getElementById('footer-parametros');
+  const footerColumnas = document.getElementById('footer-columnas');
+  
+  const stepper1Circle = document.getElementById('stepper-1-circle');
+  const stepper1Text = document.getElementById('stepper-1-text');
+  const stepper2Circle = document.getElementById('stepper-2-circle');
+  const stepper2Text = document.getElementById('stepper-2-text');
+
+  if (btnSiguienteReporte) {
+    btnSiguienteReporte.addEventListener('click', () => {
+      if (!selectedGenerarReporteCentroId) {
+        alert("Por favor selecciona un centro para el reporte.");
+        return;
+      }
+      if (stepParametrosContent) stepParametrosContent.style.display = 'none';
+      if (stepColumnasContent) stepColumnasContent.style.display = 'block';
+      if (footerParametros) footerParametros.style.display = 'none';
+      if (footerColumnas) footerColumnas.style.display = 'flex';
+      
+      if (stepper2Circle) {
+        stepper2Circle.style.background = '#00bcd4';
+        stepper2Circle.style.color = 'white';
+      }
+      if (stepper2Text) {
+        stepper2Text.style.color = '#00bcd4';
+      }
+    });
+  }
+
+  if (btnAnteriorReporte) {
+    btnAnteriorReporte.addEventListener('click', () => {
+      if (stepColumnasContent) stepColumnasContent.style.display = 'none';
+      if (stepParametrosContent) stepParametrosContent.style.display = 'block';
+      if (footerColumnas) footerColumnas.style.display = 'none';
+      if (footerParametros) footerParametros.style.display = 'block';
+      
+      if (stepper2Circle) {
+        stepper2Circle.style.background = '#f1f5f9';
+        stepper2Circle.style.color = '#94a3b8';
+      }
+      if (stepper2Text) {
+        stepper2Text.style.color = '#94a3b8';
+      }
+    });
+  }
+
+  // --- COLUMNAS CONFIGURATION LOGIC ---
+  let columnasDisponibles = [
+    { id: 'col-cliente', label: 'Nombre del Cliente', selected: true },
+    { id: 'col-nif', label: 'NIF', selected: true },
+    { id: 'col-fecha', label: 'Fecha', selected: true },
+    { id: 'col-concepto', label: 'Concepto', selected: true },
+    { id: 'col-importe', label: 'Importe', selected: true },
+    { id: 'col-centro', label: 'Centro', selected: true },
+    { id: 'col-procedimiento', label: 'Procedimiento', selected: true },
+    { id: 'col-telefono', label: 'Teléfono', selected: true },
+    { id: 'col-email', label: 'Email', selected: true },
+    { id: 'col-nacimiento', label: 'Fecha de Nacimiento', selected: true },
+    { id: 'col-genero', label: 'Género', selected: true },
+    { id: 'col-metodo-pago', label: 'Método de pago', selected: false },
+    { id: 'col-pagado', label: 'Pagado', selected: false },
+  ];
+
+  function renderColumnas() {
+    const listContainer = document.getElementById('columnas-list-container');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = columnasDisponibles.map(col => {
+      const isSelected = col.selected;
+      
+      const tickHtml = isSelected
+        ? `<div class="columna-tick" data-id="${col.id}" style="width: 22px; height: 22px; border-radius: 50%; background: #00bcd4; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+           </div>`
+        : `<div class="columna-tick" data-id="${col.id}" style="width: 22px; height: 22px; border-radius: 50%; background: transparent; border: 2px solid #e2e8f0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;"></div>`;
+
+      return `
+        <div style="display: flex; align-items: center; justify-content: space-between; background: #f1f5f9; padding: 0.8rem 1rem; border-radius: 8px;">
+          <div style="display: flex; align-items: center; gap: 0.75rem; color: ${isSelected ? '#334155' : '#94a3b8'}; font-size: 0.95rem; transition: color 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="cursor: grab;"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            ${col.label}
+          </div>
+          ${tickHtml}
+        </div>
+      `;
+    }).join('');
+
+    listContainer.querySelectorAll('.columna-tick').forEach(tick => {
+      tick.addEventListener('click', () => {
+        const colId = tick.dataset.id;
+        const col = columnasDisponibles.find(c => c.id === colId);
+        if (col) {
+          col.selected = !col.selected;
+          renderColumnas();
+        }
+      });
+    });
+  }
+
+  // Initial draw
+  renderColumnas();
 
   // ---- FILTER PANEL LOGIC ----
   const btnFiltrarReportes = document.getElementById('btn-filtrar-reportes');
