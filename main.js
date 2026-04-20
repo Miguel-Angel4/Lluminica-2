@@ -70,6 +70,29 @@ document.addEventListener('DOMContentLoaded', () => {
       hideAllViews();
       createAppointmentView.style.display = 'flex';
       document.title = 'Lluminica - Crear cita';
+      
+      // Reset appointment form state
+      selectedAptClient = null;
+      selectedAptCentro = null;
+      selectedAptProc = null;
+      
+      const unselected = document.getElementById('wrapper-cliente-unselected');
+      const selected = document.getElementById('wrapper-cliente-selected');
+      if (unselected) unselected.style.display = 'block';
+      if (selected) selected.style.display = 'none';
+      
+      const centroText = document.getElementById('cita-centro-text');
+      if (centroText) {
+        centroText.textContent = 'Seleccionar...';
+        centroText.style.color = '#94a3b8';
+      }
+      
+      const procText = document.getElementById('cita-procedimiento-text');
+      if (procText) {
+        procText.textContent = 'Seleccionar Procedimiento';
+      }
+      
+      loadAppointmentData();
     });
 
     backToDashboardBtn.addEventListener('click', () => {
@@ -2453,6 +2476,228 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       list.appendChild(card);
+    });
+  }
+  // --- APPOINTMENT SYSTEM LOGIC ---
+  let selectedAptClient = null;
+  let selectedAptCentro = null;
+  let selectedAptProc = null;
+
+  async function loadAppointmentData() {
+    // Populate Clients
+    const clientList = document.getElementById('cita-clientes-list');
+    if (clientList) {
+      try {
+        const { data: clients } = await supabase.from('clients').select('*').order('nombre_completo');
+        if (clients) {
+          clientList.innerHTML = clients.map(c => `
+            <div class="dropdown-item" data-id="${c.id}" data-name="${c.nombre_completo}" style="padding: 0.85rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; color: #1e293b;">
+              ${c.nombre_completo}
+            </div>
+          `).join('');
+          
+          clientList.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+              e.stopPropagation();
+              selectedAptClient = { id: item.dataset.id, name: item.dataset.name };
+              const unselected = document.getElementById('wrapper-cliente-unselected');
+              const selected = document.getElementById('wrapper-cliente-selected');
+              const nameEl = document.getElementById('cita-selected-cliente-name');
+              
+              if (unselected && selected && nameEl) {
+                unselected.style.display = 'none';
+                selected.style.display = 'flex';
+                nameEl.textContent = selectedAptClient.name;
+              }
+              clientList.style.display = 'none';
+              const chevron = document.getElementById('cita-cliente-chevron');
+              if (chevron) chevron.style.transform = 'rotate(0deg)';
+            });
+          });
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    // Populate Centers
+    const centroList = document.getElementById('cita-centros-list');
+    if (centroList) {
+      try {
+        const { data: centros } = await supabase.from('centros').select('*').order('nombre');
+        if (centros) {
+          centroList.innerHTML = centros.map(c => `
+            <div class="dropdown-item" data-id="${c.id}" data-name="${c.nombre}" style="padding: 0.85rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; color: #1e293b;">
+              ${c.nombre}
+            </div>
+          `).join('');
+          
+          centroList.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+              e.stopPropagation();
+              selectedAptCentro = { id: item.dataset.id, name: item.dataset.name };
+              const textEl = document.getElementById('cita-centro-text');
+              if (textEl) {
+                textEl.textContent = selectedAptCentro.name;
+                textEl.style.color = '#334155';
+              }
+              centroList.style.display = 'none';
+              const chevron = document.getElementById('cita-centro-chevron');
+              if (chevron) chevron.style.transform = 'rotate(0deg)';
+            });
+          });
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    // Populate Procedures
+    const procList = document.getElementById('cita-procedimientos-list');
+    if (procList) {
+      try {
+        const { data: procs } = await supabase.from('procedimientos').select('*').order('nombre');
+        if (procs) {
+          procList.innerHTML = procs.map(p => `
+            <div class="dropdown-item" data-id="${p.id}" data-name="${p.nombre}" style="padding: 0.85rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; color: #1e293b;">
+              ${p.nombre}
+            </div>
+          `).join('');
+          
+          procList.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+              e.stopPropagation();
+              selectedAptProc = { id: item.dataset.id, name: item.dataset.name };
+              const textEl = document.getElementById('cita-procedimiento-text');
+              if (textEl) {
+                textEl.textContent = selectedAptProc.name;
+              }
+              procList.style.display = 'none';
+              const chevron = document.getElementById('cita-procedimiento-chevron');
+              if (chevron) chevron.style.transform = 'rotate(0deg)';
+            });
+          });
+        }
+      } catch (err) { console.error(err); }
+    }
+  }
+
+  // Dropdown toggles
+  const setupAptDropdown = (btnId, listId, chevronId) => {
+    const btn = document.getElementById(btnId);
+    const list = document.getElementById(listId);
+    const chevron = document.getElementById(chevronId);
+    if (!btn || !list) return;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = list.style.display === 'block';
+      // Close all first
+      document.querySelectorAll('#cita-clientes-list, #cita-centros-list, #cita-procedimientos-list').forEach(l => l.style.display = 'none');
+      document.querySelectorAll('#cita-cliente-chevron, #cita-centro-chevron, #cita-procedimiento-chevron').forEach(c => c.style.transform = 'rotate(0deg)');
+      
+      if (!isOpen) {
+        list.style.display = 'block';
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+      }
+    });
+  };
+
+  setupAptDropdown('btn-cita-cliente', 'cita-clientes-list', 'cita-cliente-chevron');
+  setupAptDropdown('btn-cita-centro', 'cita-centros-list', 'cita-centro-chevron');
+  setupAptDropdown('btn-cita-procedimiento', 'cita-procedimientos-list', 'cita-procedimiento-chevron');
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('#cita-clientes-list, #cita-centros-list, #cita-procedimientos-list').forEach(l => l.style.display = 'none');
+    document.querySelectorAll('#cita-cliente-chevron, #cita-centro-chevron, #cita-procedimiento-chevron').forEach(c => c.style.transform = 'rotate(0deg)');
+  });
+
+  const btnCambiarClient = document.getElementById('btn-cambiar-cliente');
+  if (btnCambiarClient) {
+    btnCambiarClient.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedAptClient = null;
+      document.getElementById('wrapper-cliente-unselected').style.display = 'block';
+      document.getElementById('wrapper-cliente-selected').style.display = 'none';
+    });
+  // Payment pill logic
+  let selectedAptPagoMetodo = 'Tarjeta';
+  let selectedAptPagoEstado = 'Pendiente';
+
+  const btnTarjeta = document.getElementById('cita-pago-tarjeta');
+  const btnEfectivo = document.getElementById('cita-pago-efectivo');
+  const btnPagado = document.getElementById('cita-estado-pagado');
+  const btnPendiente = document.getElementById('cita-estado-pendiente');
+
+  if (btnTarjeta && btnEfectivo) {
+    btnTarjeta.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedAptPagoMetodo = 'Tarjeta';
+      btnTarjeta.classList.remove('pill-gray');
+      btnTarjeta.classList.add('pill-cyan');
+      btnEfectivo.classList.remove('pill-cyan');
+      btnEfectivo.classList.add('pill-gray');
+    });
+    btnEfectivo.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedAptPagoMetodo = 'Efectivo';
+      btnEfectivo.classList.remove('pill-gray');
+      btnEfectivo.classList.add('pill-cyan');
+      btnTarjeta.classList.remove('pill-cyan');
+      btnTarjeta.classList.add('pill-gray');
+    });
+  }
+
+  if (btnPagado && btnPendiente) {
+    btnPagado.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedAptPagoEstado = 'Pagado';
+      btnPagado.classList.remove('pill-gray');
+      btnPagado.classList.add('pill-cyan');
+      btnPendiente.classList.remove('pill-orange');
+      btnPendiente.classList.add('pill-gray');
+      btnPendiente.style.background = ''; // reset orange
+    });
+    btnPendiente.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedAptPagoEstado = 'Pendiente';
+      btnPendiente.classList.remove('pill-gray');
+      btnPendiente.classList.add('pill-orange');
+      btnPendiente.style.background = '#ffa000 !important';
+      btnPagado.classList.remove('pill-cyan');
+      btnPagado.classList.add('pill-gray');
+    });
+  }
+
+  const btnSubmitCita = document.getElementById('btn-submit-cita');
+  if (btnSubmitCita) {
+    btnSubmitCita.addEventListener('click', async () => {
+      if (!selectedAptClient) { alert('Selecciona un cliente'); return; }
+      if (!selectedAptCentro) { alert('Selecciona un centro'); return; }
+      if (!selectedAptProc) { alert('Selecciona un procedimiento'); return; }
+
+      btnSubmitCita.disabled = true;
+      btnSubmitCita.textContent = 'Guardando...';
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No hay sesión activa');
+        
+        // Basic insert - table structure might vary but this covers the UI state
+        const { error } = await supabase.from('appointments').insert([{
+          client_id: selectedAptClient.id,
+          centro_id: selectedAptCentro.id,
+          procedure_id: selectedAptProc.id,
+          pago_metodo: selectedAptPagoMetodo,
+          pago_estado: selectedAptPagoEstado,
+          user_id: user.id
+        }]);
+
+        if (error) throw error;
+        
+        alert('¡Cita creada con éxito!');
+        if (backToDashboardBtn) backToDashboardBtn.click();
+      } catch (err) {
+        alert('Error al crear cita: ' + err.message);
+      } finally {
+        btnSubmitCita.disabled = false;
+        btnSubmitCita.textContent = 'Crear cita';
+      }
     });
   }
 });
