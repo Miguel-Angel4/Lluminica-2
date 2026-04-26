@@ -830,6 +830,11 @@ document.addEventListener('DOMContentLoaded', () => {
           
           imgContainer.appendChild(img);
           galeriaContent.appendChild(imgContainer);
+
+          // If we are in appointment context, also add to the appointment photos
+          if (currentImageContext === 'appointment') {
+            addAptPhoto(dataUrl);
+          }
         });
 
         // Close all
@@ -1075,11 +1080,11 @@ document.addEventListener('DOMContentLoaded', () => {
     btnGalleryAction.addEventListener('click', () => {
       imageSourceModal.style.display = 'none';
       
-      if (currentImageContext === 'product' || currentImageContext === 'appointment') {
-        // En productos o citas, "GALERÍA" abre el explorador de archivos del PC/Móvil
+      if (currentImageContext === 'product') {
+        // En productos, "GALERÍA" abre el explorador de archivos del PC/Móvil
         if (galleryInput) galleryInput.click();
       } else {
-        // En la Galería general, abre la UI custom con las fotos ya capturadas
+        // En la Galería general o citas, abre la UI custom con las fotos ya capturadas
         if (internalGalleryModal) {
           internalGalleryModal.style.display = 'flex';
           renderInternalGallery();
