@@ -2911,6 +2911,60 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial draw
   renderColumnas();
 
+  const btnGenerarCsv = document.getElementById('btn-generar-csv');
+  if (btnGenerarCsv) {
+    btnGenerarCsv.addEventListener('click', async () => {
+      if (!selectedGenerarReporteCentroId) {
+        alert("Por favor selecciona un centro para el reporte.");
+        return;
+      }
+      
+      const titleEl = document.getElementById('generar-reporte-centro-text');
+      const titulo = titleEl ? titleEl.textContent : 'Nuevo Reporte';
+      const fechaInicio = generarDesdeInput ? generarDesdeInput.value : '';
+      const fechaFin = generarHastaInput ? generarHastaInput.value : '';
+      
+      const columns = columnasDisponibles.filter(c => c.selected).map(c => c.id);
+      
+      btnGenerarCsv.disabled = true;
+      btnGenerarCsv.innerHTML = 'Generando...';
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No hay sesión activa');
+
+        const { error } = await supabase
+          .from('reportes')
+          .insert({
+            titulo: titulo,
+            tipo: 'general', // You can change this based on your logic if needed
+            fecha_inicio: fechaInicio,
+            fecha_fin: fechaFin,
+            datos: { centro_id: selectedGenerarReporteCentroId, columns },
+            user_id: user.id
+          });
+
+        if (error) throw error;
+
+        // Navigate to Reportes list and refresh
+        switchToView('Reportes');
+        await loadReportes();
+        
+        // Reset steps
+        if (btnAnteriorReporte) btnAnteriorReporte.click();
+        
+      } catch (err) {
+        alert('Error al generar reporte: ' + err.message);
+      } finally {
+        btnGenerarCsv.disabled = false;
+        btnGenerarCsv.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Generar Reporte CSV
+        `;
+      }
+    });
+  }
+
   // ---- FILTER PANEL LOGIC ----
   const btnFiltrarReportes = document.getElementById('btn-filtrar-reportes');
   const reportesFilterPanel = document.getElementById('reportes-filter-panel');
@@ -3122,44 +3176,37 @@ document.addEventListener('DOMContentLoaded', () => {
     list.style.alignItems = 'stretch';
     list.innerHTML = '';
 
-    const tipoConfig = {
-      ingresos: { emoji: '💰', color: '#22c55e', bg: '#f0fdf4' },
-      citas:    { emoji: '📅', color: '#06b6d4', bg: '#ecfeff' },
-      clientes: { emoji: '👥', color: '#f59e0b', bg: '#fffbeb' },
-      general:  { emoji: '📊', color: '#8b5cf6', bg: '#f5f3ff' }
-    };
-
     filtered.forEach(reporte => {
-      const cfg = tipoConfig[reporte.tipo] || tipoConfig.general;
       const fechaCreacion = new Date(reporte.created_at);
       const fechaStr = `${fechaCreacion.getDate()}/${fechaCreacion.getMonth() + 1}/${fechaCreacion.getFullYear()}`;
 
       const card = document.createElement('div');
       card.style.cssText = `
-        width: 100%; background: white; border-radius: 14px; padding: 1rem;
-        display: flex; align-items: center; gap: 1rem;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.04); box-sizing: border-box;
-        margin-bottom: 0.75rem; border: 1px solid #f1f5f9; cursor: pointer;
+        background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box;
       `;
 
       card.innerHTML = `
-        <div style="width: 48px; height: 48px; border-radius: 12px; background: ${cfg.bg}; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0;">
-          ${cfg.emoji}
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+          <h3 style="margin: 0; font-size: 1.1rem; color: #1e293b;">Reporte de ${reporte.titulo}</h3>
+          <span style="background: #00bcd4; color: white; padding: 0.25rem 0.5rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">CSV</span>
         </div>
-        <div style="flex: 1; overflow: hidden;">
-          <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${reporte.titulo}</h4>
-          <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #94a3b8;">${fechaStr} • <span style="color: ${cfg.color}; font-weight: 600; text-transform: capitalize;">${reporte.tipo}</span></p>
+        
+        <div style="display: flex; align-items: center; gap: 0.5rem; color: #94a3b8; font-size: 0.85rem; margin-bottom: 1rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>${reporte.fecha_inicio || '-'} - ${reporte.fecha_fin || '-'}</span>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 0.4rem; flex-shrink: 0;">
-          <button class="btn-edit-reporte" style="background: none; border: none; padding: 4px; cursor: pointer; color: #00bcd4; display: flex;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </button>
-          <button class="btn-export-reporte" style="background: none; border: none; padding: 4px; cursor: pointer; color: #22c55e; display: flex;" title="Descargar CSV">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          </button>
-          <button class="btn-delete-reporte" style="background: none; border: none; padding: 4px; cursor: pointer; color: #ef4444; display: flex;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-          </button>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 1rem;">
+          <span style="color: #94a3b8; font-size: 0.8rem;">Creada: ${fechaStr}</span>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn-delete-reporte" style="background: #fee2e2; color: #ef4444; border: none; padding: 0.5rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Eliminar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+            <button class="btn-export-reporte" style="background: #00bcd4; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: bold; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Descargar
+            </button>
+          </div>
         </div>
       `;
 
