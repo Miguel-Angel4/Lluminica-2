@@ -584,8 +584,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Image Context (gallery or product)
+  // Image Context (gallery or product or appointment)
   let currentImageContext = 'gallery';
+  let currentAptId = null;
+  let currentAptPhotos = {}; // Store photos per appointment ID in this session
   let currentProductImageData = null;
   let allProductData = [];
   let allProcData = [];
@@ -1013,6 +1015,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (currentImageContext === 'product') {
           updateProductImagePreview(dataUrl);
+        } else if (currentImageContext === 'appointment') {
+          addAptPhoto(dataUrl);
         } else {
           // Save to internal gallery explicitly (don't download)
           internalSessionPhotos.unshift(dataUrl);
@@ -1028,6 +1032,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const dataUrl = ev.target.result;
         if (currentImageContext === 'product') {
           updateProductImagePreview(dataUrl);
+        } else if (currentImageContext === 'appointment') {
+          addAptPhoto(dataUrl);
         } else {
           internalSessionPhotos.unshift(dataUrl);
           alert('Foto guardada en Galería.');
@@ -1069,8 +1075,8 @@ document.addEventListener('DOMContentLoaded', () => {
     btnGalleryAction.addEventListener('click', () => {
       imageSourceModal.style.display = 'none';
       
-      if (currentImageContext === 'product') {
-        // En productos, "GALERÍA" abre el explorador de archivos del PC/Móvil
+      if (currentImageContext === 'product' || currentImageContext === 'appointment') {
+        // En productos o citas, "GALERÍA" abre el explorador de archivos del PC/Móvil
         if (galleryInput) galleryInput.click();
       } else {
         // En la Galería general, abre la UI custom con las fotos ya capturadas
@@ -2778,10 +2784,76 @@ document.addEventListener('DOMContentLoaded', () => {
       const statusText = document.getElementById('det-cita-estado');
       if (statusText) statusText.style.color = apt.pago_estado === 'Pagado' ? '#22c55e' : '#f59e0b';
 
+      // Load existing photos for this appointment in this session
+      currentAptId = id;
+      renderAptPhotos();
+
+      // Appointment Details Camera Button
+      const btnAptCamera = document.getElementById('btn-apt-det-camera');
+      if (btnAptCamera) {
+        btnAptCamera.onclick = () => {
+          currentImageContext = 'appointment';
+          if (imageSourceModal) {
+            imageSourceModal.style.display = 'flex';
+          }
+        };
+      }
+
     } catch (err) {
       console.error(err);
       alert('Error al cargar la cita: ' + err.message);
     }
+  }
+
+  function addAptPhoto(dataUrl) {
+    if (!currentAptId) return;
+    if (!currentAptPhotos[currentAptId]) {
+      currentAptPhotos[currentAptId] = [];
+    }
+    currentAptPhotos[currentAptId].unshift(dataUrl);
+    renderAptPhotos();
+  }
+
+  function renderAptPhotos() {
+    const container = document.getElementById('det-cita-fotos-container');
+    const emptyState = document.getElementById('det-cita-fotos-empty');
+    if (!container) return;
+
+    // Clear previous photos (except empty state if needed)
+    const photos = currentAptPhotos[currentAptId] || [];
+    
+    if (photos.length === 0) {
+      if (emptyState) emptyState.style.display = 'flex';
+      // Remove any existing img elements
+      container.querySelectorAll('.apt-photo-item').forEach(el => el.remove());
+      return;
+    }
+
+    if (emptyState) emptyState.style.display = 'none';
+    
+    // Remove old ones to re-render
+    container.querySelectorAll('.apt-photo-item').forEach(el => el.remove());
+
+    photos.forEach(dataUrl => {
+      const div = document.createElement('div');
+      div.className = 'apt-photo-item';
+      div.style.width = '80px';
+      div.style.height = '80px';
+      div.style.borderRadius = '12px';
+      div.style.overflow = 'hidden';
+      div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+      
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+      
+      div.appendChild(img);
+      container.appendChild(div);
+    });
+  }
+
   }
   async function loadAppointments() {
     const list = document.getElementById('citas-list');
