@@ -1174,19 +1174,24 @@ document.addEventListener('DOMContentLoaded', () => {
           galeriaContent.style.paddingBottom = '80px';
         }
 
-        // Update photos in the main wall
+        // Update or duplicate photos in the main wall
         const wizardItems = wizardImagesContainer.querySelectorAll('div[data-photo-idx]');
         wizardItems.forEach(item => {
           const idx = parseInt(item.dataset.photoIdx);
           const photo = allPhotosData[idx];
           if (!photo) return;
           
-          const tag = item.querySelector('.tag-text').textContent;
+          const newTag = item.querySelector('.tag-text').textContent;
           const clientId = wizardClientSelect.dataset.clientId || null;
           const appointmentId = wizardAptSelect.dataset.aptId || null;
 
-          // Actualizar foto existente en lugar de crear una nueva
-          dbSavePhoto(photo.data_url, clientId, appointmentId, tag, photo.id);
+          // Si la etiqueta ha cambiado, el usuario quiere un duplicado con la nueva etiqueta
+          if (photo.tag !== newTag) {
+            dbSavePhoto(photo.data_url, clientId, appointmentId, newTag); // Insertar nueva
+          } else {
+            // Si la etiqueta es la misma, solo "movemos" la foto (actualizamos IDs)
+            dbSavePhoto(photo.data_url, clientId, appointmentId, newTag, photo.id); // Actualizar existente
+          }
         });
 
         console.log('Fotos añadidas desde el asistente:', selectedInternalPhotos.size);
