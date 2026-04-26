@@ -96,6 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       
       loadAppointmentData();
+      
+      // Default selections for UI
+      selectedCreateAptMethod = 'Tarjeta';
+      selectedCreateAptStatus = 'Pendiente';
+      if (createPrecioInput) createPrecioInput.value = '0.00';
+      if (createConceptoInput) createConceptoInput.value = '';
+      if (createNotasTextarea) createNotasTextarea.value = '';
+      updateCreateSelectionUI();
     });
 
     backToDashboardBtn.addEventListener('click', () => {
@@ -2813,52 +2821,112 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Payment pill logic
-  let selectedAptPagoMetodo = 'Tarjeta';
-  let selectedAptPagoEstado = 'Pendiente';
+  // Payment pill logic (Creation)
+  let selectedCreateAptMethod = 'Tarjeta';
+  let selectedCreateAptStatus = 'Pendiente';
 
-  const btnTarjeta = document.getElementById('cita-pago-tarjeta');
-  const btnEfectivo = document.getElementById('cita-pago-efectivo');
-  const btnPagado = document.getElementById('cita-estado-pagado');
-  const btnPendiente = document.getElementById('cita-estado-pendiente');
+  const createMethodBtns = document.querySelectorAll('.create-method-btn');
+  const createStatusBtns = document.querySelectorAll('.create-status-btn');
+  const createPrecioInput = document.getElementById('create-cita-precio');
+  const createConceptoInput = document.getElementById('create-cita-concepto');
+  const createNotasTextarea = document.getElementById('create-cita-notas');
+  const btnVoiceNoteCreate = document.getElementById('btn-voice-note-create');
 
-  if (btnTarjeta && btnEfectivo) {
-    btnTarjeta.addEventListener('click', (e) => {
-      e.stopPropagation();
-      selectedAptPagoMetodo = 'Tarjeta';
-      btnTarjeta.classList.remove('pill-gray');
-      btnTarjeta.classList.add('pill-cyan');
-      btnEfectivo.classList.remove('pill-cyan');
-      btnEfectivo.classList.add('pill-gray');
-    });
-    btnEfectivo.addEventListener('click', (e) => {
-      e.stopPropagation();
-      selectedAptPagoMetodo = 'Efectivo';
-      btnEfectivo.classList.remove('pill-gray');
-      btnEfectivo.classList.add('pill-cyan');
-      btnTarjeta.classList.remove('pill-cyan');
-      btnTarjeta.classList.add('pill-gray');
+  if (createPrecioInput) {
+    createPrecioInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/[^0-9.]/g, '');
+      if ((e.target.value.match(/\./g) || []).length > 1) {
+        e.target.value = e.target.value.replace(/\.+$/, "");
+      }
     });
   }
 
-  if (btnPagado && btnPendiente) {
-    btnPagado.addEventListener('click', (e) => {
+  createMethodBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      selectedAptPagoEstado = 'Pagado';
-      btnPagado.classList.remove('pill-gray');
-      btnPagado.classList.add('pill-cyan');
-      btnPendiente.classList.remove('pill-orange');
-      btnPendiente.classList.add('pill-gray');
-      btnPendiente.style.background = ''; // reset orange
+      selectedCreateAptMethod = btn.dataset.method;
+      updateCreateSelectionUI();
     });
-    btnPendiente.addEventListener('click', (e) => {
+  });
+
+  createStatusBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      selectedAptPagoEstado = 'Pendiente';
-      btnPendiente.classList.remove('pill-gray');
-      btnPendiente.classList.add('pill-orange');
-      btnPendiente.style.background = '#ffa000 !important';
-      btnPagado.classList.remove('pill-cyan');
-      btnPagado.classList.add('pill-gray');
+      selectedCreateAptStatus = btn.dataset.status;
+      updateCreateSelectionUI();
+    });
+  });
+
+  function updateCreateSelectionUI() {
+    createMethodBtns.forEach(btn => {
+      if (btn.dataset.method === selectedCreateAptMethod) {
+        btn.classList.add('active-method');
+      } else {
+        btn.classList.remove('active-method');
+      }
+    });
+
+    createStatusBtns.forEach(btn => {
+      if (btn.dataset.status === selectedCreateAptStatus) {
+        if (selectedCreateAptStatus === 'Pagado') {
+          btn.classList.add('active-status-pagado');
+          btn.classList.remove('active-status-pendiente');
+        } else {
+          btn.classList.add('active-status-pendiente');
+          btn.classList.remove('active-status-pagado');
+        }
+      } else {
+        btn.classList.remove('active-status-pagado');
+        btn.classList.remove('active-status-pendiente');
+      }
+    });
+  }
+
+  // Voice Note Logic (Creation)
+  if (btnVoiceNoteCreate && createNotasTextarea && SpeechRecognition) {
+    const recognitionCreate = new SpeechRecognition();
+    recognitionCreate.lang = 'es-ES';
+    recognitionCreate.continuous = true;
+    recognitionCreate.interimResults = true;
+
+    let isListeningCreate = false;
+    let baseTextCreate = '';
+
+    recognitionCreate.onstart = () => {
+      isListeningCreate = true;
+      baseTextCreate = createNotasTextarea.value + (createNotasTextarea.value ? ' ' : '');
+      btnVoiceNoteCreate.style.background = '#00bcd4';
+      btnVoiceNoteCreate.querySelector('svg').style.stroke = 'white';
+      btnVoiceNoteCreate.style.boxShadow = '0 0 15px rgba(0, 188, 212, 0.5)';
+    };
+
+    recognitionCreate.onend = () => {
+      isListeningCreate = false;
+      btnVoiceNoteCreate.style.background = '#f8fafc';
+      btnVoiceNoteCreate.querySelector('svg').style.stroke = '#64748b';
+      btnVoiceNoteCreate.style.boxShadow = 'none';
+    };
+
+    recognitionCreate.onresult = (event) => {
+      let interimTranscript = '';
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+        else interimTranscript += event.results[i][0].transcript;
+      }
+      if (finalTranscript) {
+        createNotasTextarea.value = baseTextCreate + finalTranscript;
+        baseTextCreate = createNotasTextarea.value + ' ';
+      } else {
+        createNotasTextarea.value = baseTextCreate + interimTranscript;
+      }
+      createNotasTextarea.scrollTop = createNotasTextarea.scrollHeight;
+    };
+
+    btnVoiceNoteCreate.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isListeningCreate) recognitionCreate.stop();
+      else recognitionCreate.start();
     });
   }
 
@@ -2881,8 +2949,11 @@ document.addEventListener('DOMContentLoaded', () => {
           client_id: selectedAptClient.id,
           centro_id: selectedAptCentro.id,
           procedure_id: selectedAptProc.id,
-          pago_metodo: selectedAptPagoMetodo,
-          pago_estado: selectedAptPagoEstado,
+          precio: parseFloat(createPrecioInput.value) || 0,
+          pago_metodo: selectedCreateAptMethod,
+          pago_estado: selectedCreateAptStatus,
+          concepto: createConceptoInput.value.trim(),
+          notas: createNotasTextarea.value.trim(),
           user_id: user.id
         }]);
 
