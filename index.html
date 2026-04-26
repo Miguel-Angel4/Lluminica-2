@@ -1604,16 +1604,18 @@
               </div>
               <h3 style="font-size: 1.05rem; font-weight: 700; color: #1e293b;">Productos asignados</h3>
             </div>
-            <button style="background: #00bcd4; border: none; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,188,212,0.3);">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <button id="btn-add-assign-product" style="background: #00bcd4; border: none; width: 36px; height: 36px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,188,212,0.3);">
+               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             </button>
           </div>
-          <div style="display: flex; flex-direction: column; align-items: center; padding: 2rem 0;">
-             <div style="width: 60px; height: 60px; border: 3px solid #00bcd4; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-             </div>
-            <h4 style="color: #1e293b; font-weight: 700; margin-bottom: 0.5rem;">Sin productos asignados</h4>
-            <p style="color: #64748b; font-size: 0.9rem; font-weight: 500;">Toca el botón + para agregar medicamentos</p>
+          <div id="det-cita-productos-container" style="display: flex; flex-direction: column; gap: 0.75rem; padding: 0.5rem 0;">
+            <div id="det-cita-productos-empty" style="display: flex; flex-direction: column; align-items: center; padding: 2rem 0;">
+               <div style="width: 60px; height: 60px; border: 3px solid #00bcd4; border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+               </div>
+              <h4 style="color: #1e293b; font-weight: 700; margin-bottom: 0.5rem;">Sin productos asignados</h4>
+              <p style="color: #64748b; font-size: 0.9rem; font-weight: 500;">Toca el botón + para agregar medicamentos</p>
+            </div>
           </div>
         </div>
 
@@ -1698,6 +1700,30 @@
             Guardar Cambios
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal: Asignar Producto -->
+    <div id="assign-product-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #eef2f6; z-index: 10007; flex-direction: column;">
+      <!-- Header -->
+      <div style="display: flex; align-items: center; padding: 1rem; background: white; border-bottom: 1px solid #e2e8f0;">
+        <button id="btn-back-assign-product" style="background: none; border: none; font-size: 1.5rem; color: #00bcd4; cursor: pointer; margin-right: 1rem; display: flex; align-items: center;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </button>
+        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; flex: 1; text-align: center; color: #1e293b; margin-right: 2.5rem;">Asignar Producto</h3>
+      </div>
+
+      <div style="flex: 1; overflow-y: auto; padding: 1.25rem;">
+        <div id="assign-product-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+          <!-- Products will be listed here -->
+        </div>
+      </div>
+
+      <div style="padding: 1.25rem; background: #eef2f6;">
+        <button id="btn-save-assign-product" style="width: 100%; background: #00bcd4; color: white; border: none; border-radius: 12px; padding: 1.1rem; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; box-shadow: 0 4px 12px rgba(0, 188, 212, 0.25);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Guardar Cambios
+        </button>
       </div>
     </div>
   </body>

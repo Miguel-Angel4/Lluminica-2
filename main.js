@@ -2970,6 +2970,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
       }
 
+      renderAppointmentProducts();
+
     } catch (err) {
       console.error(err);
       alert('Error al cargar la cita: ' + err.message);
@@ -3176,6 +3178,247 @@ document.addEventListener('DOMContentLoaded', () => {
         btnSaveEditCobro.textContent = 'Guardar Cambios';
       }
     });
+  }
+
+
+  // --- ASIGNAR PRODUCTO LOGIC ---
+  let assignableProducts = [];
+  let selectedAptProducts = [];
+
+  const assignProductModal = document.getElementById('assign-product-modal');
+  const btnAddAssignProduct = document.getElementById('btn-add-assign-product');
+  const btnBackAssignProduct = document.getElementById('btn-back-assign-product');
+  const btnSaveAssignProduct = document.getElementById('btn-save-assign-product');
+  const assignProductList = document.getElementById('assign-product-list');
+
+  if (btnAddAssignProduct) {
+    btnAddAssignProduct.addEventListener('click', async () => {
+      assignProductModal.style.display = 'flex';
+      await loadAssignableProducts();
+      // Reset local state from current appointment products
+      selectedAptProducts = await fetchAppointmentProducts(currentAptId);
+      renderAssignableProducts();
+    });
+  }
+
+  if (btnBackAssignProduct) {
+    btnBackAssignProduct.addEventListener('click', () => {
+      assignProductModal.style.display = 'none';
+    });
+  }
+
+  async function loadAssignableProducts() {
+    try {
+      const { data, error } = await supabase
+        .from('productos')
+        .select('*')
+        .order('nombre', { ascending: true });
+      if (error) throw error;
+      assignableProducts = data;
+    } catch (err) {
+      console.error('Error loading products:', err.message);
+    }
+  }
+
+  async function fetchAppointmentProducts(aptId) {
+    try {
+      const { data, error } = await supabase
+        .from('appointment_products')
+        .select('*')
+        .eq('appointment_id', aptId);
+      if (error) throw error;
+      return data.map(ap => ({
+        id: ap.id,
+        product_id: ap.product_id,
+        cantidad: ap.cantidad,
+        unidad: ap.unidad,
+        lote: ap.lote || ''
+      }));
+    } catch (err) {
+      console.error('Error fetching appointment products:', err.message);
+      return [];
+    }
+  }
+
+  function renderAssignableProducts() {
+    if (!assignProductList) return;
+    assignProductList.innerHTML = '';
+
+    assignableProducts.forEach(prod => {
+      const isSelected = selectedAptProducts.some(p => p.product_id === prod.id);
+      const selProd = selectedAptProducts.find(p => p.product_id === prod.id) || { cantidad: 1, unidad: 'Unidades', lote: '' };
+
+      const card = document.createElement('div');
+      card.style.background = 'white';
+      card.style.borderRadius = '16px';
+      card.style.padding = '1rem';
+      card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)';
+      card.style.transition = 'all 0.3s ease';
+      card.style.cursor = 'pointer';
+      card.style.marginBottom = '0.5rem';
+
+      let innerHTML = `
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: ${isSelected ? '#00bcd4' : '#e2e8f0'}; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${isSelected ? 'white' : '#64748b'}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          </div>
+          <span style="font-weight: 600; color: #1e293b; flex: 1;">${prod.nombre}</span>
+        </div>
+      `;
+
+      if (isSelected) {
+        innerHTML += `
+          <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem;">
+              <button class="qty-btn minus" data-id="${prod.id}" style="width: 32px; height: 32px; border-radius: 50%; background: #00bcd4; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;">-</button>
+              <span style="font-size: 1.1rem; font-weight: 700; color: #00bcd4;">${selProd.cantidad}</span>
+              <button class="qty-btn plus" data-id="${prod.id}" style="width: 32px; height: 32px; border-radius: 50%; background: #00bcd4; border: none; color: white; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center;">+</button>
+            </div>
+            
+            <div style="margin-bottom: 1rem;">
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 0.4rem;">Seleccionar unidad</label>
+              <select class="unit-select" data-id="${prod.id}" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 1.5px solid #e2e8f0; background: white; font-size: 0.95rem; color: #1e293b; outline: none;">
+                <option value="Unidades" ${selProd.unidad === 'Unidades' ? 'selected' : ''}>Unidades</option>
+                <option value="Píldoras" ${selProd.unidad === 'Píldoras' ? 'selected' : ''}>Píldoras</option>
+                <option value="Mililitros" ${selProd.unidad === 'Mililitros' ? 'selected' : ''}>Mililitros</option>
+                <option value="Miligramos" ${selProd.unidad === 'Miligramos' ? 'selected' : ''}>Miligramos</option>
+                <option value="Gramos" ${selProd.unidad === 'Gramos' ? 'selected' : ''}>Gramos</option>
+                <option value="Unidad Personalizada" ${selProd.unidad === 'Unidad Personalizada' ? 'selected' : ''}>Unidad Personalizada</option>
+              </select>
+            </div>
+
+            <div style="position: relative;">
+              <input type="text" class="lote-input" data-id="${prod.id}" placeholder="Introduce el número de lote" value="${selProd.lote}" style="width: 100%; padding: 0.75rem 2.5rem 0.75rem 0.75rem; border-radius: 10px; border: 1.5px solid #e2e8f0; font-size: 0.95rem; outline: none; color: #1e293b;">
+              <svg style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #00bcd4;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2z"/><path d="M7 7h1v10H7z"/><path d="M10 7h2v10h-2z"/><path d="M14 7h1v10h-1z"/><path d="M17 7h1v10h-1z"/></svg>
+            </div>
+          </div>
+        `;
+      }
+
+      card.innerHTML = innerHTML;
+
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.qty-btn') || e.target.closest('.unit-select') || e.target.closest('.lote-input')) return;
+
+        if (isSelected) {
+          selectedAptProducts = selectedAptProducts.filter(p => p.product_id !== prod.id);
+        } else {
+          selectedAptProducts.push({ product_id: prod.id, cantidad: 1, unidad: 'Unidades', lote: '' });
+        }
+        renderAssignableProducts();
+      });
+
+      assignProductList.appendChild(card);
+    });
+
+    assignProductList.querySelectorAll('.qty-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const id = btn.dataset.id;
+        const p = selectedAptProducts.find(x => x.product_id === id);
+        if (btn.classList.contains('plus')) p.cantidad++;
+        else if (p.cantidad > 1) p.cantidad--;
+        renderAssignableProducts();
+      };
+    });
+
+    assignProductList.querySelectorAll('.unit-select').forEach(sel => {
+      sel.onchange = (e) => {
+        const id = sel.dataset.id;
+        const p = selectedAptProducts.find(x => x.product_id === id);
+        p.unidad = e.target.value;
+      };
+    });
+
+    assignProductList.querySelectorAll('.lote-input').forEach(input => {
+      input.oninput = (e) => {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        const id = input.dataset.id;
+        const p = selectedAptProducts.find(x => x.product_id === id);
+        p.lote = e.target.value;
+      };
+    });
+  }
+
+  if (btnSaveAssignProduct) {
+    btnSaveAssignProduct.addEventListener('click', async () => {
+      if (!currentAptId) return;
+      
+      btnSaveAssignProduct.disabled = true;
+      btnSaveAssignProduct.textContent = 'Guardando...';
+
+      try {
+        await supabase.from('appointment_products').delete().eq('appointment_id', currentAptId);
+
+        if (selectedAptProducts.length > 0) {
+          const toInsert = selectedAptProducts.map(p => ({
+            appointment_id: currentAptId,
+            product_id: p.product_id,
+            cantidad: p.cantidad,
+            unidad: p.unidad,
+            lote: p.lote
+          }));
+          const { error } = await supabase.from('appointment_products').insert(toInsert);
+          if (error) throw error;
+        }
+
+        assignProductModal.style.display = 'none';
+        renderAppointmentProducts();
+      } catch (err) {
+        alert('Error al asignar: ' + err.message);
+      } finally {
+        btnSaveAssignProduct.disabled = false;
+        btnSaveAssignProduct.textContent = 'Guardar Cambios';
+      }
+    });
+  }
+
+  async function renderAppointmentProducts() {
+    const container = document.getElementById('det-cita-productos-container');
+    const emptyState = document.getElementById('det-cita-productos-empty');
+    if (!container) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('appointment_products')
+        .select('*, productos(nombre)')
+        .eq('appointment_id', currentAptId);
+      
+      if (error) throw error;
+
+      container.querySelectorAll('.apt-product-item').forEach(el => el.remove());
+
+      if (data.length === 0) {
+        if (emptyState) emptyState.style.display = 'flex';
+        return;
+      }
+
+      if (emptyState) emptyState.style.display = 'none';
+
+      data.forEach(ap => {
+        const div = document.createElement('div');
+        div.className = 'apt-product-item';
+        div.style.background = '#f8fafc';
+        div.style.borderRadius = '12px';
+        div.style.padding = '0.75rem 1rem';
+        div.style.display = 'flex';
+        div.style.justifyContent = 'space-between';
+        div.style.alignItems = 'center';
+        div.style.marginBottom = '0.5rem';
+        div.innerHTML = `
+          <div>
+            <p style="font-weight: 700; color: #1e293b; margin: 0;">${ap.productos.nombre}</p>
+            <p style="font-size: 0.8rem; color: #64748b; margin: 0;">${ap.cantidad} ${ap.unidad}${ap.lote ? ` · Lote: ${ap.lote}` : ''}</p>
+          </div>
+          <div style="background: #eef2f6; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    } catch (err) {
+      console.error('Error rendering products:', err.message);
+    }
   }
 
   // Initial session check
