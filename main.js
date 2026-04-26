@@ -2970,6 +2970,15 @@ document.addEventListener('DOMContentLoaded', () => {
         };
       }
 
+      // Edit Notes logic
+      const btnEditNotes = document.getElementById('btn-edit-apt-notes');
+      if (btnEditNotes) {
+        btnEditNotes.onclick = () => {
+          editNotesModal.style.display = 'flex';
+          notesTextarea.value = apt.notas || '';
+        };
+      }
+
       renderAppointmentProducts();
 
     } catch (err) {
@@ -3419,6 +3428,83 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('Error rendering products:', err.message);
     }
+  }
+
+
+  // --- EDIT NOTES MODAL LOGIC ---
+  const editNotesModal = document.getElementById('edit-notes-modal');
+  const btnBackEditNotes = document.getElementById('btn-back-edit-notes');
+  const btnSaveAptNotes = document.getElementById('btn-save-apt-notes');
+  const notesTextarea = document.getElementById('edit-apt-notes-textarea');
+  const btnVoiceNote = document.getElementById('btn-voice-note');
+
+  if (btnBackEditNotes) {
+    btnBackEditNotes.addEventListener('click', () => {
+      editNotesModal.style.display = 'none';
+    });
+  }
+
+  // Voice to Text logic
+  let isListening = false;
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (SpeechRecognition) {
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      isListening = true;
+      btnVoiceNote.style.background = '#00bcd4';
+      btnVoiceNote.querySelector('svg').style.stroke = 'white';
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      btnVoiceNote.style.background = '#eef2f6';
+      btnVoiceNote.querySelector('svg').style.stroke = '#64748b';
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      notesTextarea.value += (notesTextarea.value ? ' ' : '') + transcript;
+    };
+
+    btnVoiceNote.addEventListener('click', () => {
+      if (isListening) {
+        recognition.stop();
+      } else {
+        recognition.start();
+      }
+    });
+  } else {
+    if (btnVoiceNote) btnVoiceNote.style.display = 'none';
+  }
+
+  if (btnSaveAptNotes) {
+    btnSaveAptNotes.addEventListener('click', async () => {
+      const notas = notesTextarea.value.trim();
+      btnSaveAptNotes.disabled = true;
+      btnSaveAptNotes.textContent = 'Guardando...';
+
+      try {
+        const { error } = await supabase
+          .from('appointments')
+          .update({ notas: notas })
+          .eq('id', currentAptId);
+
+        if (error) throw error;
+
+        editNotesModal.style.display = 'none';
+        showAppointmentDetails(currentAptId); // Reload to reflect changes
+      } catch (err) {
+        alert('Error al guardar notas: ' + err.message);
+      } finally {
+        btnSaveAptNotes.disabled = false;
+        btnSaveAptNotes.textContent = 'Guardar Nota';
+      }
+    });
   }
 
   // Initial session check
