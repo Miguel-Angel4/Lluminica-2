@@ -907,17 +907,17 @@
             </div>
             <div class="input-field">
               <label>Precio (€)</label>
-              <input type="text" class="gray-input" value="0.00" />
+              <input type="text" id="create-cita-precio" class="gray-input" value="0.00" />
             </div>
             
             <div class="input-field">
               <label>Forma de Pago</label>
               <div class="pill-group">
-                <button id="cita-pago-tarjeta" class="pill-btn pill-cyan">
+                <button id="cita-pago-tarjeta" class="pill-btn create-method-btn" data-method="Tarjeta">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
                   Tarjeta
                 </button>
-                <button id="cita-pago-efectivo" class="pill-btn pill-gray">
+                <button id="cita-pago-efectivo" class="pill-btn create-method-btn" data-method="Efectivo">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><line x1="12" x2="12" y1="8" y2="16"/><line x1="8" x2="16" y1="12" y2="12"/></svg>
                   Efectivo
                 </button>
@@ -927,11 +927,11 @@
             <div class="input-field">
               <label>Estado de Pago</label>
               <div class="pill-group">
-                <button id="cita-estado-pagado" class="pill-btn pill-gray">
+                <button id="cita-estado-pagado" class="pill-btn create-status-btn" data-status="Pagado">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
                   Pagado
                 </button>
-                <button id="cita-estado-pendiente" class="pill-btn pill-orange" style="background: #ffa000 !important; border-color: #ffa000 !important;">
+                <button id="cita-estado-pendiente" class="pill-btn create-status-btn" data-status="Pendiente">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
                   Pendiente
                 </button>
@@ -940,7 +940,7 @@
 
             <div class="input-field">
               <label>Concepto</label>
-              <input type="text" class="gray-input" placeholder="Concepto del cobro" />
+              <input type="text" id="create-cita-concepto" class="gray-input" placeholder="Concepto del cobro" />
             </div>
           </div>
 
@@ -951,9 +951,9 @@
               <span>Notas</span>
             </div>
             <div class="input-field">
-              <textarea placeholder="Escribe tus notas aquí..."></textarea>
+              <textarea id="create-cita-notas" placeholder="Escribe tus notas aquí..."></textarea>
             </div>
-            <button class="icon-circle">
+            <button id="btn-voice-note-create" class="icon-circle">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
             </button>
           </div>

@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 document.addEventListener('DOMContentLoaded', () => {
   const loginView = document.querySelector('#login-view');
@@ -23,6 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const updatePasswordView = document.querySelector('#update-password-view');
   const updatePasswordForm = document.querySelector('#update-password-form');
   const createAppointmentView = document.querySelector('#create-appointment-view');
+  
+  // Appointment creation state
+  let selectedCreateAptMethod = 'Tarjeta';
+  let selectedCreateAptStatus = 'Pendiente';
+  let createMethodBtns, createStatusBtns, createPrecioInput, createConceptoInput, createNotasTextarea, btnVoiceNoteCreate;
 
   // View toggling logic extended
   const hideAllViews = () => {
@@ -2821,16 +2827,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Payment pill logic (Creation)
-  let selectedCreateAptMethod = 'Tarjeta';
-  let selectedCreateAptStatus = 'Pendiente';
-
-  const createMethodBtns = document.querySelectorAll('.create-method-btn');
-  const createStatusBtns = document.querySelectorAll('.create-status-btn');
-  const createPrecioInput = document.getElementById('create-cita-precio');
-  const createConceptoInput = document.getElementById('create-cita-concepto');
-  const createNotasTextarea = document.getElementById('create-cita-notas');
-  const btnVoiceNoteCreate = document.getElementById('btn-voice-note-create');
+  // Payment pill logic (Creation) - Initializing variables
+  createMethodBtns = document.querySelectorAll('.create-method-btn');
+  createStatusBtns = document.querySelectorAll('.create-status-btn');
+  createPrecioInput = document.getElementById('create-cita-precio');
+  createConceptoInput = document.getElementById('create-cita-concepto');
+  createNotasTextarea = document.getElementById('create-cita-notas');
+  btnVoiceNoteCreate = document.getElementById('btn-voice-note-create');
 
   if (createPrecioInput) {
     createPrecioInput.addEventListener('input', (e) => {
@@ -3545,7 +3548,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Voice to Text logic
   let isListening = false;
   let baseText = '';
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if (SpeechRecognition) {
     const recognition = new SpeechRecognition();
