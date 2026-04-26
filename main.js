@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
-    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-productos', '#view-crear-producto', '#view-procedimientos', '#view-crear-procedimiento', '#view-centros', '#view-crear-centro', '#view-reportes', '#view-crear-reporte', '#view-detalles-cita'];
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-asignar-documento', '#view-productos', '#view-crear-producto', '#view-procedimientos', '#view-crear-procedimiento', '#view-centros', '#view-crear-centro', '#view-reportes', '#view-crear-reporte', '#view-detalles-cita'];
     views.forEach(selector => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
@@ -351,6 +351,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-subir-documento');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Subir documento';
+    } else if (label === 'Asignar Documento') {
+      const view = document.querySelector('#view-asignar-documento');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Asignar Documento';
     } else if (label === 'Productos') {
       const view = document.querySelector('#view-productos');
       if(view) view.style.display = 'flex';
@@ -609,15 +613,31 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="doc-name" style="font-weight: 600; color: #1e293b; font-size: 0.95rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${doc.nombre}</div>
           </div>
-          ${clientName ? `
-            <div style="background: #f1f5f9; color: #64748b; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-weight: 700;">${clientName}</div>
-          ` : `
-            <button class="btn-asignar" onclick="openAssignDoc('${doc.id}')" style="background: #06b6d4; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Asignar</button>
-          `}
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            ${clientName ? `
+              <div style="background: #f1f5f9; color: #64748b; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-weight: 700;">${clientName}</div>
+            ` : `
+              <button class="btn-asignar" onclick="openAssignDoc('${doc.id}')" style="background: #06b6d4; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Asignar</button>
+            `}
+            <button onclick="deleteDocument('${doc.id}')" style="background: transparent; border: none; cursor: pointer; color: #ef4444; display: flex; align-items: center; justify-content: center; padding: 0.5rem; border-radius: 6px;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='transparent'">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          </div>
         </div>
       `;
     }).join('');
   }
+
+  window.deleteDocument = async (docId) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar este documento?')) return;
+    try {
+      const { error } = await supabase.from('documentos').delete().eq('id', docId);
+      if (error) throw error;
+      await loadDocumentos();
+    } catch (err) {
+      alert('Error al borrar documento: ' + err.message);
+    }
+  };
 
   // Global management list navigation handler
   const managementList = document.querySelector('.management-list-box');
