@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedCreateAptMethod = 'Tarjeta';
   let selectedCreateAptStatus = 'Pendiente';
   let createMethodBtns, createStatusBtns, createPrecioInput, createConceptoInput, createNotasTextarea, btnVoiceNoteCreate;
+  let currentDocIdToAssign = null;
 
   // View toggling logic extended
   const hideAllViews = () => {
@@ -440,6 +441,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  const backFromAssignDoc = document.getElementById('back-from-assign-doc');
+  if (backFromAssignDoc) {
+    backFromAssignDoc.addEventListener('click', () => {
+      switchToView('Documentos');
+    });
+  }
+
   const btnDoUploadDoc = document.getElementById('btn-do-upload-doc');
   const docsListContainer = document.getElementById('docs-list-container');
   const btnTriggerDocInput = document.getElementById('btn-trigger-doc-input');
@@ -511,7 +519,13 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data: docs, error } = await supabase
         .from('documentos')
-        .select('*')
+        .select(`
+          *,
+          clients (
+            nombre,
+            apellidos
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -522,27 +536,88 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  window.openAssignDoc = (docId) => {
+    currentDocIdToAssign = docId;
+    switchToView('Asignar Documento');
+    renderAssignDocClients();
+  };
+
+  async function renderAssignDocClients() {
+    const listContainer = document.getElementById('assign-doc-clients-list');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = '<p style="text-align: center; color: #64748b;">Cargando clientes...</p>';
+
+    try {
+      const { data: clients, error } = await supabase
+        .from('clients')
+        .select('*')
+        .order('nombre', { ascending: true });
+
+      if (error) throw error;
+
+      if (!clients || clients.length === 0) {
+        listContainer.innerHTML = '<p style="text-align: center; color: #64748b;">No hay clientes registrados.</p>';
+        return;
+      }
+
+      listContainer.innerHTML = clients.map(client => `
+        <div class="client-assign-card" onclick="assignDocToClient('${client.id}')" style="background: white; border-radius: 12px; padding: 1rem; display: flex; align-items: center; gap: 1rem; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+          <div style="background: #06b6d4; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div style="flex: 1;">
+            <div style="font-weight: 700; color: #1e293b; font-size: 1rem;">${client.nombre} ${client.apellidos || ''}</div>
+            <div style="font-size: 0.85rem; color: #94a3b8; font-family: monospace;">${client.id.substring(0, 8)}...</div>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+      `).join('');
+    } catch (err) {
+      listContainer.innerHTML = `<p style="text-align: center; color: #ef4444;">Error: ${err.message}</p>`;
+    }
+  }
+
+  window.assignDocToClient = async (clientId) => {
+    if (!currentDocIdToAssign) return;
+
+    try {
+      const { error } = await supabase
+        .from('documentos')
+        .update({ client_id: clientId })
+        .eq('id', currentDocIdToAssign);
+
+      if (error) throw error;
+
+      currentDocIdToAssign = null;
+      switchToView('Documentos');
+      await loadDocumentos();
+    } catch (err) {
+      alert('Error al asignar documento: ' + err.message);
+    }
+  };
   function renderDocumentos(docs) {
     if (!docsListContainer) return;
-    
-    if (!docs || docs.length === 0) {
-      docsListContainer.innerHTML = `
-        <p style="color: #94a3b8; font-size: 1.1rem; text-align: center; margin-top: 2rem;">No hay documentos</p>
-      `;
-      return;
-    }
 
-    docsListContainer.innerHTML = docs.map(doc => `
-      <div class="doc-card">
-        <div class="doc-info">
-          <div class="doc-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+    docsListContainer.innerHTML = docs.map(doc => {
+      const clientName = doc.clients ? `${doc.clients.nombre} ${doc.clients.apellidos || ''}` : null;
+      
+      return `
+        <div class="doc-card" style="background: white; border-radius: 12px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+          <div class="doc-info" style="display: flex; align-items: center; gap: 1rem;">
+            <div class="doc-icon" style="color: #06b6d4;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="doc-name" style="font-weight: 600; color: #1e293b; font-size: 0.95rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${doc.nombre}</div>
           </div>
-          <div class="doc-name">${doc.nombre}</div>
+          ${clientName ? `
+            <div style="background: #f1f5f9; color: #64748b; padding: 0.4rem 0.75rem; border-radius: 6px; font-size: 0.85rem; font-weight: 700;">${clientName}</div>
+          ` : `
+            <button class="btn-asignar" onclick="openAssignDoc('${doc.id}')" style="background: #06b6d4; color: white; border: none; border-radius: 6px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 600; cursor: pointer;">Asignar</button>
+          `}
         </div>
-        <button class="btn-asignar">Asignar</button>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   // Global management list navigation handler
