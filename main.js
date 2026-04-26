@@ -904,6 +904,110 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
+    const wizardProcSelect = document.getElementById('wizard-proc-select');
+    const wizardProcDropdown = document.getElementById('wizard-proc-dropdown');
+    const wizardAptSelect = document.getElementById('wizard-apt-select');
+    const wizardAptDropdown = document.getElementById('wizard-apt-dropdown');
+
+    const validateWizard = () => {
+      const clientId = wizardClientSelect.dataset.clientId;
+      const procId = wizardProcSelect.dataset.procId;
+      const aptId = wizardAptSelect.dataset.aptId;
+
+      if (clientId && procId && aptId) {
+        wizardSaveBtn.style.background = '#06b6d4';
+        wizardSaveBtn.style.color = 'white';
+        wizardSaveBtn.style.cursor = 'pointer';
+      } else {
+        wizardSaveBtn.style.background = '#cbd5e1';
+        wizardSaveBtn.style.color = '#475569';
+        wizardSaveBtn.style.cursor = 'not-allowed';
+      }
+    };
+
+    async function loadWizardProcedures() {
+      if (!wizardProcDropdown) return;
+      try {
+        const { data: procedures, error } = await supabase.from('procedimientos').select('*').order('nombre');
+        if (error) throw error;
+
+        wizardProcDropdown.innerHTML = `
+          <div style="max-height: 200px; overflow-y: auto;">
+            ${procedures.map(p => `
+              <div class="wizard-proc-item" data-id="${p.id}" data-name="${p.nombre}" style="padding: 0.75rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; text-align: left; font-size: 0.9rem; color: #334155;">
+                ${p.nombre}
+              </div>
+            `).join('')}
+          </div>
+        `;
+
+        wizardProcDropdown.querySelectorAll('.wizard-proc-item').forEach(item => {
+          item.addEventListener('click', () => {
+            wizardProcSelect.querySelector('span').textContent = item.dataset.name;
+            wizardProcSelect.querySelector('span').style.color = '#334155';
+            wizardProcSelect.dataset.procId = item.dataset.id;
+            wizardProcDropdown.style.display = 'none';
+            
+            // Reset and enable Appointment select
+            wizardAptSelect.querySelector('span').textContent = 'Selecciona una Cita';
+            wizardAptSelect.querySelector('span').style.color = '#334155';
+            wizardAptSelect.style.background = 'white';
+            wizardAptSelect.style.border = '1px solid #cbd5e1';
+            wizardAptSelect.style.cursor = 'pointer';
+            delete wizardAptSelect.dataset.aptId;
+            
+            loadWizardAppointments(wizardClientSelect.dataset.clientId, item.dataset.id);
+            validateWizard();
+          });
+        });
+      } catch (err) {
+        console.error('Error al cargar procedimientos en wizard:', err.message);
+      }
+    }
+
+    async function loadWizardAppointments(clientId, procId) {
+      if (!wizardAptDropdown) return;
+      try {
+        const { data: appointments, error } = await supabase
+          .from('appointments')
+          .select('*')
+          .eq('client_id', clientId)
+          .eq('procedure_id', procId)
+          .order('created_at', { ascending: false });
+          
+        if (error) throw error;
+
+        if (!appointments || appointments.length === 0) {
+          wizardAptDropdown.innerHTML = `<p style="color: #64748b; font-size: 0.9rem; padding: 1rem;">No hay citas para este cliente y procedimiento</p>`;
+        } else {
+          wizardAptDropdown.innerHTML = `
+            <div style="max-height: 200px; overflow-y: auto;">
+              ${appointments.map(a => {
+                const date = new Date(a.created_at).toLocaleString();
+                return `
+                  <div class="wizard-apt-item" data-id="${a.id}" data-date="${date}" style="padding: 0.75rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; text-align: left; font-size: 0.9rem; color: #334155;">
+                    ${date}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+
+          wizardAptDropdown.querySelectorAll('.wizard-apt-item').forEach(item => {
+            item.addEventListener('click', () => {
+              wizardAptSelect.querySelector('span').textContent = item.dataset.date;
+              wizardAptSelect.querySelector('span').style.color = '#334155';
+              wizardAptSelect.dataset.aptId = item.dataset.id;
+              wizardAptDropdown.style.display = 'none';
+              validateWizard();
+            });
+          });
+        }
+      } catch (err) {
+        console.error('Error al cargar citas en wizard:', err.message);
+      }
+    }
+
     async function loadWizardClients() {
       if (!wizardClientDropdown) return;
       try {
@@ -937,9 +1041,24 @@ document.addEventListener('DOMContentLoaded', () => {
               wizardClientSelect.querySelector('span').style.color = '#334155';
               wizardClientSelect.dataset.clientId = item.dataset.id;
               wizardClientDropdown.style.display = 'none';
-              wizardSaveBtn.style.background = '#06b6d4';
-              wizardSaveBtn.style.color = 'white';
-              wizardSaveBtn.style.cursor = 'pointer';
+              
+              // Enable Procedure select
+              wizardProcSelect.querySelector('span').textContent = 'Selecciona un Procedimiento';
+              wizardProcSelect.querySelector('span').style.color = '#334155';
+              wizardProcSelect.style.background = 'white';
+              wizardProcSelect.style.border = '1px solid #cbd5e1';
+              wizardProcSelect.style.cursor = 'pointer';
+              
+              // Reset Procedure and Appointment
+              delete wizardProcSelect.dataset.procId;
+              wizardAptSelect.querySelector('span').textContent = 'Selecciona un cliente primero';
+              wizardAptSelect.querySelector('span').style.color = '#94a3b8';
+              wizardAptSelect.style.background = '#f8fafc';
+              wizardAptSelect.style.cursor = 'not-allowed';
+              delete wizardAptSelect.dataset.aptId;
+
+              loadWizardProcedures();
+              validateWizard();
             });
           });
         }
@@ -985,19 +1104,27 @@ document.addEventListener('DOMContentLoaded', () => {
     if (wizardClientSelect) {
       wizardClientSelect.addEventListener('click', () => {
         wizardClientDropdown.style.display = wizardClientDropdown.style.display === 'none' ? 'block' : 'none';
+        wizardProcDropdown.style.display = 'none';
+        wizardAptDropdown.style.display = 'none';
       });
-      // Simulate selecting a new client by hiding it if you click "Crear nuevo cliente"
-      const createClientBtn = wizardClientDropdown.querySelector('button');
-      if (createClientBtn) {
-        createClientBtn.addEventListener('click', () => {
-          wizardClientDropdown.style.display = 'none';
-          wizardClientSelect.querySelector('span').textContent = 'Cliente Nuevo';
-          wizardClientSelect.querySelector('span').style.color = '#334155';
-          wizardSaveBtn.style.background = '#06b6d4';
-          wizardSaveBtn.style.color = 'white';
-          wizardSaveBtn.style.cursor = 'pointer';
-        });
-      }
+    }
+
+    if (wizardProcSelect) {
+      wizardProcSelect.addEventListener('click', () => {
+        if (wizardProcSelect.style.cursor === 'not-allowed') return;
+        wizardProcDropdown.style.display = wizardProcDropdown.style.display === 'none' ? 'block' : 'none';
+        wizardClientDropdown.style.display = 'none';
+        wizardAptDropdown.style.display = 'none';
+      });
+    }
+
+    if (wizardAptSelect) {
+      wizardAptSelect.addEventListener('click', () => {
+        if (wizardAptSelect.style.cursor === 'not-allowed') return;
+        wizardAptDropdown.style.display = wizardAptDropdown.style.display === 'none' ? 'block' : 'none';
+        wizardClientDropdown.style.display = 'none';
+        wizardProcDropdown.style.display = 'none';
+      });
     }
 
     if (wizardSaveBtn) {
@@ -1020,30 +1147,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add selected photos to the main wall
         selectedInternalPhotos.forEach(idx => {
           const dataUrl = allPhotosData[idx] ? allPhotosData[idx].data_url : internalSessionPhotos[idx];
-          const imgContainer = document.createElement('div');
-          imgContainer.style.aspectRatio = '1 / 1';
-          imgContainer.style.width = '100%';
-          imgContainer.style.borderRadius = '8px';
-          imgContainer.style.overflow = 'hidden';
-          imgContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-
-          const img = document.createElement('img');
-          img.src = dataUrl;
-          img.style.width = '100%';
-          img.style.height = '100%';
-          img.style.objectFit = 'cover';
-          img.style.display = 'block';
           
-          imgContainer.appendChild(img);
-          galeriaContent.appendChild(imgContainer);
+          // Get selection IDs
+          const clientId = wizardClientSelect.dataset.clientId || null;
+          const appointmentId = wizardAptSelect.dataset.aptId || null;
 
-          if (currentImageContext === 'appointment') {
-            addAptPhoto(dataUrl);
-          } else {
-            // Guardar como foto de galería vinculada a un cliente (si se seleccionó uno)
-            const clientId = wizardClientSelect.dataset.clientId || null;
-            dbSavePhoto(dataUrl, clientId);
-          }
+          // Guardar foto vinculada
+          dbSavePhoto(dataUrl, clientId, appointmentId);
         });
 
         console.log('Fotos añadidas desde el asistente:', selectedInternalPhotos.size);
