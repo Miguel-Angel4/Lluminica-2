@@ -1167,6 +1167,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Reset wizard state
         wizardClientSelect.querySelector('span').textContent = 'Selecciona un Cliente';
         wizardClientSelect.querySelector('span').style.color = '#64748b';
+        delete wizardClientSelect.dataset.clientId;
+
+        wizardProcSelect.querySelector('span').textContent = 'Selecciona un cliente primero';
+        wizardProcSelect.querySelector('span').style.color = '#94a3b8';
+        wizardProcSelect.style.background = '#f8fafc';
+        wizardProcSelect.style.cursor = 'not-allowed';
+        delete wizardProcSelect.dataset.procId;
+
+        wizardAptSelect.querySelector('span').textContent = 'Selecciona un procedimiento primero';
+        wizardAptSelect.querySelector('span').style.color = '#94a3b8';
+        wizardAptSelect.style.background = '#f8fafc';
+        wizardAptSelect.style.cursor = 'not-allowed';
+        delete wizardAptSelect.dataset.aptId;
+
         wizardSaveBtn.style.background = '#cbd5e1';
         wizardSaveBtn.style.color = '#475569';
         wizardSaveBtn.style.cursor = 'not-allowed';
