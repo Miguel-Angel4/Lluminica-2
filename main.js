@@ -738,9 +738,25 @@ document.addEventListener('DOMContentLoaded', () => {
               e.stopPropagation();
               dbDeletePhoto(photo.id);
             };
+
+            // Tag overlay (bottom-left)
+            const tagLabel = document.createElement('div');
+            tagLabel.textContent = photo.tag || 'Sin etiqueta';
+            tagLabel.style.position = 'absolute';
+            tagLabel.style.bottom = '8px';
+            tagLabel.style.left = '8px';
+            tagLabel.style.background = 'rgba(15, 23, 42, 0.6)';
+            tagLabel.style.backdropFilter = 'blur(4px)';
+            tagLabel.style.color = 'white';
+            tagLabel.style.padding = '4px 10px';
+            tagLabel.style.borderRadius = '6px';
+            tagLabel.style.fontSize = '0.75rem';
+            tagLabel.style.fontWeight = '600';
+            tagLabel.style.zIndex = '5';
             
             imgContainer.appendChild(img);
             imgContainer.appendChild(btnDel);
+            imgContainer.appendChild(tagLabel);
             galeriaContent.appendChild(imgContainer);
           }
         } else if (!photo.appointment_id) {
