@@ -587,10 +587,101 @@ document.addEventListener('DOMContentLoaded', () => {
   // Image Context (gallery or product or appointment)
   let currentImageContext = 'gallery';
   let currentAptId = null;
-  let currentAptPhotos = {}; // Store photos per appointment ID in this session
+  let currentAptPhotos = {}; // Store photos per appointment ID
+  let internalSessionPhotos = []; // Buffer for taken photos
   let currentProductImageData = null;
   let allProductData = [];
   let allProcData = [];
+
+  async function dbSavePhoto(dataUrl, client_id = null, appointment_id = null, tag = 'Sin etiqueta') {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { error } = await supabase
+        .from('photos')
+        .insert({
+          data_url: dataUrl,
+          client_id,
+          appointment_id,
+          tag,
+          user_id: session.user.id
+        });
+      
+      if (error) throw error;
+      console.log('Foto guardada en DB');
+    } catch (err) {
+      console.error('Error al guardar foto en DB:', err.message);
+    }
+  }
+
+  async function dbLoadPhotos() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data, error } = await supabase
+        .from('photos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Clean local session variables
+      internalSessionPhotos.length = 0;
+      currentAptPhotos = {};
+      
+      const galeriaContent = document.querySelector('.galeria-content');
+      if (galeriaContent) {
+        galeriaContent.innerHTML = '';
+        // If we have photos with client_id, we should set the grid layout
+        if (data.some(p => p.client_id)) {
+          galeriaContent.classList.remove('empty-state-galeria');
+          galeriaContent.style.display = 'grid';
+          galeriaContent.style.gridTemplateColumns = 'repeat(3, 1fr)';
+          galeriaContent.style.gap = '0.5rem';
+          galeriaContent.style.padding = '1rem';
+        }
+      }
+
+      data.forEach(photo => {
+        if (photo.appointment_id) {
+          if (!currentAptPhotos[photo.appointment_id]) {
+            currentAptPhotos[photo.appointment_id] = [];
+          }
+          currentAptPhotos[photo.appointment_id].push(photo.data_url);
+        } else if (photo.client_id) {
+          // Add to main gallery wall
+          if (galeriaContent) {
+            const imgContainer = document.createElement('div');
+            imgContainer.style.aspectRatio = '1 / 1';
+            imgContainer.style.width = '100%';
+            imgContainer.style.borderRadius = '8px';
+            imgContainer.style.overflow = 'hidden';
+            imgContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+
+            const img = document.createElement('img');
+            img.src = photo.data_url;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            img.style.display = 'block';
+            
+            imgContainer.appendChild(img);
+            galeriaContent.appendChild(imgContainer);
+          }
+        } else {
+          // If no client and no appointment, it goes to the internal gallery buffer
+          internalSessionPhotos.push(photo.data_url);
+        }
+      });
+
+      if (typeof renderInternalGallery === 'function') renderInternalGallery();
+      if (typeof renderAptPhotos === 'function') renderAptPhotos();
+    } catch (err) {
+      console.error('Error al cargar fotos:', err.message);
+    }
+  }
 
   const productPreviewArea = document.getElementById('product-image-preview');
   const btnProductImgCamera = document.getElementById('product-img-btn-camera');
@@ -734,7 +825,7 @@ document.addEventListener('DOMContentLoaded', () => {
       webcamCloseBtn.addEventListener('click', stopWebcam);
     }
 
-    const internalSessionPhotos = [];
+
     const internalGalleryModal = document.getElementById('internal-gallery-modal');
     const internalGalleryGrid = document.getElementById('internal-gallery-grid');
     const closeInternalGalleryBtn = document.getElementById('close-internal-gallery');
@@ -753,6 +844,62 @@ document.addEventListener('DOMContentLoaded', () => {
         internalGalleryActionBar.style.display = 'none';
       }
     };
+
+    async function loadWizardClients() {
+      if (!wizardClientDropdown) return;
+      try {
+        const { data: clients, error } = await supabase.from('clients').select('*').order('nombre_completo');
+        if (error) throw error;
+
+        if (!clients || clients.length === 0) {
+          wizardClientDropdown.innerHTML = `
+            <p style="color: #64748b; font-size: 0.9rem; margin-top: 0; margin-bottom: 1rem;">No se encontraron resultados</p>
+            <button id="wizard-create-client" style="background: #06b6d4; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <span style="font-size: 1.2rem;">+</span> Crear nuevo cliente
+            </button>
+          `;
+        } else {
+          wizardClientDropdown.innerHTML = `
+            <div style="max-height: 200px; overflow-y: auto; margin-bottom: 1rem;">
+              ${clients.map(c => `
+                <div class="wizard-client-item" data-id="${c.id}" data-name="${c.nombre_completo}" style="padding: 0.75rem; border-bottom: 1px solid #f1f5f9; cursor: pointer; text-align: left; font-size: 0.9rem;">
+                  ${c.nombre_completo}
+                </div>
+              `).join('')}
+            </div>
+            <button id="wizard-create-client" style="background: #06b6d4; color: white; border: none; padding: 0.6rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+              <span style="font-size: 1.2rem;">+</span> Crear nuevo cliente
+            </button>
+          `;
+
+          wizardClientDropdown.querySelectorAll('.wizard-client-item').forEach(item => {
+            item.addEventListener('click', () => {
+              wizardClientSelect.querySelector('span').textContent = item.dataset.name;
+              wizardClientSelect.querySelector('span').style.color = '#334155';
+              wizardClientSelect.dataset.clientId = item.dataset.id;
+              wizardClientDropdown.style.display = 'none';
+              wizardSaveBtn.style.background = '#06b6d4';
+              wizardSaveBtn.style.color = 'white';
+              wizardSaveBtn.style.cursor = 'pointer';
+            });
+          });
+        }
+        
+        const createBtn = document.getElementById('wizard-create-client');
+        if (createBtn) {
+          createBtn.addEventListener('click', () => {
+            wizardClientSelect.querySelector('span').textContent = 'Cliente Nuevo';
+            wizardClientSelect.dataset.clientId = ''; 
+            wizardClientDropdown.style.display = 'none';
+            wizardSaveBtn.style.background = '#06b6d4';
+            wizardSaveBtn.style.color = 'white';
+            wizardSaveBtn.style.cursor = 'pointer';
+          });
+        }
+      } catch (err) {
+        console.error('Error al cargar clientes en wizard:', err.message);
+      }
+    }
 
     if (closeInternalGalleryBtn) {
       closeInternalGalleryBtn.addEventListener('click', () => {
@@ -834,6 +981,10 @@ document.addEventListener('DOMContentLoaded', () => {
           // If we are in appointment context, also add to the appointment photos
           if (currentImageContext === 'appointment') {
             addAptPhoto(dataUrl);
+          } else {
+            // Guardar como foto de galería vinculada a un cliente (si se seleccionó uno)
+            const clientId = wizardClientSelect.dataset.clientId || null;
+            dbSavePhoto(dataUrl, clientId);
           }
         });
 
@@ -857,6 +1008,7 @@ document.addEventListener('DOMContentLoaded', () => {
         internalGalleryModal.style.display = 'none';
         addImagesModal.style.display = 'flex';
         wizardImagesContainer.innerHTML = '';
+        loadWizardClients();
 
         selectedInternalPhotos.forEach(idx => {
           const dataUrl = internalSessionPhotos[idx];
@@ -938,7 +1090,7 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
-    const renderInternalGallery = () => {
+    function renderInternalGallery() {
       if (!internalGalleryGrid) return;
       internalGalleryGrid.innerHTML = '';
       if (internalSessionPhotos.length === 0) {
@@ -1025,6 +1177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           // Save to internal gallery explicitly (don't download)
           internalSessionPhotos.unshift(dataUrl);
+          dbSavePhoto(dataUrl); // Save to DB for persistence
           alert('Foto guardada en Galería.');
         }
         stopWebcam();
@@ -1041,6 +1194,7 @@ document.addEventListener('DOMContentLoaded', () => {
           addAptPhoto(dataUrl);
         } else {
           internalSessionPhotos.unshift(dataUrl);
+          dbSavePhoto(dataUrl); // Save to DB for persistence
           alert('Foto guardada en Galería.');
         }
       };
@@ -2817,6 +2971,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     currentAptPhotos[currentAptId].unshift(dataUrl);
     renderAptPhotos();
+    dbSavePhoto(dataUrl, null, currentAptId);
   }
 
   function renderAptPhotos() {
@@ -2917,6 +3072,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hideAllViews();
       dashboardView.style.display = 'flex';
       switchToView('Citas');
+      dbLoadPhotos(); // Cargar fotos de Supabase al iniciar sesión
     }
   };
   initSession();
