@@ -633,6 +633,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  async function dbDeletePhoto(photoId) {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta foto permanentemente?')) return;
+    try {
+      const { error } = await supabase
+        .from('photos')
+        .delete()
+        .eq('id', photoId);
+      if (error) throw error;
+      console.log('Foto eliminada:', photoId);
+      await dbLoadPhotos();
+    } catch (err) {
+      alert('Error al eliminar la foto: ' + err.message);
+    }
+  }
+
   async function dbLoadPhotos() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -678,6 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
             imgContainer.style.borderRadius = '8px';
             imgContainer.style.overflow = 'hidden';
             imgContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            imgContainer.style.position = 'relative';
 
             const img = document.createElement('img');
             img.src = photo.data_url;
@@ -685,8 +701,27 @@ document.addEventListener('DOMContentLoaded', () => {
             img.style.height = '100%';
             img.style.objectFit = 'cover';
             img.style.display = 'block';
+
+            const btnDel = document.createElement('button');
+            btnDel.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+            btnDel.style.position = 'absolute';
+            btnDel.style.top = '5px';
+            btnDel.style.right = '5px';
+            btnDel.style.background = 'rgba(239, 68, 68, 0.9)'; // Red
+            btnDel.style.border = 'none';
+            btnDel.style.borderRadius = '6px';
+            btnDel.style.padding = '4px';
+            btnDel.style.cursor = 'pointer';
+            btnDel.style.display = 'flex';
+            btnDel.style.alignItems = 'center';
+            btnDel.style.justifyContent = 'center';
+            btnDel.onclick = (e) => {
+              e.stopPropagation();
+              dbDeletePhoto(photo.id);
+            };
             
             imgContainer.appendChild(img);
+            imgContainer.appendChild(btnDel);
             galeriaContent.appendChild(imgContainer);
           }
         } else {
@@ -1153,6 +1188,25 @@ document.addEventListener('DOMContentLoaded', () => {
         renderImg.style.objectFit = 'cover';
         renderImg.style.display = 'block';
 
+        const btnDel = document.createElement('button');
+        btnDel.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>';
+        btnDel.style.position = 'absolute';
+        btnDel.style.top = '6px';
+        btnDel.style.right = '6px';
+        btnDel.style.background = 'rgba(239, 68, 68, 0.9)'; // Red
+        btnDel.style.border = 'none';
+        btnDel.style.borderRadius = '6px';
+        btnDel.style.padding = '4px';
+        btnDel.style.cursor = 'pointer';
+        btnDel.style.display = 'flex';
+        btnDel.style.alignItems = 'center';
+        btnDel.style.justifyContent = 'center';
+        btnDel.style.zIndex = '10';
+        btnDel.onclick = (e) => {
+          e.stopPropagation();
+          dbDeletePhoto(photo.id);
+        };
+
         const circle = document.createElement('div');
         circle.style.position = 'absolute';
         circle.style.top = '6px';
@@ -1164,6 +1218,7 @@ document.addEventListener('DOMContentLoaded', () => {
         circle.style.display = 'flex';
         circle.style.alignItems = 'center';
         circle.style.justifyContent = 'center';
+        circle.style.zIndex = '5';
         
         // Update selection UI based on current state
         const updateSelectionUI = () => {
@@ -1196,6 +1251,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderDiv.appendChild(renderImg);
         renderDiv.appendChild(circle);
+        renderDiv.appendChild(btnDel);
         internalGalleryGrid.appendChild(renderDiv);
       });
     };
