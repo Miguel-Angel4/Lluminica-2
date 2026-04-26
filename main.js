@@ -2854,7 +2854,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  }
+
   async function loadAppointments() {
     const list = document.getElementById('citas-list');
     const container = document.getElementById('citas-container');
