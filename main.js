@@ -490,27 +490,44 @@ document.addEventListener('DOMContentLoaded', () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('No hay sesión activa');
 
-        const { error } = await supabase
-          .from('documentos')
-          .insert({
-            nombre: file.name,
-            user_id: user.id
-          });
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const base64Content = e.target.result;
+          try {
+            const { error } = await supabase
+              .from('documentos')
+              .insert({
+                nombre: file.name,
+                user_id: user.id,
+                contenido_base64: base64Content
+              });
 
-        if (error) throw error;
+            if (error) throw error;
 
-        // Reset and return
-        inputUploadDoc.value = '';
-        btnTriggerDocInput.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
-          Seleccionar un documento
-        `;
-        btnDoUploadDoc.style.background = '#94a3b8';
-        
-        switchToView('Documentos');
+            // Reset and return
+            inputUploadDoc.value = '';
+            btnTriggerDocInput.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
+              Seleccionar un documento
+            `;
+            btnDoUploadDoc.style.background = '#94a3b8';
+            
+            switchToView('Documentos');
+          } catch (err) {
+            alert('Error al guardar en base de datos: ' + err.message);
+          } finally {
+            btnDoUploadDoc.disabled = false;
+            btnDoUploadDoc.textContent = 'Subir';
+          }
+        };
+        reader.onerror = () => {
+          alert('Error al leer el archivo.');
+          btnDoUploadDoc.disabled = false;
+          btnDoUploadDoc.textContent = 'Subir';
+        };
+        reader.readAsDataURL(file);
       } catch (err) {
-        alert('Error al subir: ' + err.message);
-      } finally {
+        alert('Error: ' + err.message);
         btnDoUploadDoc.disabled = false;
         btnDoUploadDoc.textContent = 'Subir';
       }
@@ -607,7 +624,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       return `
         <div class="doc-card" style="background: white; border-radius: 12px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-          <div class="doc-info" style="display: flex; align-items: center; gap: 1rem;">
+          <div class="doc-info" onclick="previewDocument('${doc.id}')" style="display: flex; align-items: center; gap: 1rem; cursor: pointer; flex: 1;">
             <div class="doc-icon" style="color: #06b6d4;">
               <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
             </div>
@@ -636,6 +653,43 @@ document.addEventListener('DOMContentLoaded', () => {
       await loadDocumentos();
     } catch (err) {
       alert('Error al borrar documento: ' + err.message);
+    }
+  };
+
+  window.previewDocument = async (docId) => {
+    try {
+      const { data, error } = await supabase
+        .from('documentos')
+        .select('nombre, contenido_base64')
+        .eq('id', docId)
+        .single();
+        
+      if (error) throw error;
+
+      if (!data.contenido_base64) {
+        alert('Este documento no tiene contenido guardado (se subió antes de habilitar las vistas previas).');
+        return;
+      }
+
+      const modal = document.getElementById('preview-documento-modal');
+      const title = document.getElementById('preview-documento-title');
+      const container = document.getElementById('preview-documento-container');
+
+      if(title) title.textContent = data.nombre;
+      if(container) {
+        container.innerHTML = '';
+        const isImage = data.contenido_base64.startsWith('data:image/');
+        
+        if (isImage) {
+          container.innerHTML = `<img src="${data.contenido_base64}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`;
+        } else {
+          container.innerHTML = `<iframe src="${data.contenido_base64}" style="width: 100%; height: 100%; border: none;"></iframe>`;
+        }
+      }
+
+      if(modal) modal.style.display = 'flex';
+    } catch (err) {
+      alert('Error al cargar la vista previa: ' + err.message);
     }
   };
 
