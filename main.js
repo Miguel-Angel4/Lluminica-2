@@ -522,8 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .select(`
           *,
           clients (
-            nombre,
-            apellidos
+            nombre_completo
           )
         `)
         .order('created_at', { ascending: false });
@@ -552,7 +551,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: clients, error } = await supabase
         .from('clients')
         .select('*')
-        .order('nombre', { ascending: true });
+        .order('nombre_completo', { ascending: true });
 
       if (error) throw error;
 
@@ -567,7 +566,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
           <div style="flex: 1;">
-            <div style="font-weight: 700; color: #1e293b; font-size: 1rem;">${client.nombre} ${client.apellidos || ''}</div>
+            <div style="font-weight: 700; color: #1e293b; font-size: 1rem;">${client.nombre_completo}</div>
             <div style="font-size: 0.85rem; color: #94a3b8; font-family: monospace;">${client.id.substring(0, 8)}...</div>
           </div>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
@@ -600,7 +599,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!docsListContainer) return;
 
     docsListContainer.innerHTML = docs.map(doc => {
-      const clientName = doc.clients ? `${doc.clients.nombre} ${doc.clients.apellidos || ''}` : null;
+      const clientName = doc.clients ? doc.clients.nombre_completo : null;
       
       return `
         <div class="doc-card" style="background: white; border-radius: 12px; padding: 1rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
