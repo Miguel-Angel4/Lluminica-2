@@ -1028,8 +1028,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentImageContext === 'appointment') {
           // Skip wizard for appointments, just add them
           selectedInternalPhotos.forEach(idx => {
-            const dataUrl = allPhotosData[idx] ? allPhotosData[idx].data_url : null;
-            if (dataUrl) addAptPhoto(dataUrl);
+            const photo = allPhotosData[idx];
+            if (photo) addAptPhoto(photo.data_url, photo.id);
           });
           internalGalleryModal.style.display = 'none';
           selectedInternalPhotos.clear();
@@ -3088,14 +3088,40 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function addAptPhoto(dataUrl) {
+  async function dbUpdatePhoto(photoId, updates) {
+    try {
+      const { error } = await supabase
+        .from('photos')
+        .update(updates)
+        .eq('id', photoId);
+      if (error) throw error;
+      console.log('Foto actualizada en DB:', photoId);
+      await dbLoadPhotos();
+    } catch (err) {
+      console.error('Error al actualizar foto en DB:', err.message);
+    }
+  }
+
+  function addAptPhoto(dataUrl, photoId = null) {
     if (!currentAptId) return;
     if (!currentAptPhotos[currentAptId]) {
       currentAptPhotos[currentAptId] = [];
     }
-    currentAptPhotos[currentAptId].unshift(dataUrl);
+    
+    // Evitar duplicados visuales locales
+    if (!currentAptPhotos[currentAptId].includes(dataUrl)) {
+      currentAptPhotos[currentAptId].unshift(dataUrl);
+    }
+    
     renderAptPhotos();
-    dbSavePhoto(dataUrl, currentAptClientId, currentAptId);
+    
+    if (photoId) {
+      // Si ya tiene ID, es una foto de la galería que estamos vinculando
+      dbUpdatePhoto(photoId, { appointment_id: currentAptId, client_id: currentAptClientId });
+    } else {
+      // Si no tiene ID, es una foto nueva (cámara o archivo)
+      dbSavePhoto(dataUrl, currentAptClientId, currentAptId);
+    }
   }
 
   function renderAptPhotos() {
