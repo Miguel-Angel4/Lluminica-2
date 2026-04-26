@@ -3446,38 +3446,77 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Voice to Text logic
   let isListening = false;
+  let baseText = '';
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if (SpeechRecognition) {
     const recognition = new SpeechRecognition();
     recognition.lang = 'es-ES';
-    recognition.continuous = false;
-    recognition.interimResults = false;
+    recognition.continuous = true;
+    recognition.interimResults = true;
 
     recognition.onstart = () => {
       isListening = true;
+      baseText = notesTextarea.value + (notesTextarea.value ? ' ' : '');
       btnVoiceNote.style.background = '#00bcd4';
       btnVoiceNote.querySelector('svg').style.stroke = 'white';
+      btnVoiceNote.style.boxShadow = '0 0 15px rgba(0, 188, 212, 0.5)';
+      console.log('Escuchando...');
     };
 
     recognition.onend = () => {
       isListening = false;
       btnVoiceNote.style.background = '#eef2f6';
       btnVoiceNote.querySelector('svg').style.stroke = '#64748b';
+      btnVoiceNote.style.boxShadow = 'none';
+      console.log('Fin de escucha');
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Error en reconocimiento:', event.error);
+      recognition.stop();
     };
 
     recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      notesTextarea.value += (notesTextarea.value ? ' ' : '') + transcript;
+      let interimTranscript = '';
+      let finalTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+
+      if (finalTranscript) {
+        notesTextarea.value = baseText + finalTranscript;
+        baseText = notesTextarea.value + ' '; // Update base for next segments
+      } else {
+        notesTextarea.value = baseText + interimTranscript;
+      }
+      
+      // Auto-scroll to bottom of textarea
+      notesTextarea.scrollTop = notesTextarea.scrollHeight;
     };
 
     btnVoiceNote.addEventListener('click', () => {
       if (isListening) {
         recognition.stop();
       } else {
-        recognition.start();
+        try {
+          recognition.start();
+        } catch (e) {
+          console.error('Error al iniciar reconocimiento:', e);
+        }
       }
     });
+
+    if (btnBackEditNotes) {
+      btnBackEditNotes.addEventListener('click', () => {
+        if (isListening) recognition.stop();
+      });
+    }
   } else {
     if (btnVoiceNote) btnVoiceNote.style.display = 'none';
   }
