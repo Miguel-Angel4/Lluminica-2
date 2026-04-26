@@ -684,7 +684,9 @@ document.addEventListener('DOMContentLoaded', () => {
             currentAptPhotos[photo.appointment_id] = [];
           }
           currentAptPhotos[photo.appointment_id].push(photo.data_url);
-        } else if (photo.client_id) {
+        }
+        
+        if (photo.client_id) {
           // Add to main gallery wall
           if (galeriaContent) {
             const imgContainer = document.createElement('div');
@@ -729,7 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
             imgContainer.appendChild(btnDel);
             galeriaContent.appendChild(imgContainer);
           }
-        } else {
+        } else if (!photo.appointment_id) {
           // If no client and no appointment, it goes to the internal gallery buffer
           internalSessionPhotos.push(photo.data_url);
         }
