@@ -587,8 +587,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Image Context (gallery or product or appointment)
   let currentImageContext = 'gallery';
   let currentAptId = null;
+  let currentAptClientId = null; // Track current appointment's client
   let currentAptPhotos = {}; // Store photos per appointment ID
   let internalSessionPhotos = []; // Buffer for taken photos
+  let allPhotosData = []; // Store all photos from DB
   let currentProductImageData = null;
   let allProductData = [];
   let allProcData = [];
@@ -609,7 +611,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       
       if (error) throw error;
-      console.log('Foto guardada en DB');
+      console.log('Foto guardada en DB:', { client_id, appointment_id });
+      // Refresh local state
+      await dbLoadPhotos();
     } catch (err) {
       console.error('Error al guardar foto en DB:', err.message);
     }
@@ -628,6 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
 
       // Clean local session variables
+      allPhotosData = data;
       internalSessionPhotos.length = 0;
       currentAptPhotos = {};
       
@@ -960,7 +965,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Add selected photos to the main wall
         selectedInternalPhotos.forEach(idx => {
-          const dataUrl = internalSessionPhotos[idx];
+          const dataUrl = allPhotosData[idx] ? allPhotosData[idx].data_url : internalSessionPhotos[idx];
           const imgContainer = document.createElement('div');
           imgContainer.style.aspectRatio = '1 / 1';
           imgContainer.style.width = '100%';
@@ -978,7 +983,6 @@ document.addEventListener('DOMContentLoaded', () => {
           imgContainer.appendChild(img);
           galeriaContent.appendChild(imgContainer);
 
-          // If we are in appointment context, also add to the appointment photos
           if (currentImageContext === 'appointment') {
             addAptPhoto(dataUrl);
           } else {
@@ -987,6 +991,8 @@ document.addEventListener('DOMContentLoaded', () => {
             dbSavePhoto(dataUrl, clientId);
           }
         });
+
+        console.log('Fotos añadidas desde el asistente:', selectedInternalPhotos.size);
 
         // Close all
         addImagesModal.style.display = 'none';
@@ -1005,13 +1011,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (addToMainGalleryBtn) {
       addToMainGalleryBtn.addEventListener('click', () => {
+        if (currentImageContext === 'appointment') {
+          // Skip wizard for appointments, just add them
+          selectedInternalPhotos.forEach(idx => {
+            const dataUrl = allPhotosData[idx] ? allPhotosData[idx].data_url : null;
+            if (dataUrl) addAptPhoto(dataUrl);
+          });
+          internalGalleryModal.style.display = 'none';
+          selectedInternalPhotos.clear();
+          updateActionBar();
+          return;
+        }
+
         internalGalleryModal.style.display = 'none';
         addImagesModal.style.display = 'flex';
         wizardImagesContainer.innerHTML = '';
         loadWizardClients();
 
         selectedInternalPhotos.forEach(idx => {
-          const dataUrl = internalSessionPhotos[idx];
+          const dataUrl = allPhotosData[idx] ? allPhotosData[idx].data_url : null;
+          if (!dataUrl) return;
           
           const div = document.createElement('div');
           div.style.minWidth = '160px';
@@ -1093,11 +1112,18 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderInternalGallery() {
       if (!internalGalleryGrid) return;
       internalGalleryGrid.innerHTML = '';
-      if (internalSessionPhotos.length === 0) {
-        internalGalleryGrid.innerHTML = '<p style="grid-column: span 3; text-align: center; margin-top: 2rem; color: #64748b;">No hay fotos guardadas en esta sesión.</p>';
+      
+      // If we are in appointment context, we might want to show all photos 
+      // but especially those from the same client or generic ones.
+      // For now, let's show ALL photos as requested "like the gallery we have".
+      
+      if (allPhotosData.length === 0) {
+        internalGalleryGrid.innerHTML = '<p style="grid-column: span 3; text-align: center; margin-top: 2rem; color: #64748b;">No hay fotos guardadas.</p>';
         return;
       }
-      internalSessionPhotos.forEach((dataUrl, idx) => {
+
+      allPhotosData.forEach((photo, idx) => {
+        const dataUrl = photo.data_url;
         const renderDiv = document.createElement('div');
         renderDiv.style.aspectRatio = '1 / 1';
         renderDiv.style.width = '100%';
@@ -2945,6 +2971,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Load existing photos for this appointment in this session
       currentAptId = id;
+      currentAptClientId = apt.client_id;
       renderAptPhotos();
 
       // Appointment Details Camera Button
@@ -2994,7 +3021,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     currentAptPhotos[currentAptId].unshift(dataUrl);
     renderAptPhotos();
-    dbSavePhoto(dataUrl, null, currentAptId);
+    dbSavePhoto(dataUrl, currentAptClientId, currentAptId);
   }
 
   function renderAptPhotos() {
