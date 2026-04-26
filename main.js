@@ -609,27 +609,39 @@ document.addEventListener('DOMContentLoaded', () => {
   let allProductData = [];
   let allProcData = [];
 
-  async function dbSavePhoto(dataUrl, client_id = null, appointment_id = null, tag = 'Sin etiqueta') {
+  async function dbSavePhoto(dataUrl, client_id = null, appointment_id = null, tag = 'Sin etiqueta', id = null) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { error } = await supabase
-        .from('photos')
-        .insert({
-          data_url: dataUrl,
-          client_id,
-          appointment_id,
-          tag,
-          user_id: session.user.id
-        });
-      
-      if (error) throw error;
-      console.log('Foto guardada en DB:', { client_id, appointment_id });
-      // Refresh local state
+      if (id) {
+        // ACTUALIZAR registro existente
+        const { error } = await supabase
+          .from('photos')
+          .update({
+            client_id: client_id,
+            appointment_id: appointment_id,
+            tag: tag
+          })
+          .eq('id', id);
+        if (error) throw error;
+        console.log('Foto actualizada con éxito:', id);
+      } else {
+        // INSERTAR nuevo registro
+        const { error } = await supabase
+          .from('photos')
+          .insert([{
+            data_url: dataUrl,
+            client_id: client_id,
+            appointment_id: appointment_id,
+            tag: tag
+          }]);
+        if (error) throw error;
+        console.log('Nueva foto guardada con éxito');
+      }
       await dbLoadPhotos();
     } catch (err) {
-      console.error('Error al guardar foto en DB:', err.message);
+      console.error('Error al guardar/actualizar foto en DB:', err.message);
     }
   }
 
@@ -1146,16 +1158,19 @@ document.addEventListener('DOMContentLoaded', () => {
           galeriaContent.style.paddingBottom = '80px';
         }
 
-        // Add selected photos to the main wall
-        selectedInternalPhotos.forEach(idx => {
-          const dataUrl = allPhotosData[idx] ? allPhotosData[idx].data_url : internalSessionPhotos[idx];
+        // Update photos in the main wall
+        const wizardItems = wizardImagesContainer.querySelectorAll('div[data-photo-idx]');
+        wizardItems.forEach(item => {
+          const idx = parseInt(item.dataset.photoIdx);
+          const photo = allPhotosData[idx];
+          if (!photo) return;
           
-          // Get selection IDs
+          const tag = item.querySelector('.tag-text').textContent;
           const clientId = wizardClientSelect.dataset.clientId || null;
           const appointmentId = wizardAptSelect.dataset.aptId || null;
 
-          // Guardar foto vinculada
-          dbSavePhoto(dataUrl, clientId, appointmentId);
+          // Actualizar foto existente en lugar de crear una nueva
+          dbSavePhoto(photo.data_url, clientId, appointmentId, tag, photo.id);
         });
 
         console.log('Fotos añadidas desde el asistente:', selectedInternalPhotos.size);
@@ -1213,6 +1228,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!dataUrl) return;
           
           const div = document.createElement('div');
+          div.dataset.photoIdx = idx; // Guardar el índice para identificarla al guardar
           div.style.minWidth = '160px';
           div.style.width = '160px';
           div.style.height = '160px';
