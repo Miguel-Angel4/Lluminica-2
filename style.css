@@ -1120,7 +1120,7 @@ input:checked + .slider:before {
 }
 
 .active-status-pagado {
-  background: #10b981 !important;
+  background: #4ade80 !important;
   color: white !important;
 }
 
