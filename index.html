@@ -1565,7 +1565,7 @@
               </div>
               <h3 style="font-size: 1.05rem; font-weight: 700; color: #1e293b;">Cobro</h3>
             </div>
-            <button style="border: none; background: transparent; cursor: pointer;">
+            <button id="btn-edit-cobro" style="border: none; background: transparent; cursor: pointer;">
                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
             </button>
           </div>
@@ -1637,5 +1637,68 @@
       </div>
     </div>
   </div>
-</body>
+
+    <!-- Modal: Editar Cobro -->
+    <div id="edit-cobro-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #eef2f6; z-index: 10006; flex-direction: column;">
+      <!-- Header -->
+      <div style="display: flex; align-items: center; padding: 1rem; background: white; border-bottom: 1px solid #e2e8f0;">
+        <button id="btn-back-edit-cobro" style="background: none; border: none; font-size: 1.5rem; color: #00bcd4; cursor: pointer; margin-right: 1rem; display: flex; align-items: center;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        </button>
+        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; flex: 1; text-align: center; color: #1e293b; margin-right: 2.5rem;">Editar Cobro</h3>
+      </div>
+
+      <div style="flex: 1; overflow-y: auto; padding: 1.25rem;">
+        <div style="background: white; border-radius: 20px; padding: 1.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+          <!-- Precio -->
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #475569; margin-bottom: 0.6rem;">Precio (€)</label>
+            <input type="text" id="edit-cobro-precio" placeholder="0.00" style="width: 100%; background: #eef2f6; border: none; border-radius: 12px; padding: 1rem; font-size: 1rem; color: #1e293b; outline: none; font-weight: 600;">
+          </div>
+
+          <!-- Forma de Pago -->
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #475569; margin-bottom: 0.6rem;">Forma de Pago</label>
+            <div style="display: flex; gap: 0.75rem;">
+              <button class="toggle-btn-pay method-btn" data-method="Tarjeta" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border: none; border-radius: 20px; background: #e2e8f0; color: #64748b; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                Tarjeta
+              </button>
+              <button class="toggle-btn-pay method-btn" data-method="Efectivo" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border: none; border-radius: 20px; background: #e2e8f0; color: #64748b; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+                Efectivo
+              </button>
+            </div>
+          </div>
+
+          <!-- Estado de Pago -->
+          <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #475569; margin-bottom: 0.6rem;">Estado de Pago</label>
+            <div style="display: flex; gap: 0.75rem;">
+              <button class="toggle-btn-pay status-btn" data-status="Pagado" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border: none; border-radius: 20px; background: #e2e8f0; color: #64748b; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Pagado
+              </button>
+              <button class="toggle-btn-pay status-btn" data-status="Pendiente" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; border: none; border-radius: 20px; background: #e2e8f0; color: #64748b; font-weight: 700; cursor: pointer; transition: all 0.2s;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Pendiente
+              </button>
+            </div>
+          </div>
+
+          <!-- Concepto -->
+          <div style="margin-bottom: 2rem;">
+            <label style="display: block; font-size: 0.9rem; font-weight: 700; color: #475569; margin-bottom: 0.6rem;">Concepto</label>
+            <textarea id="edit-cobro-concepto" style="width: 100%; background: #eef2f6; border: none; border-radius: 12px; padding: 1rem; font-size: 1rem; color: #1e293b; outline: none; font-weight: 500; min-height: 120px; resize: none;"></textarea>
+          </div>
+
+          <!-- Save Button -->
+          <button id="btn-save-edit-cobro" style="width: 100%; background: #00bcd4; color: white; border: none; border-radius: 12px; padding: 1.1rem; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; box-shadow: 0 4px 12px rgba(0, 188, 212, 0.25);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Guardar Cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

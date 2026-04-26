@@ -1112,3 +1112,19 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
+
+/* Payment Edit Toggle Buttons */
+.active-method {
+  background: #00bcd4 !important;
+  color: white !important;
+}
+
+.active-status-pagado {
+  background: #10b981 !important;
+  color: white !important;
+}
+
+.active-status-pendiente {
+  background: #f59e0b !important;
+  color: white !important;
+}

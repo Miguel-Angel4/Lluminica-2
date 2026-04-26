@@ -2957,6 +2957,18 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         };
       }
+      // Edit Cobro logic
+      const btnEditCobro = document.getElementById('btn-edit-cobro');
+      if (btnEditCobro) {
+        btnEditCobro.onclick = () => {
+          editCobroModal.style.display = 'flex';
+          editPrecioInput.value = apt.precio || '';
+          editConceptoInput.value = apt.concepto || '';
+          selectedEditCobroMethod = apt.pago_metodo || 'Tarjeta';
+          selectedEditCobroStatus = apt.pago_estado || 'Pendiente';
+          updateEditCobroSelectionUI();
+        };
+      }
 
     } catch (err) {
       console.error(err);
@@ -3063,6 +3075,107 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (err) {
       console.error('Error loading appointments:', err.message);
     }
+  }
+
+
+  // --- EDIT COBRO MODAL LOGIC ---
+  let selectedEditCobroMethod = 'Tarjeta';
+  let selectedEditCobroStatus = 'Pendiente';
+
+  const editCobroModal = document.getElementById('edit-cobro-modal');
+  const btnBackEditCobro = document.getElementById('btn-back-edit-cobro');
+  const btnSaveEditCobro = document.getElementById('btn-save-edit-cobro');
+  const editPrecioInput = document.getElementById('edit-cobro-precio');
+  const editConceptoInput = document.getElementById('edit-cobro-concepto');
+
+  const editMethodBtns = document.querySelectorAll('.method-btn');
+  const editStatusBtns = document.querySelectorAll('.status-btn');
+
+  if (btnBackEditCobro) {
+    btnBackEditCobro.addEventListener('click', () => {
+      editCobroModal.style.display = 'none';
+    });
+  }
+
+  if (editPrecioInput) {
+    editPrecioInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/[^0-9.]/g, '');
+      if ((e.target.value.match(/\./g) || []).length > 1) {
+        e.target.value = e.target.value.replace(/\.+$/, "");
+      }
+    });
+  }
+
+  editMethodBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedEditCobroMethod = btn.dataset.method;
+      updateEditCobroSelectionUI();
+    });
+  });
+
+  editStatusBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      selectedEditCobroStatus = btn.dataset.status;
+      updateEditCobroSelectionUI();
+    });
+  });
+
+  function updateEditCobroSelectionUI() {
+    editMethodBtns.forEach(btn => {
+      if (btn.dataset.method === selectedEditCobroMethod) {
+        btn.classList.add('active-method');
+      } else {
+        btn.classList.remove('active-method');
+      }
+    });
+
+    editStatusBtns.forEach(btn => {
+      if (btn.dataset.status === selectedEditCobroStatus) {
+        if (selectedEditCobroStatus === 'Pagado') {
+          btn.classList.add('active-status-pagado');
+          btn.classList.remove('active-status-pendiente');
+        } else {
+          btn.classList.add('active-status-pendiente');
+          btn.classList.remove('active-status-pagado');
+        }
+      } else {
+        btn.classList.remove('active-status-pagado');
+        btn.classList.remove('active-status-pendiente');
+      }
+    });
+  }
+
+  if (btnSaveEditCobro) {
+    btnSaveEditCobro.addEventListener('click', async () => {
+      const precio = parseFloat(editPrecioInput.value) || 0;
+      const concepto = editConceptoInput.value.trim();
+
+      btnSaveEditCobro.disabled = true;
+      btnSaveEditCobro.textContent = 'Guardando...';
+
+      try {
+        const { error } = await supabase
+          .from('appointments')
+          .update({
+            precio: precio,
+            pago_metodo: selectedEditCobroMethod,
+            pago_estado: selectedEditCobroStatus,
+            concepto: concepto
+          })
+          .eq('id', currentAptId);
+
+        if (error) throw error;
+
+        editCobroModal.style.display = 'none';
+        showAppointmentDetails(currentAptId); // Reload to reflect changes
+        loadAppointments(); // Refresh list if needed
+      } catch (err) {
+        alert('Error al actualizar: ' + err.message);
+      } finally {
+        btnSaveEditCobro.disabled = false;
+        btnSaveEditCobro.textContent = 'Guardar Cambios';
+      }
+    });
   }
 
   // Initial session check
