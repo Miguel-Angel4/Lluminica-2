@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
-    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-asignar-documento', '#view-productos', '#view-crear-producto', '#view-procedimientos', '#view-crear-procedimiento', '#view-centros', '#view-crear-centro', '#view-reportes', '#view-crear-reporte', '#view-detalles-cita'];
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-asignar-documento', '#view-productos', '#view-crear-producto', '#view-editar-producto', '#view-procedimientos', '#view-crear-procedimiento', '#view-centros', '#view-crear-centro', '#view-reportes', '#view-crear-reporte', '#view-detalles-cita'];
     views.forEach(selector => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
@@ -364,6 +364,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-crear-producto');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Crear Producto';
+    } else if (label === 'Editar Producto') {
+      const view = document.querySelector('#view-editar-producto');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Editar Producto';
     } else if (label === 'Procedimientos') {
       const view = document.querySelector('#view-procedimientos');
       if(view) view.style.display = 'flex';
@@ -944,6 +948,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const editProductPreviewArea = document.getElementById('edit-product-image-preview');
+  let currentEditProductImageData = null;
+  let editingProductId = null;
+
+  const updateEditProductImagePreview = (content, isIcon = false) => {
+    if (!editProductPreviewArea) return;
+    currentEditProductImageData = content;
+    if (isIcon) {
+      editProductPreviewArea.innerHTML = content;
+      editProductPreviewArea.style.background = '#f1f5f9';
+      const svg = editProductPreviewArea.querySelector('svg');
+      if (svg) {
+        svg.setAttribute('width', '60');
+        svg.setAttribute('height', '60');
+        svg.setAttribute('stroke', '#00bcd4');
+      }
+    } else {
+      editProductPreviewArea.innerHTML = `<img src="${content}" style="width: 100%; height: 100%; object-fit: cover; display: block;" />`;
+    }
+  };
+
   if (btnProductImgCamera) {
     btnProductImgCamera.addEventListener('click', () => {
       currentImageContext = 'product';
@@ -959,6 +984,24 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btnProductImgIcons && productIconModal) {
     btnProductImgIcons.addEventListener('click', () => {
       currentIconTarget = 'product';
+      productIconModal.style.display = 'flex';
+    });
+  }
+
+  const btnEditProductImgCamera = document.getElementById('edit-product-img-btn-camera');
+  if (btnEditProductImgCamera) {
+    btnEditProductImgCamera.addEventListener('click', () => {
+      currentImageContext = 'edit-product';
+      if (imageSourceModal) {
+        imageSourceModal.style.display = 'flex';
+      }
+    });
+  }
+
+  const btnEditProductImgIcons = document.getElementById('edit-product-img-btn-icons');
+  if (btnEditProductImgIcons && productIconModal) {
+    btnEditProductImgIcons.addEventListener('click', () => {
+      currentIconTarget = 'edit-product';
       productIconModal.style.display = 'flex';
     });
   }
@@ -999,6 +1042,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const svgHtml = opt.querySelector('svg').outerHTML;
       if (currentIconTarget === 'product') {
         updateProductImagePreview(svgHtml, true);
+      } else if (currentIconTarget === 'edit-product') {
+        updateEditProductImagePreview(svgHtml, true);
       } else {
         updateProcIconPreview(svgHtml);
         currentProcIconData = svgHtml; // Store it
@@ -1589,6 +1634,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (currentImageContext === 'product') {
           updateProductImagePreview(dataUrl);
+        } else if (currentImageContext === 'edit-product') {
+          updateEditProductImagePreview(dataUrl);
         } else if (currentImageContext === 'appointment') {
           addAptPhoto(dataUrl);
         } else {
@@ -1607,6 +1654,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const dataUrl = ev.target.result;
         if (currentImageContext === 'product') {
           updateProductImagePreview(dataUrl);
+        } else if (currentImageContext === 'edit-product') {
+          updateEditProductImagePreview(dataUrl);
         } else if (currentImageContext === 'appointment') {
           addAptPhoto(dataUrl);
         } else {
@@ -1651,7 +1700,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnGalleryAction.addEventListener('click', () => {
       imageSourceModal.style.display = 'none';
       
-      if (currentImageContext === 'product') {
+      if (currentImageContext === 'product' || currentImageContext === 'edit-product') {
         // En productos, "GALERÍA" abre el explorador de archivos del PC/Móvil
         if (galleryInput) galleryInput.click();
       } else {
@@ -2101,6 +2150,8 @@ document.addEventListener('DOMContentLoaded', () => {
       card.style.boxShadow = '0 2px 6px rgba(0,0,0,0.03)';
       card.style.boxSizing = 'border-box';
       card.style.marginBottom = '0.75rem';
+      card.style.cursor = 'pointer'; // Make it look clickable
+      card.onclick = () => openEditProduct(prod.id); // Add click listener
 
       let imgHtml = '';
       if (prod.imagen_url && prod.imagen_url.startsWith('<svg')) {
@@ -2130,6 +2181,96 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
 
       productosList.appendChild(card);
+    });
+  }
+
+  const backFromEditarProducto = document.getElementById('back-from-editar-producto');
+  if (backFromEditarProducto) {
+    backFromEditarProducto.addEventListener('click', () => {
+      switchToView('Productos');
+    });
+  }
+
+  window.openEditProduct = (productId) => {
+    const product = allProductData.find(p => p.id === productId);
+    if (!product) return;
+
+    editingProductId = product.id;
+    
+    document.getElementById('edit-product-name').value = product.nombre || '';
+    document.getElementById('edit-product-description').value = product.descripcion || '';
+    
+    if (product.imagen_url) {
+      if (product.imagen_url.startsWith('<svg')) {
+        updateEditProductImagePreview(product.imagen_url, true);
+      } else {
+        updateEditProductImagePreview(product.imagen_url, false);
+      }
+    } else {
+      updateEditProductImagePreview(`<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/></svg>`, true);
+    }
+    
+    switchToView('Editar Producto');
+  };
+
+  const btnUpdateProduct = document.getElementById('btn-update-product');
+  if (btnUpdateProduct) {
+    btnUpdateProduct.addEventListener('click', async () => {
+      const nombre = document.getElementById('edit-product-name').value.trim();
+      const descripcion = document.getElementById('edit-product-description').value.trim();
+      
+      if (!nombre) {
+        alert('El nombre del producto es obligatorio');
+        return;
+      }
+
+      btnUpdateProduct.disabled = true;
+      btnUpdateProduct.innerHTML = 'Actualizando...';
+
+      try {
+        const { error } = await supabase
+          .from('productos')
+          .update({
+            nombre,
+            descripcion,
+            imagen_url: currentEditProductImageData
+          })
+          .eq('id', editingProductId);
+
+        if (error) throw error;
+
+        switchToView('Productos');
+        await loadProductos();
+      } catch (err) {
+        alert('Error al actualizar producto: ' + err.message);
+      } finally {
+        btnUpdateProduct.disabled = false;
+        btnUpdateProduct.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21v-5h5"/></svg>
+          Actualizar producto
+        `;
+      }
+    });
+  }
+
+  const btnDeleteProduct = document.getElementById('btn-delete-product');
+  if (btnDeleteProduct) {
+    btnDeleteProduct.addEventListener('click', async () => {
+      if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) return;
+      
+      try {
+        const { error } = await supabase
+          .from('productos')
+          .delete()
+          .eq('id', editingProductId);
+
+        if (error) throw error;
+
+        switchToView('Productos');
+        await loadProductos();
+      } catch (err) {
+        alert('Error al eliminar producto: ' + err.message);
+      }
     });
   }
 
