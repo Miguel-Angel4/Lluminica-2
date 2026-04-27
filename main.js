@@ -2721,6 +2721,49 @@ document.addEventListener('DOMContentLoaded', () => {
   const generarReporteCentroChevron = document.getElementById('generar-reporte-centro-chevron');
   const generarReporteCentroText = document.getElementById('generar-reporte-centro-text');
   let selectedGenerarReporteCentroId = null;
+  let selectedExportFormat = 'csv'; // 'csv' or 'pdf'
+
+  // --- FORMAT TOGGLE ---
+  const btnExportCsvTab = document.getElementById('btn-export-csv');
+  const btnExportPdfTab = document.getElementById('btn-export-pdf');
+
+  function updateFormatToggle() {
+    if (!btnExportCsvTab || !btnExportPdfTab) return;
+    if (selectedExportFormat === 'csv') {
+      btnExportCsvTab.style.background = 'white';
+      btnExportCsvTab.style.color = '#00bcd4';
+      btnExportCsvTab.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+      btnExportPdfTab.style.background = 'transparent';
+      btnExportPdfTab.style.color = '#64748b';
+      btnExportPdfTab.style.boxShadow = 'none';
+    } else {
+      btnExportPdfTab.style.background = 'white';
+      btnExportPdfTab.style.color = '#00bcd4';
+      btnExportPdfTab.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+      btnExportCsvTab.style.background = 'transparent';
+      btnExportCsvTab.style.color = '#64748b';
+      btnExportCsvTab.style.boxShadow = 'none';
+    }
+    // Update the generate button label
+    const btnGen = document.getElementById('btn-generar-csv');
+    if (btnGen) {
+      const icon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+      btnGen.innerHTML = `${icon} Generar Reporte ${selectedExportFormat.toUpperCase()}`;
+    }
+  }
+
+  if (btnExportCsvTab) {
+    btnExportCsvTab.addEventListener('click', () => {
+      selectedExportFormat = 'csv';
+      updateFormatToggle();
+    });
+  }
+  if (btnExportPdfTab) {
+    btnExportPdfTab.addEventListener('click', () => {
+      selectedExportFormat = 'pdf';
+      updateFormatToggle();
+    });
+  }
 
   if (btnGenerarReporteCentro && generarReporteCentrosList) {
     btnGenerarReporteCentro.addEventListener('click', (e) => {
@@ -2937,10 +2980,10 @@ document.addEventListener('DOMContentLoaded', () => {
           .from('reportes')
           .insert({
             titulo: titulo,
-            tipo: 'general', // You can change this based on your logic if needed
+            tipo: 'general',
             fecha_inicio: fechaInicio,
             fecha_fin: fechaFin,
-            datos: { centro_id: selectedGenerarReporteCentroId, columns },
+            datos: { centro_id: selectedGenerarReporteCentroId, columns, formato: selectedExportFormat },
             user_id: user.id
           });
 
@@ -3192,10 +3235,12 @@ document.addEventListener('DOMContentLoaded', () => {
         background: white; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.05); width: 100%; box-sizing: border-box;
       `;
 
+      const formato = (reporte.datos && reporte.datos.formato) ? reporte.datos.formato.toUpperCase() : 'CSV';
+
       card.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
           <h3 style="margin: 0; font-size: 1.1rem; color: #1e293b;">Reporte de ${reporte.titulo}</h3>
-          <span style="background: #00bcd4; color: white; padding: 0.25rem 0.5rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">CSV</span>
+          <span style="background: #00bcd4; color: white; padding: 0.25rem 0.5rem; border-radius: 20px; font-size: 0.75rem; font-weight: bold;">${formato}</span>
         </div>
         
         <div style="display: flex; align-items: center; gap: 0.5rem; color: #94a3b8; font-size: 0.85rem; margin-bottom: 1rem;">
@@ -3271,31 +3316,62 @@ document.addEventListener('DOMContentLoaded', () => {
             const selectedColIds = (reporte.datos && reporte.datos.columns) ? reporte.datos.columns : Object.keys(columnsConfig);
             const activeCols = selectedColIds.map(id => columnsConfig[id]).filter(Boolean);
 
-            // 3. Generate CSV rows
+            // 3. Build rows
             const rows = [];
-            
-            // Header row
             rows.push(activeCols.map(col => col.header));
-
-            // Data rows
             if (appointments && appointments.length > 0) {
               appointments.forEach(apt => {
                 rows.push(activeCols.map(col => col.getValue(apt)));
               });
             } else {
-               rows.push(['No hay datos para el rango y filtros seleccionados']);
+              rows.push(['No hay datos para el rango y filtros seleccionados']);
             }
 
-            const csvContent = rows.map(r => r.map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(',')).join('\n');
-            // Add BOM for Excel UTF-8 compatibility
-            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
-            const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `reporte_${reporte.titulo.replace(/\s+/g,'_')}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
+            // 4. Export based on format
+            const reporteFormato = (reporte.datos && reporte.datos.formato) ? reporte.datos.formato : 'csv';
+
+            if (reporteFormato === 'pdf') {
+              // --- PDF export ---
+              const { jsPDF } = window.jspdf;
+              const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+
+              // Title block
+              doc.setFontSize(18);
+              doc.setTextColor(0, 188, 212);
+              doc.text(`Reporte de ${reporte.titulo}`, 40, 50);
+
+              doc.setFontSize(10);
+              doc.setTextColor(100, 116, 139);
+              const formatFecha = (d) => { if (!d) return '-'; const p = d.split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d; };
+              doc.text(`Período: ${formatFecha(reporte.fecha_inicio)} - ${formatFecha(reporte.fecha_fin)}`, 40, 68);
+              doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 40, 82);
+
+              // Table
+              doc.autoTable({
+                head: [rows[0]],
+                body: rows.slice(1),
+                startY: 100,
+                styles: { fontSize: 9, cellPadding: 5 },
+                headStyles: { fillColor: [0, 188, 212], textColor: 255, fontStyle: 'bold' },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                margin: { left: 40, right: 40 },
+              });
+
+              doc.save(`reporte_${reporte.titulo.replace(/\s+/g,'_')}.pdf`);
+
+            } else {
+              // --- CSV export ---
+              const csvContent = rows.map(r => r.map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(',')).join('\n');
+              const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+              const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `reporte_${reporte.titulo.replace(/\s+/g,'_')}.csv`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }
+
             
           } catch (err) {
             console.error(err);
