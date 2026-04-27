@@ -778,12 +778,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (error) throw error;
 
+      // Always set email from the auth user object first
+      const emailField = document.getElementById('perfil-email');
+      if (emailField) emailField.value = user.email;
+
       if (profile) {
         document.getElementById('perfil-nombre').value = profile.nombre || '';
         document.getElementById('perfil-apellidos').value = profile.apellidos || '';
         document.getElementById('perfil-telefono').value = profile.telefono || '';
         document.getElementById('perfil-nif').value = profile.nif || '';
-        document.getElementById('perfil-email').value = profile.email || '';
         document.getElementById('perfil-razon').value = profile.razon_social || '';
         document.getElementById('perfil-direccion').value = profile.direccion || '';
       }
