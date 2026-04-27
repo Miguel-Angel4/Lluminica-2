@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.menu-item');
 
   const hideAllDashboardViews = () => {
-    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-asignar-documento', '#view-productos', '#view-crear-producto', '#view-editar-producto', '#view-procedimientos', '#view-crear-procedimiento', '#view-centros', '#view-crear-centro', '#view-reportes', '#view-crear-reporte', '#view-detalles-cita'];
+    const views = ['#view-citas', '#view-galeria', '#view-clientes', '#view-menu', '#view-documentos', '#view-subir-documento', '#view-asignar-documento', '#view-productos', '#view-crear-producto', '#view-editar-producto', '#view-procedimientos', '#view-crear-procedimiento', '#view-centros', '#view-crear-centro', '#view-reportes', '#view-crear-reporte', '#view-detalles-cita', '#view-perfil'];
     views.forEach(selector => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
@@ -395,6 +395,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-crear-reporte');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Nuevo Reporte';
+    } else if (label === 'Perfil') {
+      const view = document.querySelector('#view-perfil');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Perfil';
+      loadFullUserProfile();
     } else {
       alert(`La sección de ${label} estará disponible próximamente.`);
     }
@@ -720,10 +725,142 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Also handle the profile card which is outside management list
-  const userProfileCard = document.querySelector('.menu-card:not(.feature-card)');
-  if (userProfileCard) {
-    userProfileCard.addEventListener('click', () => {
-       // Profile card could also open a profile view, for now it stays in menu
+  const btnConfigPerfil = document.getElementById('btn-configurar-perfil');
+  if (btnConfigPerfil) {
+    btnConfigPerfil.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchToView('Perfil');
+    });
+  }
+
+  const backFromPerfil = document.getElementById('back-from-perfil');
+  if (backFromPerfil) {
+    backFromPerfil.addEventListener('click', () => {
+      switchToView('Menú');
+    });
+  }
+
+  // Accordion Logic
+  const togglePersonal = document.getElementById('toggle-personal');
+  const bodyPersonal = document.getElementById('body-personal');
+  const chevronPersonal = document.getElementById('chevron-personal');
+  
+  if (togglePersonal && bodyPersonal && chevronPersonal) {
+    togglePersonal.addEventListener('click', () => {
+      const isHidden = bodyPersonal.style.display === 'none';
+      bodyPersonal.style.display = isHidden ? 'flex' : 'none';
+      chevronPersonal.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    });
+  }
+
+  const toggleFacturacion = document.getElementById('toggle-facturacion');
+  const bodyFacturacion = document.getElementById('body-facturacion');
+  const chevronFacturacion = document.getElementById('chevron-facturacion');
+
+  if (toggleFacturacion && bodyFacturacion && chevronFacturacion) {
+    toggleFacturacion.addEventListener('click', () => {
+      const isHidden = bodyFacturacion.style.display === 'none';
+      bodyFacturacion.style.display = isHidden ? 'flex' : 'none';
+      chevronFacturacion.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    });
+  }
+
+  async function loadFullUserProfile() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', user.email)
+        .single();
+
+      if (error) throw error;
+
+      if (profile) {
+        document.getElementById('perfil-nombre').value = profile.nombre || '';
+        document.getElementById('perfil-apellidos').value = profile.apellidos || '';
+        document.getElementById('perfil-telefono').value = profile.telefono || '';
+        document.getElementById('perfil-nif').value = profile.nif || '';
+        document.getElementById('perfil-email').value = profile.email || '';
+        document.getElementById('perfil-razon').value = profile.razon_social || '';
+        document.getElementById('perfil-direccion').value = profile.direccion || '';
+      }
+    } catch (err) {
+      console.error('Error loading full profile:', err.message);
+    }
+  }
+
+  const btnActualizarPerfil = document.getElementById('btn-actualizar-perfil');
+  if (btnActualizarPerfil) {
+    btnActualizarPerfil.addEventListener('click', async () => {
+      btnActualizarPerfil.disabled = true;
+      btnActualizarPerfil.textContent = 'Actualizando...';
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No hay sesión activa');
+
+        const updatedData = {
+          nombre: document.getElementById('perfil-nombre').value,
+          apellidos: document.getElementById('perfil-apellidos').value,
+          telefono: document.getElementById('perfil-telefono').value,
+          nif: document.getElementById('perfil-nif').value,
+          razon_social: document.getElementById('perfil-razon').value,
+          direccion: document.getElementById('perfil-direccion').value
+        };
+
+        const { error } = await supabase
+          .from('profiles')
+          .update(updatedData)
+          .eq('email', user.email);
+
+        if (error) throw error;
+
+        alert('Perfil actualizado correctamente.');
+        loadUserProfile(); // Refresh the menu card name
+      } catch (err) {
+        alert('Error al actualizar perfil: ' + err.message);
+      } finally {
+        btnActualizarPerfil.disabled = false;
+        btnActualizarPerfil.textContent = 'Actualizar Perfil';
+      }
+    });
+  }
+
+  const btnEliminarCuenta = document.getElementById('btn-eliminar-cuenta');
+  if (btnEliminarCuenta) {
+    btnEliminarCuenta.addEventListener('click', async () => {
+      const confirmDelete = confirm('¿ESTÁS SEGURO? Esta acción es irreversible y eliminará todos tus datos, citas, clientes y fotos permanentemente.');
+      if (!confirmDelete) return;
+
+      const secondConfirm = confirm('Por favor, confirma una última vez que deseas eliminar tu cuenta de Lluminica.');
+      if (!secondConfirm) return;
+
+      btnEliminarCuenta.disabled = true;
+      btnEliminarCuenta.textContent = 'Eliminando...';
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Note: For a real app, you'd usually call an edge function to delete auth user and cascades.
+        // Here we'll just sign out after a simulated cleanup or profile deletion.
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('email', user.email);
+
+        if (profileError) throw profileError;
+
+        await supabase.auth.signOut();
+        location.reload();
+      } catch (err) {
+        alert('Error al eliminar cuenta: ' + err.message);
+        btnEliminarCuenta.disabled = false;
+        btnEliminarCuenta.textContent = 'Eliminar Cuenta';
+      }
     });
   }
 

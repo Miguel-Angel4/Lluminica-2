@@ -319,7 +319,7 @@
               <div class="user-info">
                 <h2 id="menu-user-name">Miguel De Diego</h2>
                 <p id="menu-user-email">miguelangel261106@gmail.com</p>
-                <a href="#">Configurar perfil</a>
+                <a href="#" id="btn-configurar-perfil">Configurar perfil</a>
               </div>
               <div class="chevron-right">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
@@ -409,6 +409,78 @@
             <footer class="menu-version-footer">
               Lluminica • v0.29.35
             </footer>
+          </div>
+        </div>
+
+        <!-- Vista Perfil -->
+        <div id="view-perfil" class="main-subview" style="display: none; background: #eef2f6;">
+          <header class="subview-header" style="background: white; border-bottom: 1px solid #e8ecf0;">
+            <button class="back-btn" id="back-from-perfil">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            </button>
+            <h2 style="color: #1e293b;">Perfil</h2>
+            <div style="width: 40px;"></div>
+          </header>
+
+          <div style="padding: 1.25rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 1rem;">
+
+            <!-- Acordeón: Información Personal -->
+            <div class="perfil-accordion" id="accordion-personal">
+              <div class="perfil-accordion-header" id="toggle-personal">
+                <span style="color: #00bcd4; font-weight: 700; font-size: 1rem;">Información Personal</span>
+                <svg id="chevron-personal" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.25s;"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+              <div class="perfil-accordion-body" id="body-personal" style="display: none;">
+                <div class="perfil-field">
+                  <label class="perfil-label">Nombre</label>
+                  <input type="text" id="perfil-nombre" class="perfil-input" placeholder="Nombre" />
+                </div>
+                <div class="perfil-field">
+                  <label class="perfil-label">Apellidos</label>
+                  <input type="text" id="perfil-apellidos" class="perfil-input" placeholder="Apellidos" />
+                </div>
+                <div class="perfil-field">
+                  <label class="perfil-label">Teléfono</label>
+                  <input type="tel" id="perfil-telefono" class="perfil-input" placeholder="Teléfono" />
+                </div>
+                <div class="perfil-field">
+                  <label class="perfil-label">NIF</label>
+                  <input type="text" id="perfil-nif" class="perfil-input" placeholder="NIF" />
+                </div>
+                <div class="perfil-field">
+                  <label class="perfil-label">Email</label>
+                  <input type="email" id="perfil-email" class="perfil-input" placeholder="Email" readonly style="color: #94a3b8; cursor: not-allowed;" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Acordeón: Información de Facturación -->
+            <div class="perfil-accordion" id="accordion-facturacion">
+              <div class="perfil-accordion-header" id="toggle-facturacion">
+                <span style="color: #00bcd4; font-weight: 700; font-size: 1rem;">Información de Facturación</span>
+                <svg id="chevron-facturacion" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.25s;"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+              <div class="perfil-accordion-body" id="body-facturacion" style="display: none;">
+                <div class="perfil-field">
+                  <label class="perfil-label">Razón Social (Opcional)</label>
+                  <input type="text" id="perfil-razon" class="perfil-input" placeholder="Razón Social" />
+                </div>
+                <div class="perfil-field">
+                  <label class="perfil-label">Dirección de facturación</label>
+                  <input type="text" id="perfil-direccion" class="perfil-input" placeholder="Dirección de facturación" />
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <button id="btn-actualizar-perfil" style="width: 100%; padding: 1rem; border-radius: 10px; background: #00bcd4; border: none; color: white; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(0,188,212,0.25); transition: opacity 0.2s; margin-top: 0.5rem;">
+              Actualizar Perfil
+            </button>
+
+            <button id="btn-eliminar-cuenta" style="width: 100%; padding: 1rem; border-radius: 10px; background: #ef4444; border: none; color: white; font-size: 1rem; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(239,68,68,0.2); transition: opacity 0.2s;">
+              Eliminar Cuenta
+            </button>
+
           </div>
         </div>
 
