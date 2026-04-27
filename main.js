@@ -3179,6 +3179,13 @@ document.addEventListener('DOMContentLoaded', () => {
     filtered.forEach(reporte => {
       const fechaCreacion = new Date(reporte.created_at);
       const fechaStr = `${fechaCreacion.getDate()}/${fechaCreacion.getMonth() + 1}/${fechaCreacion.getFullYear()}`;
+      
+      const formatFechaDisplay = (dateString) => {
+        if (!dateString) return '-';
+        const parts = dateString.split('-');
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        return dateString;
+      };
 
       const card = document.createElement('div');
       card.style.cssText = `
@@ -3193,7 +3200,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         <div style="display: flex; align-items: center; gap: 0.5rem; color: #94a3b8; font-size: 0.85rem; margin-bottom: 1rem;">
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span>${reporte.fecha_inicio || '-'} - ${reporte.fecha_fin || '-'}</span>
+          <span>${formatFechaDisplay(reporte.fecha_inicio)} - ${formatFechaDisplay(reporte.fecha_fin)}</span>
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 1rem;">
@@ -3210,31 +3217,95 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       `;
 
-      // Edit
-      card.querySelector('.btn-edit-reporte').addEventListener('click', (e) => {
-        e.stopPropagation();
-        editingReporteId = reporte.id;
-        const titleEl = document.getElementById('crear-reporte-title');
-        if (titleEl) titleEl.textContent = 'Editar Reporte';
-        switchToView('Crear Reporte');
-      });
-
       // Export CSV
-      card.querySelector('.btn-export-reporte').addEventListener('click', (e) => {
-        e.stopPropagation();
-        const rows = [
-          ['Título', 'Tipo', 'Fecha Inicio', 'Fecha Fin', 'Descripción', 'Creado'],
-          [reporte.titulo, reporte.tipo, reporte.fecha_inicio || '', reporte.fecha_fin || '', reporte.descripcion || '', new Date(reporte.created_at).toLocaleDateString('es-ES')]
-        ];
-        const csvContent = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `reporte_${reporte.titulo.replace(/\s+/g,'_')}.csv`;
-        a.click();
-        URL.revokeObjectURL(url);
-      });
+      const btnExport = card.querySelector('.btn-export-reporte');
+      if (btnExport) {
+        btnExport.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          
+          const originalHtml = btnExport.innerHTML;
+          btnExport.innerHTML = '...';
+          btnExport.disabled = true;
+
+          try {
+            // 1. Prepare query for appointments
+            let query = supabase
+              .from('appointments')
+              .select('*, clients(nombre_completo, nif, fecha_nacimiento, genero, email, telefono), centros(nombre), procedimientos(nombre)')
+              .order('created_at', { ascending: false });
+
+            // Filter by center if selected
+            if (reporte.datos && reporte.datos.centro_id) {
+              query = query.eq('centro_id', reporte.datos.centro_id);
+            }
+
+            // Filter by date range (inclusive)
+            if (reporte.fecha_inicio) {
+              query = query.gte('created_at', `${reporte.fecha_inicio}T00:00:00.000Z`);
+            }
+            if (reporte.fecha_fin) {
+              query = query.lte('created_at', `${reporte.fecha_fin}T23:59:59.999Z`);
+            }
+
+            const { data: appointments, error } = await query;
+            
+            if (error) throw error;
+
+            // 2. Prepare columns configuration
+            const columnsConfig = {
+              'col-cliente': { header: 'Nombre del Cliente', getValue: apt => apt.clients ? apt.clients.nombre_completo : '' },
+              'col-nif': { header: 'NIF', getValue: apt => apt.clients ? apt.clients.nif : '' },
+              'col-fecha': { header: 'Fecha', getValue: apt => new Date(apt.created_at).toLocaleDateString('es-ES') },
+              'col-concepto': { header: 'Concepto', getValue: apt => apt.concepto || '' },
+              'col-importe': { header: 'Importe', getValue: apt => apt.precio ? `${apt.precio} €` : '' },
+              'col-centro': { header: 'Centro', getValue: apt => apt.centros ? apt.centros.nombre : '' },
+              'col-procedimiento': { header: 'Procedimiento', getValue: apt => apt.procedimientos ? apt.procedimientos.nombre : '' },
+              'col-telefono': { header: 'Teléfono', getValue: apt => apt.clients ? apt.clients.telefono : '' },
+              'col-email': { header: 'Email', getValue: apt => apt.clients ? apt.clients.email : '' },
+              'col-nacimiento': { header: 'Fecha de Nacimiento', getValue: apt => apt.clients && apt.clients.fecha_nacimiento ? new Date(apt.clients.fecha_nacimiento).toLocaleDateString('es-ES') : '' },
+              'col-genero': { header: 'Género', getValue: apt => apt.clients ? apt.clients.genero : '' },
+              'col-metodo-pago': { header: 'Método de pago', getValue: apt => apt.pago_metodo || '' },
+              'col-pagado': { header: 'Estado Pago', getValue: apt => apt.pago_estado || '' },
+            };
+
+            const selectedColIds = (reporte.datos && reporte.datos.columns) ? reporte.datos.columns : Object.keys(columnsConfig);
+            const activeCols = selectedColIds.map(id => columnsConfig[id]).filter(Boolean);
+
+            // 3. Generate CSV rows
+            const rows = [];
+            
+            // Header row
+            rows.push(activeCols.map(col => col.header));
+
+            // Data rows
+            if (appointments && appointments.length > 0) {
+              appointments.forEach(apt => {
+                rows.push(activeCols.map(col => col.getValue(apt)));
+              });
+            } else {
+               rows.push(['No hay datos para el rango y filtros seleccionados']);
+            }
+
+            const csvContent = rows.map(r => r.map(v => `"${(v || '').toString().replace(/"/g, '""')}"`).join(',')).join('\n');
+            // Add BOM for Excel UTF-8 compatibility
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const blob = new Blob([bom, csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `reporte_${reporte.titulo.replace(/\s+/g,'_')}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+          } catch (err) {
+            console.error(err);
+            alert('Error al exportar datos: ' + err.message);
+          } finally {
+            btnExport.disabled = false;
+            btnExport.innerHTML = originalHtml;
+          }
+        });
+      }
 
       // Delete
       card.querySelector('.btn-delete-reporte').addEventListener('click', async (e) => {
