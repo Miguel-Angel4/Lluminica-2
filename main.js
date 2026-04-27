@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (togglePersonal && bodyPersonal && chevronPersonal) {
     togglePersonal.addEventListener('click', () => {
       const isHidden = bodyPersonal.style.display === 'none';
-      bodyPersonal.style.display = isHidden ? 'flex' : 'none';
+      bodyPersonal.style.display = isHidden ? 'block' : 'none';
       chevronPersonal.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
     });
   }
@@ -760,7 +760,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (toggleFacturacion && bodyFacturacion && chevronFacturacion) {
     toggleFacturacion.addEventListener('click', () => {
       const isHidden = bodyFacturacion.style.display === 'none';
-      bodyFacturacion.style.display = isHidden ? 'flex' : 'none';
+      bodyFacturacion.style.display = isHidden ? 'block' : 'none';
       chevronFacturacion.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
     });
   }
