@@ -953,15 +953,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function dbLoadPhotos() {
+  async function dbLoadPhotos(filterType = null, filterValue = null) {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { data, error } = await supabase
+      let query = supabase
         .from('photos')
-        .select('*')
+        .select(`
+          *,
+          appointments (
+            id,
+            procedure_id,
+            centro_id,
+            created_at,
+            procedimientos (nombre),
+            centros (nombre)
+          ),
+          clients (
+            nombre_completo
+          )
+        `)
         .order('created_at', { ascending: false });
+
+      // Apply filtering if provided
+      if (filterType && filterValue) {
+        if (filterType === 'Cliente') {
+          query = query.eq('client_id', filterValue);
+        } else if (filterType === 'Procedimiento') {
+          // This requires a bit more complex filtering since it's nested
+          // But Supabase allows filtering on joined tables
+          query = query.eq('appointments.procedure_id', filterValue);
+        } else if (filterType === 'Centro') {
+          query = query.eq('appointments.centro_id', filterValue);
+        } else if (filterType === 'Fecha') {
+          // Filter by date (YYYY-MM-DD)
+          query = query.gte('created_at', `${filterValue}T00:00:00`).lte('created_at', `${filterValue}T23:59:59`);
+        }
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -973,27 +1004,44 @@ document.addEventListener('DOMContentLoaded', () => {
       const galeriaContent = document.querySelector('.galeria-content');
       if (galeriaContent) {
         galeriaContent.innerHTML = '';
-        // If we have photos with client_id, we should set the grid layout
-        if (data.some(p => p.client_id)) {
+        // Filter out photos where the joined filter didn't match (Supabase returns null for filtered joins)
+        const filteredData = data.filter(p => {
+          if (!filterType || !filterValue) return true;
+          if (filterType === 'Procedimiento') return p.appointments && p.appointments.procedure_id === filterValue;
+          if (filterType === 'Centro') return p.appointments && p.appointments.centro_id === filterValue;
+          return true;
+        });
+
+        if (filteredData.length > 0) {
           galeriaContent.classList.remove('empty-state-galeria');
           galeriaContent.style.display = 'grid';
           galeriaContent.style.gridTemplateColumns = 'repeat(3, 1fr)';
           galeriaContent.style.gap = '0.5rem';
           galeriaContent.style.padding = '1rem';
+          galeriaContent.style.paddingBottom = '100px'; // Extra space for FAB
+        } else {
+          galeriaContent.classList.add('empty-state-galeria');
+          galeriaContent.style.display = 'flex';
+          galeriaContent.innerHTML = `
+            <div class="img-placeholder">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+            </div>
+            <h3>No se encontraron imágenes</h3>
+            <p>Prueba con otro filtro o sube nuevas imágenes</p>
+          `;
+          return;
         }
-      }
 
-      data.forEach(photo => {
-        if (photo.appointment_id) {
-          if (!currentAptPhotos[photo.appointment_id]) {
-            currentAptPhotos[photo.appointment_id] = [];
+        filteredData.forEach(photo => {
+          if (photo.appointment_id) {
+            if (!currentAptPhotos[photo.appointment_id]) {
+              currentAptPhotos[photo.appointment_id] = [];
+            }
+            currentAptPhotos[photo.appointment_id].push(photo.data_url);
           }
-          currentAptPhotos[photo.appointment_id].push(photo.data_url);
-        }
-        
-        if (photo.client_id) {
-          // Add to main gallery wall
-          if (galeriaContent) {
+          
+          if (photo.client_id) {
+            // Add to main gallery wall
             const imgContainer = document.createElement('div');
             imgContainer.style.width = '100%';
             imgContainer.style.height = '0';
@@ -4535,6 +4583,71 @@ document.addEventListener('DOMContentLoaded', () => {
       dbLoadPhotos(); // Cargar fotos de Supabase al iniciar sesión
     }
   };
-  initSession();
+  // Logic for Gallery filtering
+  const galeriaFiltroTipo = document.getElementById('galeria-filtro-tipo');
+  const galeriaBuscadorLabel = document.getElementById('galeria-buscador-label');
+  const galeriaSearchGroup = document.getElementById('galeria-search-group');
+  const galeriaBtnLimpiar = document.getElementById('galeria-btn-limpiar-filtro');
+
+  if (galeriaFiltroTipo && galeriaBuscadorLabel) {
+    galeriaFiltroTipo.addEventListener('change', () => {
+      const val = galeriaFiltroTipo.value;
+      galeriaBuscadorLabel.textContent = `Buscar ${val}`;
+    });
+  }
+
+  if (galeriaBtnLimpiar) {
+    galeriaBtnLimpiar.addEventListener('click', () => {
+      galeriaBuscadorLabel.textContent = `Buscar ${galeriaFiltroTipo.value}`;
+      dbLoadPhotos();
+    });
+  }
+
+  if (galeriaSearchGroup) {
+    galeriaSearchGroup.addEventListener('click', async () => {
+      const type = galeriaFiltroTipo.value;
+      
+      if (type === 'Cliente') {
+        const { data: clients } = await supabase.from('clients').select('id, nombre_completo').order('nombre_completo');
+        if (clients) {
+          const names = clients.map(c => c.nombre_completo);
+          const choice = prompt(`Selecciona un cliente:\n${names.join('\n')}`);
+          const client = clients.find(c => c.nombre_completo === choice);
+          if (client) {
+            galeriaBuscadorLabel.textContent = client.nombre_completo;
+            dbLoadPhotos('Cliente', client.id);
+          }
+        }
+      } else if (type === 'Procedimiento') {
+        const { data: procs } = await supabase.from('procedimientos').select('id, nombre').order('nombre');
+        if (procs) {
+          const names = procs.map(p => p.nombre);
+          const choice = prompt(`Selecciona un procedimiento:\n${names.join('\n')}`);
+          const proc = procs.find(p => p.nombre === choice);
+          if (proc) {
+            galeriaBuscadorLabel.textContent = proc.nombre;
+            dbLoadPhotos('Procedimiento', proc.id);
+          }
+        }
+      } else if (type === 'Centro') {
+        const { data: centros } = await supabase.from('centros').select('id, nombre').order('nombre');
+        if (centros) {
+          const names = centros.map(c => c.nombre);
+          const choice = prompt(`Selecciona un centro:\n${names.join('\n')}`);
+          const centro = centros.find(c => c.nombre === choice);
+          if (centro) {
+            galeriaBuscadorLabel.textContent = centro.nombre;
+            dbLoadPhotos('Centro', centro.id);
+          }
+        }
+      } else if (type === 'Fecha') {
+        const choice = prompt('Introduce la fecha (AAAA-MM-DD):', new Date().toISOString().split('T')[0]);
+        if (choice) {
+          galeriaBuscadorLabel.textContent = choice;
+          dbLoadPhotos('Fecha', choice);
+        }
+      }
+    });
+  }
 });
 

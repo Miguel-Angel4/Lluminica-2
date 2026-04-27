@@ -245,20 +245,20 @@
           <div class="galeria-header">
              <div class="filtro-cliente">
                <span>Buscar por:</span>
-               <select>
-                 <option>Cliente</option>
-                 <option>Procedimiento</option>
-                 <option>Fecha</option>
-                 <option>Centro</option>
+               <select id="galeria-filtro-tipo">
+                 <option value="Cliente">Cliente</option>
+                 <option value="Procedimiento">Procedimiento</option>
+                 <option value="Fecha">Fecha</option>
+                 <option value="Centro">Centro</option>
                </select>
              </div>
              <div class="buscador-bar">
-               <div class="search-input-group">
-                  <span>Buscar Cliente</span>
+               <div class="search-input-group" id="galeria-search-group">
+                  <span id="galeria-buscador-label">Buscar Cliente</span>
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
                </div>
-               <button class="filter-btn">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+               <button class="filter-btn" id="galeria-btn-limpiar-filtro" title="Limpiar filtro">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
                </button>
              </div>
           </div>
