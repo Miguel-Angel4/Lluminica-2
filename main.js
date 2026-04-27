@@ -770,18 +770,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Always set email from the auth user object first, before any potential errors
+      const emailField = document.getElementById('perfil-email');
+      if (emailField) {
+        emailField.value = user.email || '';
+        console.log("Setting email field to:", user.email);
+      }
+
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('email', user.email)
         .single();
 
-      if (error) throw error;
-
-      // Always set email from the auth user object first
-      const emailField = document.getElementById('perfil-email');
-      if (emailField) emailField.value = user.email;
-
+      // We don't throw if error is "not found" to allow setting fields to empty
       if (profile) {
         document.getElementById('perfil-nombre').value = profile.nombre || '';
         document.getElementById('perfil-apellidos').value = profile.apellidos || '';
