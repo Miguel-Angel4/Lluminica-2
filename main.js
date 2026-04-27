@@ -818,8 +818,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const { error } = await supabase
           .from('profiles')
-          .update(updatedData)
-          .eq('email', user.email);
+          .upsert({ ...updatedData, email: user.email }, { onConflict: 'email' });
 
         if (error) throw error;
 
