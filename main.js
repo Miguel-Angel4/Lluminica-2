@@ -3176,7 +3176,7 @@ document.addEventListener('DOMContentLoaded', () => {
     list.style.alignItems = 'stretch';
     list.innerHTML = '';
 
-    filtered.forEach(reporte => {
+    reportes.forEach(reporte => {
       const fechaCreacion = new Date(reporte.created_at);
       const fechaStr = `${fechaCreacion.getDate()}/${fechaCreacion.getMonth() + 1}/${fechaCreacion.getFullYear()}`;
       
