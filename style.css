@@ -1133,8 +1133,8 @@ input:checked + .slider:before {
 .perfil-accordion {
   background: white;
   border-radius: 12px;
-  overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 1.25rem;
 }
 
 .perfil-accordion-header {
@@ -1145,6 +1145,7 @@ input:checked + .slider:before {
   cursor: pointer;
   background: white;
   transition: background 0.2s;
+  border-radius: 12px;
 }
 
 .perfil-accordion-header:active {
