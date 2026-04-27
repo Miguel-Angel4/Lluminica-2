@@ -1099,15 +1099,15 @@ document.addEventListener('DOMContentLoaded', () => {
             imgContainer.appendChild(btnDel);
             imgContainer.appendChild(tagLabel);
             galeriaContent.appendChild(imgContainer);
+          } else if (!photo.appointment_id) {
+            // If no client and no appointment, it goes to the internal gallery buffer
+            internalSessionPhotos.push(photo.data_url);
           }
-        } else if (!photo.appointment_id) {
-          // If no client and no appointment, it goes to the internal gallery buffer
-          internalSessionPhotos.push(photo.data_url);
-        }
-      });
+        });
 
       if (typeof renderInternalGallery === 'function') renderInternalGallery();
       if (typeof renderAptPhotos === 'function') renderAptPhotos();
+    }
     } catch (err) {
       console.error('Error al cargar fotos:', err.message);
     }
