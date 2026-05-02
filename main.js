@@ -1217,8 +1217,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (filteredData.length > 0) {
           galeriaContent.classList.remove('empty-state-galeria');
           galeriaContent.style.display = 'grid';
-          // Columns and gap are now handled by CSS media queries
-          galeriaContent.style.paddingBottom = '100px'; 
+          galeriaContent.style.gridTemplateColumns = 'repeat(3, 1fr)';
+          galeriaContent.style.gap = '0.5rem';
+          galeriaContent.style.padding = '1rem';
+          galeriaContent.style.paddingBottom = '100px'; // Extra space for FAB
         } else {
           galeriaContent.classList.add('empty-state-galeria');
           galeriaContent.style.display = 'flex';

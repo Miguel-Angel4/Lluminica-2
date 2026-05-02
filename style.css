@@ -14,7 +14,7 @@
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: #f8fafc;
+  background-color: var(--llum-bg);
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -248,126 +248,7 @@ body {
   }
 }
 
-@media (min-width: 768px) {
-  #app {
-    max-width: 450px;
-    background: white;
-    padding: 3rem;
-    border-radius: 24px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.05);
-  }
 
-  #dashboard-view {
-    flex-direction: row !important;
-  }
-
-  .bottom-nav {
-    width: 280px;
-    height: 100vh;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-    padding: 2.5rem 1.25rem !important;
-    border-top: none !important;
-    border-right: 1px solid #e2e8f0;
-    position: relative;
-    background: white;
-  }
-
-  .nav-item {
-    flex-direction: row !important;
-    gap: 1.25rem !important;
-    padding: 1rem 1.25rem !important;
-    width: 100%;
-    border-radius: 12px;
-    font-size: 1rem !important;
-    transition: all 0.2s ease;
-  }
-
-  .nav-item svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .nav-item.active {
-    background-color: #e0f2fe;
-    color: #0369a1 !important;
-  }
-
-  .nav-item:hover:not(.active) {
-    background-color: #f1f5f9;
-    color: #334155;
-  }
-
-  .main-subview {
-    flex: 1;
-    height: 100vh;
-    overflow-y: auto;
-  }
-
-  /* Grid Layouts for Desktop */
-  .management-list-box {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 1.5rem;
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
-  .management-list-box .menu-item {
-    background: white !important;
-    border-radius: 16px !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-    min-height: 80px !important;
-  }
-
-  .menu-view-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 3rem !important;
-  }
-
-  .galeria-content {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
-    gap: 1.5rem !important;
-    padding: 2rem !important;
-  }
-
-  .clientes-content:not(.empty-state-clientes) {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)) !important;
-    gap: 1.5rem !important;
-    padding: 2rem !important;
-  }
-
-  /* Calendar desktop adjustments */
-  .citas-content {
-    padding: 2rem !important;
-  }
-
-  #citas-list {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 1.5rem !important;
-  }
-
-  #calendario-view {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-}
-
-@media (min-width: 1200px) {
-  .management-list-box {
-    grid-template-columns: repeat(3, 1fr) !important;
-  }
-
-  .galeria-content {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)) !important;
-  }
-}
 
 /* Dashboard Styles */
 #dashboard-view {
