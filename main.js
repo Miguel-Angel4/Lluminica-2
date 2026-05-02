@@ -728,15 +728,32 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!docsListContainer) return;
     
     try {
-      const { data: docs, error } = await supabase
+      let query = supabase
         .from('documentos')
         .select(`
           *,
-          clients (
-            nombre_completo
+          clients!inner (
+            nombre_completo,
+            centro_id
           )
-        `)
-        .order('created_at', { ascending: false });
+        `);
+
+      if (globalCentroFilterId) {
+        query = query.eq('clients.centro_id', globalCentroFilterId);
+      } else {
+        // If no filter, allow docs with no client (optional choice, but let's keep it visible)
+        query = supabase
+          .from('documentos')
+          .select(`
+            *,
+            clients (
+              nombre_completo,
+              centro_id
+            )
+          `);
+      }
+
+      const { data: docs, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
 
@@ -2171,10 +2188,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: clients, error } = await supabase
+      let query = supabase
         .from('clients')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+
+      if (globalCentroFilterId) {
+        query = query.eq('centro_id', globalCentroFilterId);
+      }
+
+      const { data: clients, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
 
@@ -3097,7 +3119,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const optionsHtml = `
         <option value="">Seleccionar Centro...</option>
-        ${centros.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')}
+        ${centros.map(c => {
+          const isSelected = globalCentroFilterId === c.id ? 'selected' : '';
+          return `<option value="${c.id}" ${isSelected}>${c.nombre}</option>`;
+        }).join('')}
       `;
 
       if (clientCentroSelect) clientCentroSelect.innerHTML = optionsHtml;
@@ -3632,10 +3657,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadReportes() {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('reportes')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+
+      if (globalCentroFilterId) {
+        // Filter reports where the metadata 'centro_id' in JSONB matches
+        query = query.eq('datos->>centro_id', globalCentroFilterId);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
       allReportesData = data || [];
@@ -3857,7 +3888,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const clientList = document.getElementById('cita-clientes-list');
     if (clientList) {
       try {
-        const { data: clients } = await supabase.from('clients').select('*').order('nombre_completo');
+        let query = supabase.from('clients').select('*');
+        if (globalCentroFilterId) {
+          query = query.eq('centro_id', globalCentroFilterId);
+        }
+        const { data: clients } = await query.order('nombre_completo');
         if (clients) {
           clientList.innerHTML = clients.map(c => `
             <div class="dropdown-item" data-id="${c.id}" data-name="${c.nombre_completo}" style="padding: 0.85rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; color: #1e293b;">
@@ -3893,6 +3928,19 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const { data: centros } = await supabase.from('centros').select('*').order('nombre');
         if (centros) {
+          // Pre-select if global filter is active
+          if (globalCentroFilterId) {
+            const current = centros.find(c => c.id === globalCentroFilterId);
+            if (current) {
+              selectedAptCentro = { id: current.id, name: current.nombre };
+              const textEl = document.getElementById('cita-centro-text');
+              if (textEl) {
+                textEl.textContent = current.nombre;
+                textEl.style.color = '#334155';
+              }
+            }
+          }
+
           centroList.innerHTML = centros.map(c => `
             <div class="dropdown-item" data-id="${c.id}" data-name="${c.nombre}" style="padding: 0.85rem 1rem; cursor: pointer; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; color: #1e293b;">
               ${c.nombre}
@@ -4975,6 +5023,9 @@ document.addEventListener('DOMContentLoaded', () => {
           // Re-load data with new filter
           loadAppointments();
           dbLoadPhotos();
+          loadClientes();
+          loadDocumentos();
+          loadReportes();
           
           // Go back
           switchToView('Menú');
