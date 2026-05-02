@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let allAppointmentsData = [];
   let currentCalendarDate = new Date();
   let selectedCalendarDay = null; // {day, month, year}
-  let globalCentroFilterId = null; // Global filter by center ID
+  let globalCentroFilterId = localStorage.getItem('globalCentroFilterId') || null; // Global filter by center ID
 
   // View toggling logic extended
   const hideAllViews = () => {
@@ -4894,8 +4894,23 @@ document.addEventListener('DOMContentLoaded', () => {
       hideAllViews();
       dashboardView.style.display = 'flex';
       switchToView('Citas');
+      
+      // Update filter label on startup
+      if (globalCentroFilterId) {
+        try {
+          const { data: centro } = await supabase.from('centros').select('nombre').eq('id', globalCentroFilterId).single();
+          if (centro) {
+            const label = document.getElementById('global-filter-centro-text');
+            if (label) label.textContent = centro.nombre;
+          }
+        } catch (e) { console.error("Error loading filter centro name:", e); }
+      }
+
       loadAppointments(); // Cargar citas de Supabase al iniciar sesión
       dbLoadPhotos(); // Cargar fotos de Supabase al iniciar sesión
+      loadClientes();
+      loadDocumentos();
+      loadReportes();
     }
   };
   // Logic for Gallery filtering
@@ -4984,6 +4999,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const listContainer = document.getElementById('global-centro-list');
     if (!listContainer) return;
 
+    listContainer.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 2rem;">Cargando centros...</p>';
+
     try {
       // Get all centers
       const { data: centers, error } = await supabase.from('centros').select('*').order('nombre');
@@ -5014,9 +5031,11 @@ document.addEventListener('DOMContentLoaded', () => {
           const id = item.dataset.id;
           if (id === 'all') {
             globalCentroFilterId = null;
+            localStorage.removeItem('globalCentroFilterId');
             document.getElementById('global-filter-centro-text').textContent = 'Todos los centros';
           } else {
             globalCentroFilterId = id;
+            localStorage.setItem('globalCentroFilterId', id);
             document.getElementById('global-filter-centro-text').textContent = item.querySelector('span').textContent;
           }
           
