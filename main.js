@@ -31,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let createMethodBtns, createStatusBtns, createPrecioInput, createConceptoInput, createNotasTextarea, btnVoiceNoteCreate;
   let currentDocIdToAssign = null;
   let allClientsData = [];
+  let allAppointmentsData = [];
+  let currentCalendarDate = new Date();
 
   // View toggling logic extended
   const hideAllViews = () => {
@@ -292,16 +294,131 @@ document.addEventListener('DOMContentLoaded', () => {
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      // If it's the calendar tab, we don't switch yet because it's 'Próximamente'
-      if (tab.id === 'tab-calendario') {
-        alert('La vista de Calendario estará disponible próximamente.');
-        return;
-      }
-      
       tabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
+
+      const citasContainer = document.getElementById('citas-container');
+      const calendarioView = document.getElementById('calendario-view');
+      const emptyState = document.getElementById('citas-empty-state');
+
+      if (tab.id === 'tab-calendario') {
+        if (citasContainer) citasContainer.style.display = 'none';
+        if (calendarioView) calendarioView.style.display = 'block';
+        if (emptyState) emptyState.style.display = 'none';
+        renderCalendar();
+      } else {
+        if (citasContainer) citasContainer.style.display = (allAppointmentsData.length > 0) ? 'flex' : 'none';
+        if (calendarioView) calendarioView.style.display = 'none';
+        if (emptyState) emptyState.style.display = (allAppointmentsData.length === 0) ? 'flex' : 'none';
+      }
     });
   });
+
+  // Calendar Navigation
+  const prevMonthBtn = document.getElementById('prev-month');
+  const nextMonthBtn = document.getElementById('next-month');
+
+  if (prevMonthBtn) {
+    prevMonthBtn.addEventListener('click', () => {
+      currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+      renderCalendar();
+    });
+  }
+
+  if (nextMonthBtn) {
+    nextMonthBtn.addEventListener('click', () => {
+      currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+      renderCalendar();
+    });
+  }
+
+  function renderCalendar() {
+    const monthYearLabel = document.getElementById('calendar-month-year');
+    const calendarDays = document.getElementById('calendar-days');
+    if (!monthYearLabel || !calendarDays) return;
+
+    const months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+
+    monthYearLabel.textContent = `${months[month]} ${year}`;
+
+    // Clear days
+    calendarDays.innerHTML = '';
+
+    // First day of month
+    const firstDay = new Date(year, month, 1).getDay();
+    // Adjust for Monday start (0=Sun, 1=Mon... -> 0=Mon, 6=Sun)
+    let dayOffset = firstDay === 0 ? 6 : firstDay - 1;
+
+    // Days in month
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Padding
+    for (let i = 0; i < dayOffset; i++) {
+      const empty = document.createElement('div');
+      calendarDays.appendChild(empty);
+    }
+
+    // Days
+    const today = new Date();
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayEl = document.createElement('div');
+      dayEl.style.height = '40px';
+      dayEl.style.display = 'flex';
+      dayEl.style.flexDirection = 'column';
+      dayEl.style.alignItems = 'center';
+      dayEl.style.justifyContent = 'center';
+      dayEl.style.fontSize = '0.9rem';
+      dayEl.style.fontWeight = '600';
+      dayEl.style.borderRadius = '10px';
+      dayEl.style.cursor = 'pointer';
+      dayEl.style.position = 'relative';
+      dayEl.textContent = d;
+
+      const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+      
+      // Check for appointments on this day
+      const dayAppointments = allAppointmentsData.filter(apt => {
+        const aptDate = new Date(apt.created_at);
+        return aptDate.getFullYear() === year && aptDate.getMonth() === month && aptDate.getDate() === d;
+      });
+
+      if (dayAppointments.length > 0) {
+        dayEl.style.color = '#00bcd4';
+        const dot = document.createElement('div');
+        dot.style.width = '4px';
+        dot.style.height = '4px';
+        dot.style.background = '#00bcd4';
+        dot.style.borderRadius = '50%';
+        dot.style.position = 'absolute';
+        dot.style.bottom = '5px';
+        dayEl.appendChild(dot);
+      } else {
+        dayEl.style.color = '#1e293b';
+      }
+
+      if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) {
+        dayEl.style.background = '#e0f7fa';
+        dayEl.style.border = '1px solid #00bcd4';
+      }
+
+      dayEl.onclick = () => {
+        if (dayAppointments.length > 0) {
+          // Switch to list view and highlight these appointments?
+          // Or show a simple alert/modal for now as requested "se verán las citas... que dia y hora"
+          const listStr = dayAppointments.map(apt => {
+            const date = new Date(apt.created_at);
+            const time = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+            return `${time} - ${apt.clients ? apt.clients.nombre_completo : 'Cliente'}`;
+          }).join('\n');
+          alert(`Citas para el día ${d}/${month + 1}/${year}:\n\n${listStr}`);
+        }
+      };
+
+      calendarDays.appendChild(dayEl);
+    }
+  }
 
   const menuItems = document.querySelectorAll('.menu-item');
 
@@ -4154,6 +4271,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (error) throw error;
 
+      allAppointmentsData = data || [];
+
       if (!data || data.length === 0) {
         if (container) container.style.display = 'none';
         if (empty) empty.style.display = 'flex';
@@ -4654,6 +4773,7 @@ document.addEventListener('DOMContentLoaded', () => {
       hideAllViews();
       dashboardView.style.display = 'flex';
       switchToView('Citas');
+      loadAppointments(); // Cargar citas de Supabase al iniciar sesión
       dbLoadPhotos(); // Cargar fotos de Supabase al iniciar sesión
     }
   };
@@ -4723,5 +4843,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  initSession();
 });
 
