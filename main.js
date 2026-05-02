@@ -189,6 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
       dashboardView.style.display = 'flex';
       document.title = 'Lluminica - Citas';
       loadAppointments(); // Ensure appointments are loaded on login
+      dbLoadPhotos(); // Ensure photos are loaded on login
     } catch (err) {
       loginError.style.display = 'block';
       console.error('Login error:', err.message);
@@ -506,6 +507,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-galeria');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Galería';
+      dbLoadPhotos();
     } else if (label === 'Clientes') {
       const view = document.querySelector('#view-clientes');
       if(view) view.style.display = 'flex';
