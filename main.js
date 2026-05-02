@@ -33,6 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let allClientsData = [];
   let allAppointmentsData = [];
   let currentCalendarDate = new Date();
+  let selectedCalendarDay = null; // {day, month, year}
 
   // View toggling logic extended
   const hideAllViews = () => {
@@ -310,6 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (citasContainer) citasContainer.style.display = (allAppointmentsData.length > 0) ? 'flex' : 'none';
         if (calendarioView) calendarioView.style.display = 'none';
         if (emptyState) emptyState.style.display = (allAppointmentsData.length === 0) ? 'flex' : 'none';
+        const dayApts = document.getElementById('calendar-day-appointments');
+        if (dayApts) dayApts.style.display = 'none';
       }
     });
   });
@@ -321,6 +324,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (prevMonthBtn) {
     prevMonthBtn.addEventListener('click', () => {
       currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+      const dayApts = document.getElementById('calendar-day-appointments');
+      if (dayApts) dayApts.style.display = 'none';
       renderCalendar();
     });
   }
@@ -328,6 +333,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (nextMonthBtn) {
     nextMonthBtn.addEventListener('click', () => {
       currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+      const dayApts = document.getElementById('calendar-day-appointments');
+      if (dayApts) dayApts.style.display = 'none';
       renderCalendar();
     });
   }
@@ -398,26 +405,75 @@ document.addEventListener('DOMContentLoaded', () => {
         dayEl.style.color = '#1e293b';
       }
 
-      if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) {
+      if (selectedCalendarDay && selectedCalendarDay.year === year && selectedCalendarDay.month === month && selectedCalendarDay.day === d) {
+        dayEl.style.background = '#00bcd4';
+        dayEl.style.color = 'white';
+        const dot = dayEl.querySelector('div');
+        if (dot) dot.style.background = 'white';
+      } else if (today.getFullYear() === year && today.getMonth() === month && today.getDate() === d) {
         dayEl.style.background = '#e0f7fa';
         dayEl.style.border = '1px solid #00bcd4';
       }
 
       dayEl.onclick = () => {
-        if (dayAppointments.length > 0) {
-          // Switch to list view and highlight these appointments?
-          // Or show a simple alert/modal for now as requested "se verán las citas... que dia y hora"
-          const listStr = dayAppointments.map(apt => {
-            const date = new Date(apt.created_at);
-            const time = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-            return `${time} - ${apt.clients ? apt.clients.nombre_completo : 'Cliente'}`;
-          }).join('\n');
-          alert(`Citas para el día ${d}/${month + 1}/${year}:\n\n${listStr}`);
-        }
+        selectedCalendarDay = { day: d, month: month, year: year };
+        renderCalendar(); // Re-render to show selection
+        showDayAppointments(d, month, year, dayAppointments);
       };
 
       calendarDays.appendChild(dayEl);
     }
+  }
+
+  function showDayAppointments(day, month, year, appointments) {
+    const container = document.getElementById('calendar-day-appointments');
+    const list = document.getElementById('calendar-appointments-list');
+    const label = document.getElementById('selected-day-label');
+    if (!container || !list || !label) return;
+
+    if (appointments.length === 0) {
+      container.style.display = 'none';
+      return;
+    }
+
+    container.style.display = 'block';
+    label.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Citas para el ${day}/${month + 1}/${year}
+    `;
+
+    list.innerHTML = appointments.map(apt => {
+      const date = new Date(apt.created_at);
+      const timeStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+      const clientName = apt.clients ? apt.clients.nombre_completo : 'Cliente';
+      
+      return `
+        <div class="calendar-apt-item" data-id="${apt.id}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; background: #f8fafc; border-radius: 12px; cursor: pointer; transition: all 0.2s; border: 1px solid #f1f5f9;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <span style="color: #00bcd4; font-weight: 700; font-size: 0.95rem;">${timeStr}</span>
+            <span style="color: #1e293b; font-weight: 600; font-size: 0.95rem;">${clientName}</span>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+      `;
+    }).join('');
+
+    list.querySelectorAll('.calendar-apt-item').forEach(item => {
+      item.onclick = () => {
+        showAppointmentDetails(item.dataset.id);
+      };
+      item.onmouseenter = () => {
+        item.style.background = '#f1f5f9';
+        item.style.borderColor = '#e2e8f0';
+      };
+      item.onmouseleave = () => {
+        item.style.background = '#f8fafc';
+        item.style.borderColor = '#f1f5f9';
+      };
+    });
+
+    // Scroll container into view if it was hidden
+    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 
   const menuItems = document.querySelectorAll('.menu-item');
