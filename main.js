@@ -1927,6 +1927,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = document.getElementById('client-email').value;
       const phone = document.getElementById('client-phone').value;
       const gender = document.getElementById('client-gender').value;
+      const centroId = document.getElementById('client-centro-id').value;
 
       if (!name) {
         alert('El nombre es obligatorio');
@@ -1948,7 +1949,8 @@ document.addEventListener('DOMContentLoaded', () => {
             fecha_nacimiento: bday || null,
             email: email,
             telefono: phone,
-            genero: gender
+            genero: gender,
+            centro_id: centroId || null
           }
         ]);
 
@@ -1960,6 +1962,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('client-birthday').value = '';
         document.getElementById('client-email').value = '';
         document.getElementById('client-phone').value = '';
+        document.getElementById('client-centro-id').value = '';
         
         addClienteModal.style.display = 'none';
         loadClientes(); // Reload list
@@ -1976,6 +1979,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function loadClientes() {
     const clientesContent = document.querySelector('.clientes-content');
     if (!clientesContent) return;
+
+    await populateCentrosDropdowns();
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -2050,7 +2055,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  function openClientProfile(client) {
+  async function openClientProfile(client) {
     const profileView = document.getElementById('client-profile-view');
     if (!profileView) return;
 
@@ -2058,6 +2063,22 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('profile-bday').textContent = client.fecha_nacimiento ? formatDate(client.fecha_nacimiento) : 'Sin fecha';
     document.getElementById('profile-gender').textContent = client.genero || 'No especificado';
     
+    // Set center name
+    const profileCentro = document.getElementById('profile-centro');
+    if (profileCentro) {
+      if (client.centro_id) {
+        const centro = allCentrosData.find(c => c.id === client.centro_id);
+        if (centro) {
+          profileCentro.textContent = centro.nombre;
+        } else {
+          const { data } = await supabase.from('centros').select('nombre').eq('id', client.centro_id).single();
+          profileCentro.textContent = data ? data.nombre : 'Desconocido';
+        }
+      } else {
+        profileCentro.textContent = 'Sin asignar';
+      }
+    }
+
     // Update initials in avatar
     const initials = client.nombre_completo.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
     const avatar = document.getElementById('profile-avatar');
@@ -2095,6 +2116,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('edit-client-email').value = currentEditingClient.email || '';
       document.getElementById('edit-client-phone').value = currentEditingClient.telefono || '';
       document.getElementById('edit-client-gender').value = currentEditingClient.genero || 'Hombre';
+      document.getElementById('edit-client-centro-id').value = currentEditingClient.centro_id || '';
       
       editClienteModal.style.display = 'block';
     });
@@ -2116,6 +2138,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = document.getElementById('edit-client-email').value;
       const phone = document.getElementById('edit-client-phone').value;
       const gender = document.getElementById('edit-client-gender').value;
+      const centroId = document.getElementById('edit-client-centro-id').value;
 
       if (!name) {
         alert('El nombre es obligatorio');
@@ -2134,7 +2157,8 @@ document.addEventListener('DOMContentLoaded', () => {
             fecha_nacimiento: bday || null,
             email: email,
             telefono: phone,
-            genero: gender
+            genero: gender,
+            centro_id: centroId || null
           })
           .eq('id', currentEditingClient.id);
 
@@ -2147,6 +2171,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentEditingClient.email = email;
         currentEditingClient.telefono = phone;
         currentEditingClient.genero = gender;
+        currentEditingClient.centro_id = centroId;
 
         // Refresh profile view
         openClientProfile(currentEditingClient);
@@ -2847,6 +2872,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
       list.appendChild(card);
     });
+  }
+
+  async function populateCentrosDropdowns() {
+    const clientCentroSelect = document.getElementById('client-centro-id');
+    const editClientCentroSelect = document.getElementById('edit-client-centro-id');
+    if (!clientCentroSelect && !editClientCentroSelect) return;
+
+    try {
+      const { data: centros, error } = await supabase
+        .from('centros')
+        .select('id, nombre')
+        .order('nombre', { ascending: true });
+
+      if (error) throw error;
+
+      const optionsHtml = `
+        <option value="">Seleccionar Centro...</option>
+        ${centros.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('')}
+      `;
+
+      if (clientCentroSelect) clientCentroSelect.innerHTML = optionsHtml;
+      if (editClientCentroSelect) editClientCentroSelect.innerHTML = optionsHtml;
+    } catch (err) {
+      console.error('Error populating centros dropdowns:', err.message);
+    }
   }
 
   const procSearchInput = document.getElementById('proc-search-input');
