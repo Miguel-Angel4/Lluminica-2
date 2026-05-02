@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let selectedCreateAptStatus = 'Pendiente';
   let createMethodBtns, createStatusBtns, createPrecioInput, createConceptoInput, createNotasTextarea, btnVoiceNoteCreate;
   let currentDocIdToAssign = null;
+  let allClientsData = [];
 
   // View toggling logic extended
   const hideAllViews = () => {
@@ -1994,6 +1995,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (error) throw error;
 
       if (!clients || clients.length === 0) {
+        allClientsData = [];
         clientesContent.innerHTML = `
           <div class="img-placeholder" style="width: 90px; height: 90px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
             <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -2005,11 +2007,33 @@ document.addEventListener('DOMContentLoaded', () => {
         clientesContent.style.justifyContent = 'center';
         clientesContent.style.height = 'calc(100vh - 250px)';
       } else {
+        allClientsData = clients;
         renderClientesList(clients);
       }
     } catch (err) {
         console.error('Error loading clients:', err.message);
     }
+  }
+
+  // Handle Client Search
+  const clientSearchInput = document.getElementById('client-search-input');
+  if (clientSearchInput) {
+    clientSearchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      if (!query) {
+        renderClientesList(allClientsData);
+        return;
+      }
+
+      const filtered = allClientsData.filter(client => {
+        const nameMatch = client.nombre_completo.toLowerCase().includes(query);
+        const emailMatch = (client.email || '').toLowerCase().includes(query);
+        const nifMatch = (client.nif || '').toLowerCase().includes(query);
+        return nameMatch || emailMatch || nifMatch;
+      });
+
+      renderClientesList(filtered);
+    });
   }
 
   let currentEditingClient = null;
