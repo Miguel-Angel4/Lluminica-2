@@ -489,7 +489,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterView = document.querySelector('#view-global-centro-filter');
     if (filterView) filterView.style.display = 'none';
   };
-  };
 
   const switchToView = (label) => {
     navItems.forEach(ni => ni.classList.remove('active'));
