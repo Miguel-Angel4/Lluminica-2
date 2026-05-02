@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let allAppointmentsData = [];
   let currentCalendarDate = new Date();
   let selectedCalendarDay = null; // {day, month, year}
+  let globalCentroFilterId = null; // Global filter by center ID
 
   // View toggling logic extended
   const hideAllViews = () => {
@@ -485,6 +486,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const v = document.querySelector(selector);
       if (v) v.style.display = 'none';
     });
+    const filterView = document.querySelector('#view-global-centro-filter');
+    if (filterView) filterView.style.display = 'none';
+  };
   };
 
   const switchToView = (label) => {
@@ -571,11 +575,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-crear-reporte');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Nuevo Reporte';
-    } else if (label === 'Perfil') {
-      const view = document.querySelector('#view-perfil');
-      if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Perfil';
       loadFullUserProfile();
+    } else if (label === 'FiltroCentro') {
+      const view = document.querySelector('#view-global-centro-filter');
+      if(view) view.style.display = 'flex';
+      document.title = 'Lluminica - Filtro por centro';
+      renderGlobalCentroFilter();
     } else {
       alert(`La sección de ${label} estará disponible próximamente.`);
     }
@@ -1151,6 +1157,10 @@ document.addEventListener('DOMContentLoaded', () => {
           )
         `)
         .order('created_at', { ascending: false });
+
+      if (globalCentroFilterId) {
+        query = query.eq('appointments.centro_id', globalCentroFilterId);
+      }
 
       // Apply filtering if provided
       if (filterType && filterValue) {
@@ -4322,10 +4332,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!list) return;
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('appointments')
         .select('*, clients(nombre_completo)')
         .order('created_at', { ascending: false });
+
+      if (globalCentroFilterId) {
+        query = query.eq('centro_id', globalCentroFilterId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -4900,6 +4916,75 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+  }
+
+  // --- Global Center Filter Logic ---
+  const btnOpenGlobalFilter = document.getElementById('btn-global-filter-centro');
+  if (btnOpenGlobalFilter) {
+    btnOpenGlobalFilter.addEventListener('click', () => {
+      switchToView('FiltroCentro');
+    });
+  }
+
+  const btnBackFromFilter = document.getElementById('back-from-filter-centro');
+  if (btnBackFromFilter) {
+    btnBackFromFilter.addEventListener('click', () => {
+      switchToView('Menú');
+    });
+  }
+
+  async function renderGlobalCentroFilter() {
+    const listContainer = document.getElementById('global-centro-list');
+    if (!listContainer) return;
+
+    try {
+      // Get all centers
+      const { data: centers, error } = await supabase.from('centros').select('*').order('nombre');
+      if (error) throw error;
+
+      let html = `
+        <div class="global-centro-item ${!globalCentroFilterId ? 'active' : ''}" data-id="all" style="background: white; padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; border: 2px solid ${!globalCentroFilterId ? '#00bcd4' : 'transparent'}; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 0.75rem;">
+          <span style="font-weight: 700; color: #1e293b;">Todos los centros</span>
+          ${!globalCentroFilterId ? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+        </div>
+      `;
+
+      centers.forEach(centro => {
+        const isActive = globalCentroFilterId === centro.id;
+        html += `
+          <div class="global-centro-item ${isActive ? 'active' : ''}" data-id="${centro.id}" style="background: white; padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; border: 2px solid ${isActive ? '#00bcd4' : 'transparent'}; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-bottom: 0.75rem;">
+            <span style="font-weight: 700; color: #1e293b;">${centro.nombre}</span>
+            ${isActive ? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+          </div>
+        `;
+      });
+
+      listContainer.innerHTML = html;
+
+      // Add click listeners
+      listContainer.querySelectorAll('.global-centro-item').forEach(item => {
+        item.onclick = () => {
+          const id = item.dataset.id;
+          if (id === 'all') {
+            globalCentroFilterId = null;
+            document.getElementById('global-filter-centro-text').textContent = 'Todos los centros';
+          } else {
+            globalCentroFilterId = id;
+            document.getElementById('global-filter-centro-text').textContent = item.querySelector('span').textContent;
+          }
+          
+          // Re-load data with new filter
+          loadAppointments();
+          dbLoadPhotos();
+          
+          // Go back
+          switchToView('Menú');
+        };
+      });
+
+    } catch (err) {
+      console.error('Error rendering global center filter:', err.message);
+    }
   }
 
   initSession();
