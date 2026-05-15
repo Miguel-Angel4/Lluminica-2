@@ -1053,9 +1053,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- PROFILE PHOTO LOGIC ---
   const perfilFotoPreview = document.getElementById('perfil-foto-preview');
   const perfilFileInput = document.getElementById('perfil-file-input');
+  const perfilCambiarTexto = document.querySelector('#view-perfil p[style*="Cambiar foto"]');
 
   if (perfilFotoPreview && perfilFileInput) {
-    perfilFotoPreview.onclick = () => perfilFileInput.click();
+    const triggerUpload = () => {
+      console.log("Triggering file input click");
+      perfilFileInput.click();
+    };
+    perfilFotoPreview.onclick = triggerUpload;
+    if (perfilCambiarTexto) perfilCambiarTexto.onclick = triggerUpload;
     
     perfilFileInput.onchange = async (e) => {
       const file = e.target.files[0];
@@ -1063,22 +1069,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('No hay sesión activa');
+        if (!user) throw new Error('No hay sesión activa. Por favor, inicia sesión de nuevo.');
+
+        // Show loading state
+        if (perfilCambiarTexto) perfilCambiarTexto.textContent = 'Subiendo...';
+        perfilFotoPreview.style.opacity = '0.5';
 
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
         const filePath = `avatars/${fileName}`;
 
-        // Upload to storage (assuming bucket 'avatars' exists)
+        console.log("Uploading file to path:", filePath);
+
+        // Upload to storage
         const { error: uploadError } = await supabase.storage
           .from('avatars')
-          .upload(filePath, file);
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          if (uploadError.message.includes('bucket not found')) {
+            throw new Error('El contenedor "avatars" no existe en Supabase Storage. Por favor, créalo o contacta con soporte.');
+          }
+          throw uploadError;
+        }
 
         const { data: { publicUrl } } = supabase.storage
           .from('avatars')
           .getPublicUrl(filePath);
+
+        console.log("File uploaded, public URL:", publicUrl);
 
         // Update profile
         const { error: updateError } = await supabase
@@ -1087,11 +1109,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (updateError) throw updateError;
 
-        loadUserProfile(); // Refresh menu avatar
-        loadFullUserProfile(); // Refresh profile view
-        alert('Foto de perfil actualizada correctamente');
+        await loadUserProfile(); // Refresh menu avatar
+        await loadFullUserProfile(); // Refresh profile view
+        alert('¡Foto de perfil actualizada correctamente!');
       } catch (err) {
-        alert('Error al subir la foto: ' + err.message);
+        console.error("Upload error details:", err);
+        alert('Error al subir la foto: ' + (err.message || 'Error desconocido'));
+      } finally {
+        if (perfilCambiarTexto) perfilCambiarTexto.textContent = 'Cambiar foto de perfil';
+        perfilFotoPreview.style.opacity = '1';
+        perfilFileInput.value = ''; // Reset input
       }
     };
   }
