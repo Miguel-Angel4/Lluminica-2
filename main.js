@@ -574,6 +574,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = document.querySelector('#view-crear-reporte');
       if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Nuevo Reporte';
+    } else if (label === 'Perfil') {
+      const view = document.querySelector('#view-perfil');
+      if(view) view.style.display = 'flex';
       document.title = 'Lluminica - Perfil';
       loadFullUserProfile();
     } else if (label === 'FiltroCentro') {
@@ -924,9 +927,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Also handle the profile card which is outside management list
   const btnConfigPerfil = document.getElementById('btn-configurar-perfil');
+  const cardUserProfile = document.getElementById('menu-user-profile');
+
   if (btnConfigPerfil) {
     btnConfigPerfil.addEventListener('click', (e) => {
       e.preventDefault();
+      e.stopPropagation(); // Prevent card listener if link is clicked
+      switchToView('Perfil');
+    });
+  }
+
+  if (cardUserProfile) {
+    cardUserProfile.addEventListener('click', () => {
       switchToView('Perfil');
     });
   }
