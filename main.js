@@ -983,12 +983,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // We don't throw if error is "not found" to allow setting fields to empty
       if (profile) {
-        document.getElementById('perfil-nombre').value = profile.nombre || '';
-        document.getElementById('perfil-apellidos').value = profile.apellidos || '';
-        document.getElementById('perfil-telefono').value = profile.telefono || '';
-        document.getElementById('perfil-nif').value = profile.nif || '';
-        document.getElementById('perfil-razon').value = profile.razon_social || '';
         document.getElementById('perfil-direccion').value = profile.direccion || '';
+        
+        const imgAvatar = document.getElementById('perfil-img-avatar');
+        const svgAvatar = document.getElementById('perfil-svg-avatar');
+        if (imgAvatar && svgAvatar && profile.avatar_url) {
+          imgAvatar.src = profile.avatar_url;
+          imgAvatar.style.display = 'block';
+          svgAvatar.style.display = 'none';
+        } else if (imgAvatar && svgAvatar) {
+          imgAvatar.style.display = 'none';
+          svgAvatar.style.display = 'block';
+        }
       }
     } catch (err) {
       console.error('Error loading full profile:', err.message);
@@ -1022,6 +1028,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         alert('Perfil actualizado correctamente.');
         loadUserProfile(); // Refresh the menu card name
+        loadFullUserProfile(); // Refresh profile view
       } catch (err) {
         alert('Error al actualizar perfil: ' + err.message);
       } finally {
@@ -1029,6 +1036,52 @@ document.addEventListener('DOMContentLoaded', () => {
         btnActualizarPerfil.textContent = 'Actualizar Perfil';
       }
     });
+  }
+
+  // --- PROFILE PHOTO LOGIC ---
+  const perfilFotoPreview = document.getElementById('perfil-foto-preview');
+  const perfilFileInput = document.getElementById('perfil-file-input');
+
+  if (perfilFotoPreview && perfilFileInput) {
+    perfilFotoPreview.onclick = () => perfilFileInput.click();
+    
+    perfilFileInput.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No hay sesión activa');
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const filePath = `avatars/${fileName}`;
+
+        // Upload to storage (assuming bucket 'avatars' exists)
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(filePath);
+
+        // Update profile
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .upsert({ email: user.email, avatar_url: publicUrl }, { onConflict: 'email' });
+
+        if (updateError) throw updateError;
+
+        loadUserProfile(); // Refresh menu avatar
+        loadFullUserProfile(); // Refresh profile view
+        alert('Foto de perfil actualizada correctamente');
+      } catch (err) {
+        alert('Error al subir la foto: ' + err.message);
+      }
+    };
   }
 
   const btnEliminarCuenta = document.getElementById('btn-eliminar-cuenta');
@@ -1073,7 +1126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('nombre, apellidos')
+        .select('nombre, apellidos, avatar_url')
         .eq('email', user.email)
         .single();
 
@@ -1081,9 +1134,13 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const menuUserName = document.getElementById('menu-user-name');
       const menuUserEmail = document.getElementById('menu-user-email');
+      const menuUserAvatar = document.getElementById('menu-user-avatar');
       
       if (menuUserName) menuUserName.textContent = fullName;
       if (menuUserEmail) menuUserEmail.textContent = user.email;
+      if (menuUserAvatar && profile && profile.avatar_url) {
+        menuUserAvatar.innerHTML = `<img src="${profile.avatar_url}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+      }
     } catch (err) {
       console.error('Error loading user profile for menu:', err.message);
     }
