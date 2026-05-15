@@ -4773,12 +4773,36 @@ document.addEventListener('DOMContentLoaded', () => {
             <p style="font-weight: 700; color: #1e293b; margin: 0;">${ap.productos.nombre}</p>
             <p style="font-size: 0.8rem; color: #64748b; margin: 0;">${ap.cantidad} ${ap.unidad}${ap.lote ? ` · Lote: ${ap.lote}` : ''}</p>
           </div>
-          <div style="background: #eef2f6; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-          </div>
+          <button class="btn-remove-apt-product" data-id="${ap.id}" style="background: #fee2e2; border: none; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          </button>
         `;
         container.appendChild(div);
       });
+
+      // Add deletion logic for the remove buttons
+      container.querySelectorAll('.btn-remove-apt-product').forEach(btn => {
+        btn.onclick = async (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          if (confirm('¿Estás seguro de que deseas quitar este producto de la cita?')) {
+            try {
+              const { error } = await supabase
+                .from('appointment_products')
+                .delete()
+                .eq('id', id);
+              
+              if (error) throw error;
+              
+              // Refresh the products list
+              await renderAppointmentProducts();
+            } catch (err) {
+              alert('Error al quitar el producto: ' + err.message);
+            }
+          }
+        };
+      });
+
     } catch (err) {
       console.error('Error rendering products:', err.message);
     }
