@@ -1442,6 +1442,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  if (btnCloseIconModal && productIconModal) {
+    btnCloseIconModal.addEventListener('click', () => {
+      productIconModal.style.display = 'none';
+    });
+
+    productIconModal.addEventListener('click', (e) => {
+      if (e.target === productIconModal) {
+        productIconModal.style.display = 'none';
+      }
+    });
+  }
+
   // Modal logic for Galeria Camera FAB
   const galeriaFab = document.querySelector('.fab-camera');
   const imageSourceModal = document.querySelector('#image-source-modal');
