@@ -2358,30 +2358,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileView = document.getElementById('client-profile-view');
     if (!profileView) return;
 
-    document.getElementById('profile-name').textContent = client.nombre_completo;
-    document.getElementById('profile-bday').textContent = client.fecha_nacimiento ? formatDate(client.fecha_nacimiento) : 'Sin fecha';
-    document.getElementById('profile-gender').textContent = client.genero || 'No especificado';
-    
-    // Set center name
-    const profileCentro = document.getElementById('profile-centro');
-    if (profileCentro) {
-      if (client.centro_id) {
-        const centro = allCentrosData.find(c => c.id === client.centro_id);
-        if (centro) {
-          profileCentro.textContent = centro.nombre;
-        } else {
-          const { data } = await supabase.from('centros').select('nombre').eq('id', client.centro_id).single();
-          profileCentro.textContent = data ? data.nombre : 'Desconocido';
-        }
-      } else {
-        profileCentro.textContent = 'Sin asignar';
-      }
-    }
-
-    // Update initials in avatar
-    const initials = client.nombre_completo.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-    const avatar = document.getElementById('profile-avatar');
-    avatar.innerHTML = initials;
+    // Populate editable fields
+    document.getElementById('edit-client-name').value = client.nombre_completo || '';
+    document.getElementById('edit-client-nif').value = client.nif || '';
+    document.getElementById('edit-client-birthday').value = client.fecha_nacimiento || '';
+    document.getElementById('edit-client-email').value = client.email || '';
+    document.getElementById('edit-client-phone').value = client.telefono || '';
+    document.getElementById('edit-client-gender').value = client.genero || 'Hombre';
+    document.getElementById('edit-client-centro-id').value = client.centro_id || '';
 
     currentEditingClient = client;
     profileView.style.display = 'block';
@@ -2400,33 +2384,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const editProfileBtn = document.getElementById('edit-profile-btn');
-  const editClienteModal = document.getElementById('edit-cliente-modal');
-  const editClienteBackBtn = document.getElementById('edit-cliente-back');
+  // The profile view is now directly editable, so we don't need the separate edit modal logic here
+  // except for ensuring the back button in the profile view works (already handled above)
+
   const editClientSaveBtn = document.getElementById('edit-client-save');
-
-  if (editProfileBtn && editClienteModal) {
-    editProfileBtn.addEventListener('click', () => {
-      if (!currentEditingClient) return;
-      
-      document.getElementById('edit-client-name').value = currentEditingClient.nombre_completo;
-      document.getElementById('edit-client-nif').value = currentEditingClient.nif || '';
-      document.getElementById('edit-client-birthday').value = currentEditingClient.fecha_nacimiento || '';
-      document.getElementById('edit-client-email').value = currentEditingClient.email || '';
-      document.getElementById('edit-client-phone').value = currentEditingClient.telefono || '';
-      document.getElementById('edit-client-gender').value = currentEditingClient.genero || 'Hombre';
-      document.getElementById('edit-client-centro-id').value = currentEditingClient.centro_id || '';
-      
-      editClienteModal.style.display = 'block';
-    });
-  }
-
-  if (editClienteBackBtn) {
-    editClienteBackBtn.addEventListener('click', () => {
-      editClienteModal.style.display = 'none';
-    });
-  }
-
   if (editClientSaveBtn) {
     editClientSaveBtn.addEventListener('click', async () => {
       if (!currentEditingClient) return;
@@ -2463,20 +2424,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (error) throw error;
 
-        // Update current local object
-        currentEditingClient.nombre_completo = name;
-        currentEditingClient.nif = nif;
-        currentEditingClient.fecha_nacimiento = bday;
-        currentEditingClient.email = email;
-        currentEditingClient.telefono = phone;
-        currentEditingClient.genero = gender;
-        currentEditingClient.centro_id = centroId;
-
-        // Refresh profile view
-        openClientProfile(currentEditingClient);
+        alert('Cliente actualizado correctamente');
         
-        editClienteModal.style.display = 'none';
-        loadClientes(); // Refresh list in background
+        // Hide profile view and return to list
+        document.getElementById('client-profile-view').style.display = 'none';
+        currentEditingClient = null;
+        loadClientes(); // Refresh list
       } catch (err) {
         alert('Error al actualizar: ' + err.message);
       } finally {
