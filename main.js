@@ -995,6 +995,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // We don't throw if error is "not found" to allow setting fields to empty
       if (profile) {
+        document.getElementById('perfil-nombre').value = profile.nombre || '';
+        document.getElementById('perfil-apellidos').value = profile.apellidos || '';
+        document.getElementById('perfil-telefono').value = profile.telefono || '';
+        document.getElementById('perfil-nif').value = profile.nif || '';
+        document.getElementById('perfil-razon').value = profile.razon_social || '';
         document.getElementById('perfil-direccion').value = profile.direccion || '';
         
         const imgAvatar = document.getElementById('perfil-img-avatar');
