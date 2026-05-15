@@ -4657,6 +4657,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const isSelected = selectedAptProducts.some(p => p.product_id === prod.id);
       const selProd = selectedAptProducts.find(p => p.product_id === prod.id) || { cantidad: 1, unidad: 'Unidades', lote: '' };
 
+      let imgHtml = '';
+      if (prod.imagen_url && prod.imagen_url.startsWith('<svg')) {
+        imgHtml = prod.imagen_url.replace(/width="[^"]*"/, 'width="20"').replace(/height="[^"]*"/, 'height="20"').replace(/stroke="[^"]*"/, `stroke="${isSelected ? 'white' : '#64748b'}"`);
+      } else if (prod.imagen_url) {
+        imgHtml = `<img src="${prod.imagen_url}" style="width: 20px; height: 20px; border-radius: 50%; object-fit: cover;" />`;
+      } else {
+        imgHtml = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${isSelected ? 'white' : '#64748b'}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
+      }
+
       const card = document.createElement('div');
       card.style.background = 'white';
       card.style.borderRadius = '16px';
@@ -4668,8 +4677,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let innerHTML = `
         <div style="display: flex; align-items: center; gap: 1rem;">
-          <div style="width: 40px; height: 40px; border-radius: 50%; background: ${isSelected ? '#00bcd4' : '#e2e8f0'}; display: flex; align-items: center; justify-content: center;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="${isSelected ? 'white' : '#64748b'}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: ${isSelected ? '#00bcd4' : '#e2e8f0'}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            ${imgHtml}
           </div>
           <span style="font-weight: 600; color: #1e293b; flex: 1;">${prod.nombre}</span>
         </div>
@@ -4946,7 +4955,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { data, error } = await supabase
         .from('appointment_products')
-        .select('*, productos(nombre)')
+        .select('*, productos(nombre, imagen_url)')
         .eq('appointment_id', currentAptId);
       
       if (error) throw error;
@@ -4961,6 +4970,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (emptyState) emptyState.style.display = 'none';
 
       data.forEach(ap => {
+        let imgHtml = '';
+        if (ap.productos.imagen_url && ap.productos.imagen_url.startsWith('<svg')) {
+          imgHtml = `<div style="width: 36px; height: 36px; border-radius: 50%; background: #00bcd4; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+            ${ap.productos.imagen_url.replace(/width="[^"]*"/, 'width="18"').replace(/height="[^"]*"/, 'height="18"').replace(/stroke="[^"]*"/, 'stroke="white"')}
+          </div>`;
+        } else if (ap.productos.imagen_url) {
+          imgHtml = `<img src="${ap.productos.imagen_url}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" />`;
+        } else {
+          imgHtml = `<div style="width: 36px; height: 36px; border-radius: 50%; background: #00bcd4; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2L5.5 13H11L9.5 22L15 11H9.5L11 2Z"/></svg>
+          </div>`;
+        }
+
         const div = document.createElement('div');
         div.className = 'apt-product-item';
         div.style.background = '#f8fafc';
@@ -4971,9 +4993,12 @@ document.addEventListener('DOMContentLoaded', () => {
         div.style.alignItems = 'center';
         div.style.marginBottom = '0.5rem';
         div.innerHTML = `
-          <div>
-            <p style="font-weight: 700; color: #1e293b; margin: 0;">${ap.productos.nombre}</p>
-            <p style="font-size: 0.8rem; color: #64748b; margin: 0;">${ap.cantidad} ${ap.unidad}${ap.lote ? ` · Lote: ${ap.lote}` : ''}</p>
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            ${imgHtml}
+            <div>
+              <p style="font-weight: 700; color: #1e293b; margin: 0;">${ap.productos.nombre}</p>
+              <p style="font-size: 0.8rem; color: #64748b; margin: 0;">${ap.cantidad} ${ap.unidad}${ap.lote ? ` · Lote: ${ap.lote}` : ''}</p>
+            </div>
           </div>
           <button class="btn-remove-apt-product" data-id="${ap.id}" style="background: #fee2e2; border: none; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
