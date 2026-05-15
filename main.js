@@ -1107,10 +1107,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         console.log("File uploaded, public URL:", publicUrl);
 
-        // Update profile
+        // Update profile including existing form data to avoid NOT NULL constraints
         const { error: updateError } = await supabase
           .from('profiles')
-          .upsert({ email: user.email, avatar_url: publicUrl }, { onConflict: 'email' });
+          .upsert({ 
+            email: user.email, 
+            avatar_url: publicUrl,
+            nombre: document.getElementById('perfil-nombre').value,
+            apellidos: document.getElementById('perfil-apellidos').value,
+            telefono: document.getElementById('perfil-telefono').value,
+            nif: document.getElementById('perfil-nif').value,
+            razon_social: document.getElementById('perfil-razon').value,
+            direccion: document.getElementById('perfil-direccion').value
+          }, { onConflict: 'email' });
 
         if (updateError) throw updateError;
 
