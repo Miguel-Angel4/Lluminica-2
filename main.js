@@ -4328,6 +4328,23 @@ document.addEventListener('DOMContentLoaded', () => {
         procRow.onclick = () => openSelector('procedure', 'Seleccionar Procedimiento');
       }
 
+      // Edit Date/Time logic
+      const dateTimeContainer = document.getElementById('det-cita-datetime-container');
+      if (dateTimeContainer) {
+        dateTimeContainer.onclick = () => {
+          const editModal = document.getElementById('edit-date-time-modal');
+          const dateInput = document.getElementById('edit-apt-date');
+          const timeInput = document.getElementById('edit-apt-time');
+          
+          if (editModal && dateInput && timeInput) {
+            const dateObj = new Date(apt.created_at);
+            dateInput.value = dateObj.toISOString().split('T')[0];
+            timeInput.value = `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+            editModal.style.display = 'flex';
+          }
+        };
+      }
+
       renderAppointmentProducts();
 
     } catch (err) {
@@ -4867,6 +4884,57 @@ document.addEventListener('DOMContentLoaded', () => {
         return name.toLowerCase().includes(query);
       });
       renderSelectorList(filtered);
+    };
+  }
+
+  // --- EDIT DATE/TIME MODAL LOGIC ---
+  const editDateTimeModal = document.getElementById('edit-date-time-modal');
+  const btnCancelDateTime = document.getElementById('btn-cancel-date-time');
+  const btnSaveDateTime = document.getElementById('btn-save-date-time');
+
+  if (btnCancelDateTime) {
+    btnCancelDateTime.onclick = () => editDateTimeModal.style.display = 'none';
+  }
+
+  if (btnSaveDateTime) {
+    btnSaveDateTime.onclick = async () => {
+      const dateInput = document.getElementById('edit-apt-date');
+      const timeInput = document.getElementById('edit-apt-time');
+      
+      if (!dateInput.value || !timeInput.value) {
+        alert('Por favor, selecciona fecha y hora');
+        return;
+      }
+
+      // Combine date and time
+      const newDate = new Date(`${dateInput.value}T${timeInput.value}`);
+      
+      try {
+        btnSaveDateTime.disabled = true;
+        btnSaveDateTime.textContent = 'Guardando...';
+        
+        const { error } = await supabase
+          .from('appointments')
+          .update({ created_at: newDate.toISOString() })
+          .eq('id', currentAptId);
+        
+        if (error) throw error;
+        
+        editDateTimeModal.style.display = 'none';
+        showAppointmentDetails(currentAptId); // Refresh details
+        loadAppointments(); // Refresh calendar/list
+      } catch (err) {
+        alert('Error al actualizar fecha/hora: ' + err.message);
+      } finally {
+        btnSaveDateTime.disabled = false;
+        btnSaveDateTime.textContent = 'Guardar';
+      }
+    };
+  }
+
+  if (editDateTimeModal) {
+    editDateTimeModal.onclick = (e) => {
+      if (e.target === editDateTimeModal) editDateTimeModal.style.display = 'none';
     };
   }
 
