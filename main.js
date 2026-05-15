@@ -4299,6 +4299,35 @@ document.addEventListener('DOMContentLoaded', () => {
         };
       }
 
+      // Delete Appointment logic
+      const btnDeleteApt = document.getElementById('btn-delete-apt');
+      if (btnDeleteApt) {
+        btnDeleteApt.onclick = async () => {
+          if (confirm('¿Estás seguro de que deseas eliminar esta cita permanentemente?')) {
+            try {
+              const { error } = await supabase.from('appointments').delete().eq('id', id);
+              if (error) throw error;
+              alert('Cita eliminada con éxito');
+              hideAllViews();
+              loadAppointments();
+            } catch (err) {
+              alert('Error al eliminar la cita: ' + err.message);
+            }
+          }
+        };
+      }
+
+      // Change Client/Procedure logic
+      const patientRow = document.getElementById('det-cita-paciente-row');
+      if (patientRow) {
+        patientRow.onclick = () => openSelector('client', 'Seleccionar Cliente');
+      }
+
+      const procRow = document.getElementById('det-cita-procedimiento-row');
+      if (procRow) {
+        procRow.onclick = () => openSelector('procedure', 'Seleccionar Procedimiento');
+      }
+
       renderAppointmentProducts();
 
     } catch (err) {
@@ -4730,10 +4759,115 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         alert('Error al asignar: ' + err.message);
       } finally {
-        btnSaveAssignProduct.disabled = false;
         btnSaveAssignProduct.textContent = 'Guardar Cambios';
       }
     });
+  }
+
+  // --- ITEM SELECTOR MODAL LOGIC ---
+  const itemSelectorModal = document.getElementById('item-selector-modal');
+  const btnCloseSelector = document.getElementById('btn-close-selector');
+  const selectorTitle = document.getElementById('selector-title');
+  const selectorSearch = document.getElementById('selector-search');
+  const selectorList = document.getElementById('selector-list');
+
+  let selectorType = ''; // 'client' or 'procedure'
+  let selectorData = [];
+
+  if (btnCloseSelector) {
+    btnCloseSelector.onclick = () => itemSelectorModal.style.display = 'none';
+  }
+
+  if (itemSelectorModal) {
+    itemSelectorModal.onclick = (e) => {
+      if (e.target === itemSelectorModal) {
+        itemSelectorModal.style.display = 'none';
+      }
+    };
+  }
+
+  function openSelector(type, title) {
+    selectorType = type;
+    selectorTitle.textContent = title;
+    selectorSearch.value = '';
+    itemSelectorModal.style.display = 'flex';
+    loadSelectorData();
+  }
+
+  async function loadSelectorData() {
+    selectorList.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem;">Cargando...</p>';
+    try {
+      let data = [];
+      if (selectorType === 'client') {
+        const { data: clients } = await supabase.from('clients').select('*').order('nombre_completo');
+        data = clients || [];
+      } else {
+        const { data: procs } = await supabase.from('procedimientos').select('*').order('nombre');
+        data = procs || [];
+      }
+      selectorData = data;
+      renderSelectorList(data);
+    } catch (err) {
+      console.error(err);
+      selectorList.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 2rem;">Error al cargar datos</p>';
+    }
+  }
+
+  function renderSelectorList(items) {
+    selectorList.innerHTML = '';
+    if (items.length === 0) {
+      selectorList.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem;">No hay resultados</p>';
+      return;
+    }
+
+    items.forEach(item => {
+      const name = selectorType === 'client' ? item.nombre_completo : item.nombre;
+      const div = document.createElement('div');
+      div.style.padding = '1rem';
+      div.style.background = '#f8fafc';
+      div.style.borderRadius = '12px';
+      div.style.cursor = 'pointer';
+      div.style.fontWeight = '600';
+      div.style.color = '#1e293b';
+      div.style.transition = 'all 0.2s';
+      div.style.border = '1px solid #e2e8f0';
+      div.textContent = name;
+      
+      div.onclick = async () => {
+        try {
+          const update = selectorType === 'client' ? { client_id: item.id } : { procedure_id: item.id };
+          const { error } = await supabase.from('appointments').update(update).eq('id', currentAptId);
+          if (error) throw error;
+          
+          itemSelectorModal.style.display = 'none';
+          showAppointmentDetails(currentAptId); // Refresh details
+        } catch (err) {
+          alert('Error al actualizar: ' + err.message);
+        }
+      };
+      
+      div.onmouseenter = () => {
+        div.style.background = '#e2e8f0';
+        div.style.borderColor = '#cbd5e1';
+      };
+      div.onmouseleave = () => {
+        div.style.background = '#f8fafc';
+        div.style.borderColor = '#e2e8f0';
+      };
+      
+      selectorList.appendChild(div);
+    });
+  }
+
+  if (selectorSearch) {
+    selectorSearch.oninput = (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      const filtered = selectorData.filter(item => {
+        const name = selectorType === 'client' ? item.nombre_completo : item.nombre;
+        return name.toLowerCase().includes(query);
+      });
+      renderSelectorList(filtered);
+    };
   }
 
   async function renderAppointmentProducts() {

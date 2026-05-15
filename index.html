@@ -1668,6 +1668,24 @@
 
     <script type="module" src="/main.js"></script>
 
+    <!-- Item Selector Modal (for changing client/procedure in details) -->
+    <div id="item-selector-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 20000; align-items: center; justify-content: center; padding: 1rem;">
+      <div style="background: white; border-radius: 20px; width: 100%; max-width: 400px; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
+        <header style="padding: 1.25rem; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between;">
+          <h3 id="selector-title" style="font-size: 1.1rem; font-weight: 700; color: #1e293b;">Seleccionar</h3>
+          <button id="btn-close-selector" style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </header>
+        <div style="padding: 1rem; overflow-y: auto; flex: 1;">
+           <input type="text" id="selector-search" placeholder="Buscar..." style="width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.95rem; outline: none; margin-bottom: 1rem; box-sizing: border-box;">
+           <div id="selector-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+             <!-- Populated via JS -->
+           </div>
+        </div>
+      </div>
+    </div>
+
     <!-- View: Detalles de Cita -->
     <div id="view-detalles-cita" class="view-container" style="display: none; flex-direction: column; background: #f1f5f9; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; overflow-y: auto;">
       <header class="view-header" style="background: white; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -1676,10 +1694,7 @@
         </button>
         <h2 style="font-size: 1.15rem; font-weight: 700; color: #1e293b;">Detalles de la Cita</h2>
         <div style="display: flex; gap: 1rem;">
-          <button style="border: none; background: transparent; cursor: pointer;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/></svg>
-          </button>
-          <button style="border: none; background: transparent; cursor: pointer;">
+          <button id="btn-delete-apt" style="border: none; background: transparent; cursor: pointer;">
             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00bcd4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
           </button>
         </div>
@@ -1697,18 +1712,18 @@
 
         <!-- Paciente y Procedimiento -->
         <div style="background: white; border-radius: 20px; padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-          <div style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 16px; position: relative;">
+          <div id="det-cita-paciente-row" style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 16px; position: relative; cursor: pointer;">
             <div style="background: #00bcd4; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </div>
             <div>
-              <p style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05rem; margin-bottom: 0.1rem;">Paciente</p>
+              <p style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05rem; margin-bottom: 0.1rem;">Cliente</p>
               <p id="det-cita-paciente" style="font-weight: 700; color: #1e293b; font-size: 1rem;">--</p>
             </div>
             <svg style="position: absolute; right: 1rem; color: #cbd5e1" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 16px; position: relative;">
+          <div id="det-cita-procedimiento-row" style="display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 16px; position: relative; cursor: pointer;">
             <div style="background: #fcd34d; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/></svg>
             </div>
